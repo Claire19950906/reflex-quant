@@ -27,7 +27,7 @@ notable documentation improvement, you'll be listed here.
 - Merge a PR with significant impact (new checker, new feature, major
   documentation improvement)
 - Or report a security issue responsibly (see [SECURITY.md](../SECURITY.md))
-- Email team@reflex-quant.ai if we missed you
+- Email z2132743607@163.com if we missed you
 
 ---
 

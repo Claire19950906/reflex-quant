@@ -127,7 +127,7 @@ excellent to each other. We take violations seriously.
 
 - **For bug / feature / question** → open an issue
 - **For security** → security@reflex-quant.ai (encrypted preferred)
-- **For commercial licensing** → team@reflex-quant.ai
+- **For commercial licensing** → z2132743607@163.com
 - **For everything else** → Discord (link in [README.md](./README.md))
 
 ---

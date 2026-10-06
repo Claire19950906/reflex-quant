@@ -113,4 +113,4 @@ Recommended: Cloudflare Web Analytics (free, no cookies, GDPR-friendly). One lin
 
 ## Need help?
 
-Open an issue at the repo, or email team@reflex-quant.ai. Response within 24h on weekdays.
+Open an issue at the repo, or email z2132743607@163.com. Response within 24h on weekdays.

@@ -58,7 +58,7 @@ Series A trigger: $1.5M ARR (currently $0 ARR, paper trading).
 
 ### We're a $20M-AUM family office. Can we use this?
 
-Yes — design-partner tier. Email team@reflex-quant.ai.
+Yes — design-partner tier. Email z2132743607@163.com.
 
 We're currently piloting with 2 quant funds + 1 family office. Pricing for
 the design partner program is **$499/mo self-hosted** with a 30-day
@@ -146,7 +146,7 @@ We will not remotely disable it. We can't. Your machine, your code.
 This is the **public showcase repo**. The full source is currently in our
 **private repo** under design-partner agreement. To get access:
 
-- Email team@reflex-quant.ai
+- Email z2132743607@163.com
 - Sign an NDA
 - Receive private-repo access (read-only)
 - Optional: contribute under AGPL-3.0 to public repo
@@ -202,7 +202,7 @@ Yes. Scale tier ($100k/yr + revenue share). Includes:
 - Dedicated engineer
 - Roadmap influence
 
-Email: team@reflex-quant.ai.
+Email: z2132743607@163.com.
 
 ---
 
@@ -214,7 +214,7 @@ Yes — research partnership tier:
 - Joint technical blog post every 6 months
 - Co-marketing on landing page
 
-Email: team@reflex-quant.ai.
+Email: z2132743607@163.com.
 
 ---
 

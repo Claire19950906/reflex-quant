@@ -2,7 +2,7 @@
 
 > ⚠️ **This is a summary.** The full Commercial License Agreement is a separate
 > document signed between you and the Reflex Quant project. Contact
-> team@reflex-quant.ai for the binding agreement.
+> z2132743607@163.com for the binding agreement.
 
 The AGPL-3.0 license (see [LICENSE](./LICENSE)) requires you to publish your
 source code if you run a modified version as a network service. If you do not
@@ -62,7 +62,7 @@ You do **not** need a commercial license if:
 - You are an individual researcher / academic / hobbyist
 - You fork the project and publish your fork under AGPL-3.0
 
-When in doubt: **email us** — team@reflex-quant.ai — and we'll help you
+When in doubt: **email us** — z2132743607@163.com — and we'll help you
 figure out the right path.
 
 ---
@@ -90,7 +90,7 @@ figure out the right path.
 
 ## How to start
 
-1. Send an email to **team@reflex-quant.ai** with:
+1. Send an email to **z2132743607@163.com** with:
    - Your company name and contact
    - Intended use case (SaaS / embed / white-label)
    - Estimated number of end users

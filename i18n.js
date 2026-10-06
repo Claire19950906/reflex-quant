@@ -203,7 +203,7 @@
       'pricing.faq.a5': 'Custom / OEM tier only. Starts at $50k for a 6-week engagement.',
 
       'pricing.contact.text':    'Questions?',
-      'pricing.contact.email':   'team@reflex-quant.ai',
+      'pricing.contact.email':   'z2132743607@163.com',
     },
 
     zh: {
@@ -403,7 +403,7 @@
       'pricing.faq.a5': '仅限定制 / OEM 档。起步价 $50k，6 周合作。',
 
       'pricing.contact.text':    '有问题？',
-      'pricing.contact.email':   'team@reflex-quant.ai',
+      'pricing.contact.email':   'z2132743607@163.com',
     },
   };
 

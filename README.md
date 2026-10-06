@@ -29,6 +29,19 @@
 ---
 
 <p align="center">
+  <a href="#-why-reflex-quant"><img src="https://img.shields.io/badge/⭐_Star_this_repo-if_you_believe_honest_systems_win-blueviolet?style=for-the-badge" alt="Star this repo"></a>
+  &nbsp;&nbsp;
+  <a href="./docs/SOCIAL_BIOS.md"><img src="https://img.shields.io/badge/📣_Share-share_with_one_quant_friend-orange?style=for-the-badge" alt="Share"></a>
+</p>
+
+> **⭐ If you believe the next decade of quant will be defined by reasoning quality,
+> not raw data — star this repo.** Every star tells the algo this problem deserves
+> attention, and brings one more independent quant into the conversation. That's our
+> only distribution channel. No paid ads, no growth hacks — just signal density.
+
+---
+
+<p align="center">
   <a href="./assets/banner.png"><img src="./assets/banner.png" alt="Reflex Quant — Self-aware AI for quant trading" width="100%"></a>
 </p>
 
@@ -228,10 +241,13 @@ for commercial terms.
 
 ## 📬 Get in touch
 
-- **Email:** team@reflex-quant.ai
-- **Demo:** [calendly.com/reflex-quant](https://calendly.com)
-- **Twitter:** [@reflexquant](https://twitter.com/reflexquant)
-- **Discord:** [discord.gg/reflex-quant](https://discord.com)
+- **Email (founder):** z2132743607@163.com
+- **Issues / feature requests:** [github.com/Claire19950906/reflex-quant/issues](https://github.com/Claire19950906/reflex-quant/issues)
+- **Discussions / Q&A:** [github.com/Claire19950906/reflex-quant/discussions](https://github.com/Claire19950906/reflex-quant/discussions)
+- **Pitch deck:** [`docs/SOCIAL_BIOS.md`](./docs/SOCIAL_BIOS.md) — ready-to-paste copy for every channel
+- **Launch kit:** [`docs/LAUNCH_KIT.md`](./docs/LAUNCH_KIT.md) — Twitter thread + HN Show + Reddit drafts + 30-day calendar
+
+> *We're a one-person operation right now. Email goes straight to the founder. If you want to talk, just write what you're working on and why Reflex Quant matters to you.*
 
 ---
 

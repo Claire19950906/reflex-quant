@@ -1,0 +1,97 @@
+# Feature Request — Reflex Quant
+# Use this template to suggest a new checker, knowledge-graph node type,
+# showcase improvement, or pricing/license model change.
+
+name: ✨ Feature Request
+description: Suggest a new checker, meta-loop pattern, showcase improvement, or pricing change
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      content: |
+        Tell us what you'd like to see. The clearer the use-case, the easier to prioritize.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of feature
+      description: Which area does this idea affect?
+      options:
+        - New reflection checker (E028+)
+        - New meta-loop pattern / blindspot detector
+        - Knowledge graph node type
+        - Showcase UI / interactivity
+        - Pricing / licensing model
+        - Documentation / example
+        - Build / deploy / tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it solves
+      description: What pain point does this address? Who is affected and how often?
+      placeholder: |
+        Energy shorts on OPEC+ meeting days have a 35% miss rate because
+        single-source news (TreeNews) gets through E007. This costs ~$XXk
+        per quarter in avoidable losses.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe your ideal fix. Include pseudocode, schema, or UI mockup if you can.
+      placeholder: |
+        Add E028: opec_window_awareness — if news source mentions OPEC+,
+        require ≥3 independent sources within ±30 min of decision time.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you consider? Why this approach over others?
+      placeholder: |
+        Considered a global "high-impact-news-day" flag, but that's
+        too coarse — would also flag FOMC, ECB, etc. where the rule
+        already works.
+    validations:
+      required: false
+
+  - type: input
+    id: effort
+    attributes:
+      label: Estimated effort
+      description: Your best guess — leave blank if unsure.
+      placeholder: "1 day / 1 week / 1 month / unknown"
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact / reach
+      description: How many users / trades / assets would benefit?
+      placeholder: |
+        Affects ~25% of energy shorts. We run ~10 energy shorts/week.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I have searched existing issues and Discussions and this is not a duplicate
+          required: true
+        - label: I have read [ROADMAP.md](https://github.com/reflex-quant/reflex-quant/blob/main/docs/ROADMAP.md)
+          required: true
+        - label: I am willing to submit a PR if the proposal is accepted (optional, but appreciated)
+          required: false

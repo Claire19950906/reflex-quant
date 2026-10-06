@@ -1,0 +1,11 @@
+# robots.txt — Reflex Quant
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /api/
+
+# Faster indexing of the high-value pages
+Sitemap: https://Claire19950906.github.io/reflex-quant/sitemap.xml

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Reflex Quant commercial license — pricing tiers, license terms, and FAQ for proprietary use.">
+<meta property="og:title" content="Reflex Quant — Commercial License">
+<meta property="og:description" content="Pricing tiers and license terms for proprietary use of Reflex Quant.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://Claire19950906.github.io/reflex-quant/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<title data-i18n-attr="title:pricing.meta.title">Reflex Quant — Commercial License</title>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --bg2: #131a2e;
+    --bg3: #1c2541;
+    --border: #2d3a5f;
+    --text: #e2e8f0;
+    --dim: #94a3b8;
+    --dim2: #64748b;
+    --primary: #3b82f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --meta: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  header {
+    background: linear-gradient(180deg, var(--bg2), var(--bg));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  header .logo {
+    width: 56px; height: 56px;
+    background: var(--primary);
+    border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  header h1 { font-size: 32px; margin-bottom: 8px; }
+  header .sub { color: var(--dim); font-size: 14px; }
+  h2 {
+    font-size: 22px;
+    margin: 32px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--dim); }
+  p { margin-bottom: 12px; color: var(--text); }
+  code {
+    background: var(--bg3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+  }  .tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .tier {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .tier:hover { transform: translateY(-2px); border-color: var(--primary); }
+  .tier.active { border-color: var(--primary); background: var(--bg3); }
+  .tier .badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .tier h3 { color: var(--text); font-size: 18px; margin: 4px 0 4px; }
+  .tier .price { font-size: 28px; font-weight: 700; color: var(--primary); margin: 8px 0; font-family: "SF Mono", monospace; }
+  .tier .price-period { color: var(--dim); font-size: 12px; }
+  .tier ul { list-style: none; margin-top: 12px; }
+  .tier li { padding: 4px 0; font-size: 13px; color: var(--dim); }
+  .tier li::before { content: "✓ "; color: var(--success); font-weight: bold; }
+  .calc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .calc label {
+    display: block;
+    color: var(--dim);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .calc-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  input[type="number"], select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .estimate {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .estimate .label { color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .estimate .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: "SF Mono", monospace;
+  }
+  .estimate .breakdown { font-size: 12px; color: var(--dim2); margin-top: 4px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--dim); font-weight: 700; text-transform: uppercase; font-size: 11px; }
+  td { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .cta {
+    background: var(--primary);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .cta:hover { background: #2563eb; }
+  .small { font-size: 12px; color: var(--dim2); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .lang-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    margin-top: 16px;
+  }
+  .lang-toggle:hover {
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.08);
+  }
+  .lang-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .lang-toggle .globe {
+    font-size: 14px; line-height: 1;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="logo">🪞</div>
+  <h1 data-i18n="pricing.header.title">Reflex Quant — Commercial License</h1>
+  <div class="sub" data-i18n="pricing.header.sub">Pricing & terms for proprietary use · Last updated 2026-10-06</div>
+  <button class="lang-toggle" id="lang-toggle" type="button"
+          data-i18n="lang.toggle" data-i18n-aria="pricing.lang.toggle.aria"
+          aria-label="Switch language to Chinese">
+    <span class="globe">🌐</span>
+    <span id="lang-toggle-label">中</span>
+  </button>
+</header>
+
+<section>
+  <h2 data-i18n="pricing.section.why">Why a commercial license?</h2>
+  <p data-i18n="pricing.section.why.p1">Reflex Quant is dual-licensed. The core code is <strong>AGPL-3.0</strong>, which means anyone who forks and modifies it must release their changes under the same license. This protects the project from being quietly absorbed into closed-source products.</p>
+  <p data-i18n="pricing.section.why.p2">If you want to use Reflex Quant in a proprietary product, run it as a service without releasing your modifications, or embed it in a larger closed-source system — you need a <strong>commercial license</strong> from us.</p>
+</section>
+
+<section>
+  <h2 data-i18n="pricing.section.tiers">Pricing tiers</h2>
+  <div class="tiers" id="tiers">
+    <div class="tier" data-tier="indie">
+      <span class="badge">INDIE</span>
+      <h3 data-i18n="pricing.tier.indie.name">Indie / Research</h3>
+      <div class="price">$5,000<span class="price-period">/yr</span></div>
+      <ul>
+        <li data-i18n="pricing.tier.indie.f1">Up to 2 quants / researchers</li>
+        <li data-i18n="pricing.tier.indie.f2">Internal use only</li>
+        <li data-i18n="pricing.tier.indie.f3">No redistribution</li>
+        <li data-i18n="pricing.tier.indie.f4">No SaaS / managed offering</li>
+        <li data-i18n="pricing.tier.indie.f5">Email support</li>
+      </ul>
+    </div>
+    <div class="tier" data-tier="team">
+      <span class="badge">TEAM</span>
+      <h3 data-i18n="pricing.tier.team.name">Team / Desk</h3>
+      <div class="price">$25,000<span class="price-period">/yr</span></div>
+      <ul>
+        <li data-i18n="pricing.tier.team.f1">Up to 10 quants</li>
+        <li data-i18n="pricing.tier.team.f2">Internal use + client reports</li>
+        <li data-i18n="pricing.tier.team.f3">No SaaS</li>
+        <li data-i18n="pricing.tier.team.f4">Custom checker development (4 / yr)</li>
+        <li data-i18n="pricing.tier.team.f5">Priority support</li>
+      </ul>
+    </div>
+    <div class="tier" data-tier="firm">
+      <span class="badge">FIRM</span>
+      <h3 data-i18n="pricing.tier.firm.name">Firm / Institutional</h3>
+      <div class="price">$100,000<span class="price-period">/yr</span></div>
+      <ul>
+        <li data-i18n="pricing.tier.firm.f1">Unlimited quants at one site</li>
+        <li data-i18n="pricing.tier.firm.f2">Internal use + redistribution to clients</li>
+        <li data-i18n="pricing.tier.firm.f3">SaaS allowed for clients only</li>
+        <li data-i18n="pricing.tier.firm.f4">Unlimited custom checker dev</li>
+        <li data-i18n="pricing.tier.firm.f5">Dedicated support engineer</li>
+        <li data-i18n="pricing.tier.firm.f6">Source code escrow available</li>
+      </ul>
+    </div>
+    <div class="tier" data-tier="custom">
+      <span class="badge">CUSTOM</span>
+      <h3 data-i18n="pricing.tier.custom.name">Custom / OEM</h3>
+      <div class="price" data-i18n="pricing.tier.custom.price">Let's talk</div>
+      <ul>
+        <li data-i18n="pricing.tier.custom.f1">OEM / embedded use</li>
+        <li data-i18n="pricing.tier.custom.f2">Multi-site / global</li>
+        <li data-i18n="pricing.tier.custom.f3">White-label</li>
+        <li data-i18n="pricing.tier.custom.f4">On-prem / air-gapped</li>
+        <li data-i18n="pricing.tier.custom.f5">Custom SLAs</li>
+        <li data-i18n="pricing.tier.custom.f6">Volume discounts</li>
+      </ul>
+    </div>
+  </div>
+</section><section>
+  <h2 data-i18n="pricing.section.calc">Pricing calculator</h2>
+  <div class="calc">
+    <div class="calc-row">
+      <div>
+        <label data-i18n="pricing.calc.label.tier">Tier</label>
+        <select id="tier-select">
+          <option value="indie" data-i18n="pricing.calc.tier.indie">Indie / Research ($5k/yr)</option>
+          <option value="team" selected data-i18n="pricing.calc.tier.team">Team / Desk ($25k/yr)</option>
+          <option value="firm" data-i18n="pricing.calc.tier.firm">Firm / Institutional ($100k/yr)</option>
+          <option value="custom" data-i18n="pricing.calc.tier.custom">Custom / OEM (contact us)</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="pricing.calc.label.seats">Number of seats</label>
+        <input type="number" id="seats" value="5" min="1" max="500">
+      </div>
+    </div>
+    <div class="calc-row">
+      <div>
+        <label data-i18n="pricing.calc.label.term">Contract term</label>
+        <select id="term">
+          <option value="1" data-i18n="pricing.calc.term.1">1 year (standard)</option>
+          <option value="2" data-i18n="pricing.calc.term.2">2 years (-10%)</option>
+          <option value="3" data-i18n="pricing.calc.term.3">3 years (-20%)</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="pricing.calc.label.support">Support tier</label>
+        <select id="support">
+          <option value="email" data-i18n="pricing.calc.support.email">Email (included)</option>
+          <option value="priority" data-i18n="pricing.calc.support.priority">Priority (+15%)</option>
+          <option value="dedicated" data-i18n="pricing.calc.support.dedicated">Dedicated engineer (+40%)</option>
+        </select>
+      </div>
+    </div>
+    <div class="estimate">
+      <div>
+        <div class="label" data-i18n="pricing.estimate.label">Estimated annual cost</div>
+        <div class="value" id="estimate-value">$25,000</div>
+        <div class="breakdown" id="estimate-breakdown" data-i18n="pricing.estimate.breakdown">Team tier, 5 seats, 1 year, email support</div>
+      </div>
+      <a href="mailto:team@reflex-quant.ai?subject=Commercial%20license%20inquiry" class="cta" data-i18n="pricing.estimate.cta">Contact sales</a>
+    </div>
+    <p class="small" style="margin-top: 12px;" data-i18n="pricing.calc.note">All prices in USD. Volume discounts available above 50 seats (firm tier). Custom / OEM tier requires direct conversation — no online estimate.</p>
+  </div>
+</section>
+
+<section>
+  <h2 data-i18n="pricing.section.included">What's included in every tier</h2>
+  <table>
+    <tr><th data-i18n="pricing.table.feature">Feature</th><th data-i18n="pricing.table.col.indie">Indie</th><th data-i18n="pricing.table.col.team">Team</th><th data-i18n="pricing.table.col.firm">Firm</th><th data-i18n="pricing.table.col.custom">Custom</th></tr>
+    <tr><td data-i18n="pricing.table.row.core">Core 7-layer reflection engine</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.meta">Meta-loop (system self-reflection)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.kg">Knowledge graph persistence</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.source">Source code access</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.mod">Proprietary modifications allowed</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.internal">Internal use</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.redist">Redistribution to clients</td><td>—</td><td data-i18n="pricing.table.row.reports_only">Reports only</td><td>✓</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.saas">SaaS offering</td><td>—</td><td>—</td><td data-i18n="pricing.table.row.clients_only">Clients only</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.whitelabel">White-label / OEM</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td data-i18n="pricing.table.row.custom">Custom checker development</td><td>—</td><td data-i18n="pricing.table.row.four_per_year">4 / year</td><td data-i18n="pricing.table.row.unlimited">Unlimited</td><td data-i18n="pricing.table.row.unlimited">Unlimited</td></tr>
+    <tr><td data-i18n="pricing.table.row.escrow">Source code escrow</td><td>—</td><td>—</td><td data-i18n="pricing.table.row.optional">Optional</td><td>✓</td></tr>
+  </table>
+</section><section>
+  <h2 data-i18n="pricing.section.terms">License terms (summary)</h2>
+  <p data-i18n="pricing.section.terms.intro">The full commercial license agreement is a 12-page legal document. The key terms, in plain English:</p>
+  <ul style="margin-left: 20px; color: var(--text);">
+    <li><strong data-i18n="pricing.terms.term">Term</strong>: <span data-i18n="pricing.terms.term1.body">1, 2, or 3 years. Auto-renews unless cancelled 30 days before expiry.</span></li>
+    <li><strong data-i18n="pricing.terms.usecase">Use cases</strong>: <span data-i18n="pricing.terms.usecase.body">covered uses are listed in your tier. Anything not listed is not licensed.</span></li>
+    <li><strong data-i18n="pricing.terms.mod">Modifications</strong>: <span data-i18n="pricing.terms.mod.body">all proprietary modifications remain your IP. We don't ask for assignment.</span></li>
+    <li><strong data-i18n="pricing.terms.conf">Confidentiality</strong>: <span data-i18n="pricing.terms.conf.body">we keep your use confidential unless you opt in to a public reference.</span></li>
+    <li><strong data-i18n="pricing.terms.support">Support</strong>: <span data-i18n="pricing.terms.support.body">response SLAs vary by support tier. Dedicated engineer tier includes a quarterly on-site (or video) review.</span></li>
+    <li><strong data-i18n="pricing.terms.term2">Termination</strong>: <span data-i18n="pricing.terms.term2.body">either party can terminate at the end of term. No refunds on early termination (you keep what's already licensed for the term you paid for).</span></li>
+    <li><strong>Warranty</strong>: we warrant the code runs as documented. No warranty of profitability.</li>
+    <li><strong>Liability cap</strong>: total fees paid in the prior 12 months. Standard.</li>
+  </ul>
+  <p class="small">This summary is informational; the signed agreement governs. We use standard SaaS / licensing boilerplate (based on the Open Source Initiative's recommended pattern) and are happy to walk through any clause.</p>
+</section>
+
+<section>
+  <h2>Why the prices are what they are</h2>
+  <p>Two reasons we don't price this like a typical SaaS:</p>
+  <p><strong>1. The system gets more valuable over time.</strong> The meta-loop proposes ~3 new checkers per week from real trading data. The longer you run it, the more domain knowledge accumulates in your local knowledge graph. Switching costs go up.</p>
+  <p><strong>2. We don't want this in the wrong hands.</strong> AGPL-3.0 already stops the obvious abuse (closed-source SaaS forks). The commercial license is the legitimate path for organizations that need a proprietary use case — but we want it to be a meaningful conversation, not a free-for-all commodity. A $5k/yr indie floor and a $100k/yr firm tier signal that.</p>
+</section>
+
+<section>
+  <h2 data-i18n="pricing.section.faq">FAQ</h2>
+  <h3 data-i18n="pricing.faq.q1">Can I evaluate before buying?</h3>
+  <p data-i18n="pricing.faq.a1">Yes — the <a href="./showcase/index.html" style="color: var(--primary);">Reflex Quant showcase</a> is a live, clickable demo with synthetic data. No account needed, runs offline in your browser.</p>
+  <h3 data-i18n="pricing.faq.q2">What's the difference between AGPL-3.0 and the commercial license?</h3>
+  <p data-i18n="pricing.faq.a2">AGPL-3.0: free, but you must release your modifications under AGPL-3.0 if you deploy as a network service. Commercial: paid, no release requirement.</p>
+  <h3 data-i18n="pricing.faq.q3">Do you offer academic pricing?</h3>
+  <p data-i18n="pricing.faq.a3">Yes — for accredited universities and not-for-profit research, the Indie tier is waived. Email us with your institution.</p>
+  <h3 data-i18n="pricing.faq.q4">Can I switch tiers mid-contract?</h3>
+  <p data-i18n="pricing.faq.a4">Upgrades yes (prorated), downgrades at term renewal only.</p>
+  <h3 data-i18n="pricing.faq.q5">What about consulting / custom integration?</h3>
+  <p data-i18n="pricing.faq.a5">Custom / OEM tier only. Starts at $50k for a 6-week engagement.</p>
+</section><hr>
+<section style="text-align: center; color: var(--dim); padding: 24px 0;">
+  <p><span data-i18n="pricing.contact.text">Questions?</span> <a href="mailto:team@reflex-quant.ai" style="color: var(--primary);">team@reflex-quant.ai</a></p>
+  <p class="small">Reflex Quant · v225 · 2026-10-06</p>
+</section>
+
+</div>
+
+<script src="i18n.js"></script>
+<script>
+(function() {
+  const BASE = { indie: 5000, team: 25000, firm: 100000, custom: null };
+  const SUPPORT = { email: 0, priority: 0.15, dedicated: 0.40 };
+  const TERM = { '1': 0, '2': 0.10, '3': 0.20 };
+  const SEAT_MULTIPLIER = function(tier, seats) {
+    if (tier === 'custom') return 1;
+    if (tier === 'firm') {
+      if (seats <= 50) return 1;
+      if (seats <= 100) return 0.85;
+      return 0.70;
+    }
+    if (tier === 'team' && seats > 10) {
+      return 1 + (seats - 10) * 0.10;
+    }
+    return 1;
+  };
+  const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+  const tierSelect = document.getElementById('tier-select');
+  const seatsInput = document.getElementById('seats');
+  const termSelect = document.getElementById('term');
+  const supportSelect = document.getElementById('support');
+  const estimateValue = document.getElementById('estimate-value');
+  const estimateBreakdown = document.getElementById('estimate-breakdown');
+  const tierCards = document.querySelectorAll('.tier');
+
+  tierCards.forEach(card => {
+    card.addEventListener('click', () => {
+      tierCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      tierSelect.value = card.dataset.tier;
+      recalc();
+    });
+  });
+
+  function recalc() {
+    const tier = tierSelect.value;
+    const seats = parseInt(seatsInput.value) || 1;
+    const term = parseInt(termSelect.value);
+    const support = supportSelect.value;
+    if (tier === 'custom') {
+      estimateValue.textContent = window.i18n.t('pricing.estimate.custom');
+      estimateBreakdown.textContent = window.i18n.t('pricing.estimate.custom.note');
+      return;
+    }
+    let base = BASE[tier];
+    base = base * SEAT_MULTIPLIER(tier, seats);
+    let total = base * (1 + SUPPORT[support]);
+    total = total * (1 - TERM[term]);
+    estimateValue.textContent = fmt(total) + (term > 1 ? ` (${term}-year term)` : '/yr');
+    const tierName = { indie: 'Indie', team: 'Team', firm: 'Firm' }[tier];
+    const termName = { 1: '1 year', 2: '2 year (-10%)', 3: '3 year (-20%)' }[term];
+    const supportName = { email: 'email support', priority: 'priority support (+15%)', dedicated: 'dedicated engineer (+40%)' }[support];
+    estimateBreakdown.textContent = `${tierName} tier, ${seats} seat${seats>1?'s':''}, ${termName}, ${supportName}`;
+  }
+
+  [tierSelect, seatsInput, termSelect, supportSelect].forEach(el => {
+    el.addEventListener('change', recalc);
+    el.addEventListener('input', recalc);
+  });
+  recalc();
+
+  /* Language toggle */
+  var langBtn = document.getElementById('lang-toggle');
+  if (langBtn) {
+    langBtn.addEventListener('click', function() {
+      window.i18n.toggle();
+      recalc();
+    });
+  }
+})();
+</script>
+</body>
+</html>

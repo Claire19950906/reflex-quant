@@ -1,0 +1,21 @@
+# Funding — Reflex Quant
+# Enables a "Sponsor" button on the GitHub repo page.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-repository/displaying-a-sponsor-button-in-your-repository
+
+# GitHub Sponsors (preferred — fee-free for OSS)
+github: reflex-quant
+
+# Open Collective
+# open_collective: reflex-quant
+
+# Ko-fi (one-off donations)
+# ko_fi: reflexquant
+
+# Patreon (recurring)
+# patreon: reflexquant
+
+# Custom funding URL
+# custom: ["https://reflex-quant.ai/sponsor", "https://buy.stripe.com/..."]
+
+# Community funding platforms (Patreon / Open Collective etc.) are not yet active.
+# Update this file when a sponsorship channel is set up.

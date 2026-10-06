@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Reflex Quant favicon — mirror / self-reflection motif -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- Vertical mirror line -->
+  <line x1="32" y1="14" x2="32" y2="50" stroke="#e2e8f0" stroke-width="2" stroke-opacity="0.55" stroke-dasharray="2 2"/>
+  <!-- Left half: original arrow (up) -->
+  <path d="M22 40 L22 22 L17 22 L26 12 L35 22 L30 22 L30 40 Z" fill="#e2e8f0"/>
+  <!-- Right half: mirrored arrow (down) — represents self-reflection flipping the signal -->
+  <path d="M42 24 L42 42 L47 42 L38 52 L29 42 L34 42 L34 24 Z" fill="#e2e8f0" fill-opacity="0.85"/>
+</svg>

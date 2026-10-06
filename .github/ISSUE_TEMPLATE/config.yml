@@ -1,0 +1,14 @@
+# Issue template chooser — shown when a user clicks "New issue"
+# See https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+
+blank_issues_enabled: false
+contact_links:
+  - name: Reflex Quant Discussions
+    url: https://github.com/reflex-quant/reflex-quant/discussions
+    about: For general questions, ideas, and showcase feedback
+  - name: Reflex Quant homepage
+    url: https://reflex-quant.ai
+    about: Product info, pricing, and design-partner inquiries
+  - name: Security disclosure
+    url: https://github.com/reflex-quant/reflex-quant/security/advisories/new
+    about: Please report security issues privately (not as a public issue)

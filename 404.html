@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Page not found · Reflex Quant</title>
+<style>
+  :root {
+    --bg: #0a0f1e; --bg2: #131a2e; --bg3: #1c2541;
+    --border: #2d3a5f; --text: #e2e8f0;
+    --dim: #94a3b8; --primary: #3b82f6; --meta: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 48px; max-width: 520px; text-align: center;
+  }
+  .logo {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--primary), var(--meta));
+    border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 32px; margin-bottom: 24px;
+  }
+  h1 { font-size: 56px; font-weight: 700; margin-bottom: 8px; line-height: 1; }
+  h2 { font-size: 18px; color: var(--dim); font-weight: 500; margin-bottom: 24px; }
+  p { color: var(--dim); margin-bottom: 28px; line-height: 1.6; }
+  .links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  a {
+    display: inline-block; padding: 10px 20px;
+    background: var(--primary); color: white; text-decoration: none;
+    border-radius: 8px; font-weight: 600; font-size: 14px;
+    transition: background 0.15s ease;
+  }
+  a:hover { background: #2563eb; }
+  a.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  a.secondary:hover {
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.08);
+  }
+  code {
+    background: var(--bg3); padding: 2px 8px; border-radius: 4px;
+    font-family: "JetBrains Mono", Menlo, monospace; font-size: 13px;
+    color: var(--primary);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">🪞</div>
+  <h1>404</h1>
+  <h2>Reflection missed</h2>
+  <p>
+    The page you tried to reach doesn't exist — or has been moved.
+    The 7-layer reflection engine caught the broken link before you could lose money on it.
+  </p>
+  <div class="links">
+    <a href="./">← Back to README</a>
+    <a href="./showcase/" class="secondary">Live showcase</a>
+    <a href="./LICENSE-COMMERCIAL.html" class="secondary">Pricing</a>
+  </div>
+  <p style="margin-top: 28px; font-size: 12px;">
+    Looking for <code id="path">/something</code>? Try the sitemap:
+    <a href="./sitemap.xml" style="background:none;border:none;padding:0;color:var(--primary);text-decoration:underline;">sitemap.xml</a>
+  </p>
+</div>
+<script>
+  // Echo the path the visitor tried, so they know what went wrong
+  var p = document.getElementById('path');
+  if (p) p.textContent = window.location.pathname;
+</script>
+</body>
+</html>

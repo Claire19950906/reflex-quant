@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Self-aware AI for quant trading. 7-layer reflection engine + meta-loop — catches the trades your risk engine misses.">
+<meta property="og:title" content="Reflex Quant — Self-aware AI for quant trading">
+<meta property="og:description" content="A self-aware AI for quant trading. 7-layer reflection engine + meta-loop — catches the trades your risk engine misses.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://Claire19950906.github.io/reflex-quant/assets/screenshots/06-stats-hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reflex Quant — Self-aware AI for quant trading">
+<meta name="twitter:description" content="A self-aware AI for quant trading. 7-layer reflection engine + meta-loop — catches the trades your risk engine misses.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title data-i18n-attr="title:meta.title">Reflex Quant 🪞 — Live Reflection Showcase</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0f1e; --bg-2: #131a2e; --bg-3: #1c2541;
+    --border: #2d3a5f; --text: #e2e8f0;
+    --text-dim: #94a3b8; --text-dimmer: #64748b;
+    --primary: #3b82f6; --success: #10b981; --danger: #ef4444;
+    --warning: #f59e0b; --meta: #8b5cf6;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 14px; line-height: 1.5;
+    min-height: 100vh; overflow-x: hidden;
+  }
+  .mono { font-family: "JetBrains Mono", "Fira Code", Menlo, monospace; }
+  header {
+    background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--primary), var(--meta));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  }
+  .brand-text h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand-text .tag {
+    font-size: 11px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1.2px;
+  }
+  .status {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .clock { font-family: "JetBrains Mono", monospace; }
+  .lang-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .lang-toggle:hover {
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.08);
+  }
+  .lang-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .lang-toggle .globe {
+    font-size: 14px; line-height: 1;
+  }
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    padding: 20px 32px; background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    position: relative; overflow: hidden;
+  }
+  .stat::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--primary));
+  }
+  .stat .label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .stat .value {
+    font-size: 28px; font-weight: 700;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--accent, var(--text));
+  }
+  .stat .delta { font-size: 12px; color: var(--text-dimmer); margin-top: 4px; }
+  .stat .delta.pos { color: var(--success); }
+  .stat .delta.neg { color: var(--danger); }
+  main { padding: 24px 32px; }
+  .section {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+  }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    background: var(--bg-3);
+  }
+  .section-header h2 {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-header h2 .icon {
+    width: 24px; height: 24px; background: var(--bg);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .section-body { padding: 20px; }
+  .signals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .signal {
+    background: var(--bg-3); border-left: 3px solid var(--primary);
+    border-radius: 8px; padding: 14px; cursor: pointer;
+    transition: all 0.2s; position: relative;
+  }
+  .signal:hover {
+    background: var(--bg); transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .signal.buy { border-left-color: var(--success); }
+  .signal.sell { border-left-color: var(--danger); }
+  .signal.hold { border-left-color: var(--warning); }
+  .signal-row1 {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .signal-action {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--primary); color: white; letter-spacing: 1px;
+  }
+  .signal.buy .signal-action { background: var(--success); }
+  .signal.sell .signal-action { background: var(--danger); }
+  .signal.hold .signal-action { background: var(--warning); color: #000; }
+  .signal-time {
+    font-size: 11px; color: var(--text-dimmer);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .signal-asset { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .signal-asset .side { font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+  .signal-reasoning {
+    font-size: 12px; color: var(--text-dim); line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }.cases {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .case {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: all 0.3s; position: relative;
+  }
+  .case:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+  }
+  .case.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  .case-header {
+    padding: 16px; border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .case-header .badge {
+    position: absolute; top: 16px; right: 16px;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .badge.error { background: rgba(239,68,68,0.2); color: var(--danger); }
+  .badge.correct { background: rgba(16,185,129,0.2); color: var(--success); }
+  .badge.meta { background: rgba(139,92,246,0.2); color: var(--meta); }
+  .case-asset {
+    font-size: 18px; font-weight: 700;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .case-asset .side {
+    font-size: 12px; color: var(--text-dim);
+    font-family: inherit; margin-left: 6px;
+  }
+  .case-decision {
+    font-size: 13px; color: var(--text-dim); margin-top: 4px;
+  }
+  .case-body { padding: 16px; }
+  .case-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 6px 0;
+    border-bottom: 1px solid rgba(45,58,95,0.4);
+  }
+  .case-row:last-child { border-bottom: none; }
+  .case-row .label { color: var(--text-dim); }
+  .case-row .value { font-weight: 600; font-family: "JetBrains Mono", monospace; }
+  .case-row .value.pos { color: var(--success); }
+  .case-row .value.neg { color: var(--danger); }
+  .case-reflection {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-top: 12px;
+  }
+  .case-reflection h4 {
+    font-size: 11px; text-transform: uppercase;
+    color: var(--text-dim); letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .errors { display: flex; flex-direction: column; gap: 6px; }
+  .error-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; padding: 6px 8px;
+    background: rgba(239,68,68,0.08);
+    border-left: 2px solid var(--danger);
+    border-radius: 4px;
+  }
+  .error-item.warning { background: rgba(245,158,11,0.08); border-color: var(--warning); }
+  .error-item.info { background: rgba(59,130,246,0.08); border-color: var(--primary); }
+  .error-code {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700; color: var(--danger); min-width: 50px;
+  }
+  .error-item.warning .error-code { color: var(--warning); }
+  .error-item.info .error-code { color: var(--primary); }
+  .meta-section {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(59,130,246,0.08));
+    border: 1px solid rgba(139,92,246,0.3);
+  }
+  .meta-flow {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 16px; gap: 12px;
+  }
+  .meta-node {
+    flex: 1; background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    text-align: center; position: relative; min-height: 100px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .meta-node .step {
+    font-size: 10px; color: var(--meta);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;
+  }
+  .meta-node .label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .meta-node .detail { font-size: 11px; color: var(--text-dim); }
+  .meta-arrow { color: var(--meta); font-size: 18px; flex-shrink: 0; }
+  .meta-proposal {
+    margin-top: 16px; padding: 16px;
+    background: var(--bg-3);
+    border: 1px dashed var(--meta);
+    border-radius: 10px;
+  }
+  .meta-proposal h4 {
+    color: var(--meta);
+    font-size: 12px; text-transform: uppercase;
+    letter-spacing: 1.2px; margin-bottom: 8px;
+  }
+  .meta-proposal p { font-size: 13px; line-height: 1.6; color: var(--text); }
+  footer {
+    text-align: center; padding: 24px;
+    color: var(--text-dimmer); font-size: 12px;
+    border-top: 1px solid var(--border); margin-top: 24px;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+  .stat.primary { --accent: var(--primary); }
+  .stat.success { --accent: var(--success); }
+  .stat.warning { --accent: var(--warning); }
+  .stat.meta    { --accent: var(--meta); }
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 24px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 16px; max-width: 720px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-body { padding: 24px; }
+  .modal-close {
+    background: var(--bg-3); border: none; color: var(--text);
+    width: 32px; height: 32px; border-radius: 8px;
+    cursor: pointer; font-size: 18px;
+  }
+  .modal-close:hover { background: var(--border); }
+  @media (max-width: 1100px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .cases { grid-template-columns: 1fr; }
+    .meta-flow { flex-direction: column; }
+    .meta-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">🪞</div>
+    <div class="brand-text">
+      <h1>Reflex Quant <span class="mono" style="color:var(--text-dim); font-size:12px;">v225</span></h1>
+      <div class="tag" data-i18n="brand.tagline">Self-aware AI for quant trading</div>
+    </div>
+  </div>
+  <div class="status">
+    <span class="status-dot"></span>
+    <span data-i18n="header.status">System operational</span>
+    <span class="clock" id="clock">—</span>
+    <button class="lang-toggle" id="lang-toggle" type="button"
+            data-i18n="lang.toggle" data-i18n-aria="lang.toggle.aria"
+            aria-label="Switch language to Chinese">
+      <span class="globe">🌐</span>
+      <span id="lang-toggle-label">中</span>
+    </button>
+  </div>
+</header><div class="stats-bar">
+  <div class="stat primary">
+    <div class="label" data-i18n="stat.signals.label">Signals Today</div>
+    <div class="value" id="stat-signals">0</div>
+    <div class="delta pos" data-i18n="stat.signals.delta">live feed</div>
+  </div>
+  <div class="stat success">
+    <div class="label" data-i18n="stat.checks.label">Reflection Checks</div>
+    <div class="value" id="stat-checks">0</div>
+    <div class="delta" data-i18n="stat.checks.delta">across 7 layers</div>
+  </div>
+  <div class="stat warning">
+    <div class="label" data-i18n="stat.errors.label">Errors Caught</div>
+    <div class="value" id="stat-errors">0</div>
+    <div class="delta neg" data-i18n="stat.errors.delta">E001 – E027</div>
+  </div>
+  <div class="stat meta">
+    <div class="label" data-i18n="stat.meta.label">Meta-Loop Cycles</div>
+    <div class="value" id="stat-meta">0</div>
+    <div class="delta" data-i18n="stat.meta.delta">self-reflection runs</div>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+    <div class="section-header">
+      <h2><span class="icon">📡</span> <span data-i18n="section.signals.title">Live Trading Signals</span></h2>
+      <span class="mono" style="color:var(--text-dimmer); font-size:11px;" data-i18n="section.signals.refresh">refreshes every 5s</span>
+    </div>
+    <div class="section-body">
+      <div class="signals-grid" id="signals-grid"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2><span class="icon">🔬</span> <span data-i18n="section.cases.title">27-Layer Reflection — Case Studies</span></h2>
+      <span class="mono" style="color:var(--text-dimmer); font-size:11px;" data-i18n="section.cases.hint">click to deep-dive</span>
+    </div>
+    <div class="section-body">
+      <div class="cases" id="cases"></div>
+    </div>
+  </div>
+
+  <div class="section meta-section">
+    <div class="section-header">
+      <h2><span class="icon">🧠</span> <span data-i18n="section.meta.title">Meta-Loop Self-Reflection</span></h2>
+      <span class="mono" style="color:var(--meta); font-size:11px;" data-i18n="section.meta.hint">when 7 checkers all miss...</span>
+    </div>
+    <div class="section-body">
+      <div class="meta-flow">
+        <div class="meta-node">
+          <div class="step"><span data-i18n="step">Step</span> 1</div>
+          <div class="label" data-i18n="meta.step1.label">Trade Closed</div>
+          <div class="detail" data-i18n="meta.step1.detail">7 reasoning-logic checkers all PASSED</div>
+        </div>
+        <div class="meta-arrow">→</div>
+        <div class="meta-node">
+          <div class="step"><span data-i18n="step">Step</span> 2</div>
+          <div class="label" data-i18n="meta.step2.label">Outcome = LOSE</div>
+          <div class="detail" data-i18n="meta.step2.detail">-3.0% on WTI long</div>
+        </div>
+        <div class="meta-arrow">→</div>
+        <div class="meta-node">
+          <div class="step"><span data-i18n="step">Step</span> 3</div>
+          <div class="label" data-i18n="meta.step3.label">Meta-Loop Trigger</div>
+          <div class="detail" data-i18n="meta.step3.detail">"But all 7 passed?"</div>
+        </div>
+        <div class="meta-arrow">→</div>
+        <div class="meta-node">
+          <div class="step"><span data-i18n="step">Step</span> 4</div>
+          <div class="label" data-i18n="meta.step4.label">Pattern Detected</div>
+          <div class="detail" data-i18n="meta.step4.detail">cross-temporal drift missed</div>
+        </div>
+        <div class="meta-arrow">→</div>
+        <div class="meta-node">
+          <div class="step"><span data-i18n="step">Step</span> 5</div>
+          <div class="label" data-i18n="meta.step5.label">Proposal</div>
+          <div class="detail" data-i18n="meta.step5.detail">add E028 checker</div>
+        </div>
+      </div>
+      <div class="meta-proposal">
+        <h4 data-i18n="meta.proposal.title">📝 META_REFLECTION.md entry (excerpt)</h4>
+        <p data-i18n="meta.proposal.text">On 2026-09-28, 7 reasoning-logic checkers passed a WTI long @ 77.20 that lost -3.0% intraday. Root cause: news from Tuesday was no longer relevant by Thursday (cross-temporal drift). None of the 7 checkers tested for time-windowed context validity. <strong>Proposed E028: cross_temporal_consistency</strong> — verify news age against decision horizon. Added to v226 roadmap.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2><span class="icon">📊</span> <span data-i18n="section.kg.title">Why this matters — Knowledge Graph Growth</span></h2>
+    </div>
+    <div class="section-body">
+      <div id="kg-viz" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;"></div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title" data-i18n="modal.title">Case Detail</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<footer>
+  <span data-i18n="footer.text">Reflex Quant v225 — Showcase only. All data shown is illustrative. Live system access requires NDA + design partner agreement. Contact: </span><a href="mailto:team@reflex-quant.ai">team@reflex-quant.ai</a>
+</footer><script>
+// ============ DATA (illustrative, not real trades) ============
+const SIGNALS_TEMPLATES = [
+  {
+    asset: 'XAU/USD', side: 'LONG', price: 2034.50,
+    reasoning: 'DXY weakening, real yields falling, geopolitical risk premium returning — gold bid into reflation regime.',
+    source: 'Reuters • Bloomberg'
+  },
+  {
+    asset: 'WTI Crude', side: 'SHORT', price: 78.50,
+    reasoning: 'API inventory build + demand softness in EM; OPEC+ cuts not enough to absorb supply.',
+    source: 'TreeNews'
+  },
+  {
+    asset: 'EUR/USD', side: 'LONG', price: 1.0872,
+    reasoning: 'ECB hawkish surprise, US ISM missing consensus — rate differential compressing.',
+    source: 'DJ Newswire • Reuters'
+  },
+  {
+    asset: 'BTC/USD', side: 'HOLD', price: 67420,
+    reasoning: 'ETF flows positive but on-chain accumulation slowing; awaiting FOMC clarity.',
+    source: 'CoinDesk'
+  },
+  {
+    asset: 'SPX', side: 'LONG', price: 5768.40,
+    reasoning: 'Earnings beats at 78%, breadth improving, RSI neutral with momentum tailwind.',
+    source: 'Bloomberg'
+  },
+  {
+    asset: 'DXY', side: 'SHORT', price: 104.20,
+    reasoning: 'Fed pivot priced in, weak NFP data, real yields rolling over.',
+    source: 'FRED • Reuters'
+  }
+];
+
+const CASES = [
+  {
+    id: 'wti-short',
+    badge: 'error',
+    badgeTextKey: 'case.badge.error',
+    asset: 'WTI Crude', side: 'SHORT',
+    decision: 'Entry 78.50, TP 75.00, SL 80.00',
+    outcome: 'LOSE', pnl: '-3.0%',
+    layers: { sources: 1, checks: 27, errors: 3, severity: 'HIGH' },
+    errors: [
+      { code: 'E007', severity: 'danger', text: 'sample_integrity — only 1 news source (TreeNews). Min threshold 3.' },
+      { code: 'E012', severity: 'warning', text: 'causal_chain — 1-hop reasoning; lacked demand-side mechanism.' },
+      { code: 'E019', severity: 'warning', text: 'evidence_grade — L1 (headline only), no L2/L3 context.' }
+    ],
+    lesson: 'Single-source shorts in crude are blind to OPEC+ surprise risk. v226: require ≥3 sources for energy shorts.'
+  },
+  {
+    id: 'gold-dxy',
+    badge: 'correct',
+    badgeTextKey: 'case.badge.correct',
+    asset: 'XAU/USD', side: 'LONG',
+    decision: 'Entry 2034, TP 2070, SL 2010',
+    outcome: 'WIN', pnl: '+2.1%',
+    layers: { sources: 4, checks: 27, errors: 0, severity: 'NONE' },
+    errors: [],
+    lesson: 'Inverse-pair awareness (E015) correctly recognized XAU↑ + DXY↓ as coherent, not contradictory.'
+  },
+  {
+    id: 'meta-loop',
+    badge: 'meta',
+    badgeTextKey: 'case.badge.meta',
+    asset: 'WTI Crude', side: 'LONG',
+    decision: 'Entry 77.20, TP 80.00, SL 75.50',
+    outcome: 'LOSE', pnl: '-3.4%',
+    layers: { sources: 3, checks: 27, errors: 0, severity: 'PASSED-ALL' },
+    errors: [],
+    lesson: 'All 7 reasoning-logic checkers passed. Meta-loop detected: news from 36h ago was already priced. → E028 cross_temporal_consistency proposed.'
+  }
+];const KG_INSIGHTS = [
+  { layer: 'event_logic',      count: 142, color: 'primary', descKey: 'kg.event_logic.desc' },
+  { layer: 'causal',           count: 87,  color: 'success', descKey: 'kg.causal.desc' },
+  { layer: 'reasoning_logic',  count: 213, color: 'warning', descKey: 'kg.reasoning_logic.desc' },
+  { layer: 'sample_integrity', count: 64,  color: 'danger',  descKey: 'kg.sample_integrity.desc' },
+  { layer: 'cross_asset',      count: 91,  color: 'meta',    descKey: 'kg.cross_asset.desc' },
+  { layer: 'meta_patterns',    count: 28,  color: 'primary', descKey: 'kg.meta_patterns.desc' }
+];
+
+let signalIndex = 0;
+function renderSignals() {
+  const grid = document.getElementById('signals-grid');
+  const tpl = SIGNALS_TEMPLATES[signalIndex % SIGNALS_TEMPLATES.length];
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0,8);
+  const action = tpl.side.toLowerCase();
+  const sig = document.createElement('div');
+  sig.className = `signal ${action}`;
+  sig.innerHTML = `
+    <div class="signal-row1">
+      <span class="signal-action">${tpl.side}</span>
+      <span class="signal-time">${timeStr}</span>
+    </div>
+    <div class="signal-asset">${tpl.asset}<span class="side">@ ${tpl.price}</span></div>
+    <div class="signal-reasoning">${tpl.reasoning}</div>
+    <div style="font-size:10px; color:var(--text-dimmer); margin-top:6px;">${tpl.source}</div>
+  `;
+  grid.insertBefore(sig, grid.firstChild);
+  while (grid.children.length > 6) grid.removeChild(grid.lastChild);
+  signalIndex++;
+}
+
+function renderCases() {
+  const container = document.getElementById('cases');
+  CASES.forEach((c, idx) => {
+    const div = document.createElement('div');
+    div.className = 'case';
+    div.onclick = () => openCase(c);
+    const errorsHtml = c.errors.length === 0
+      ? (c.badge === 'correct'
+          ? `<div style="font-size:12px;color:var(--success);padding:8px 0;">${window.i18n.t('case.correct.note')}</div>`
+          : `<div style="font-size:12px;color:var(--meta);padding:8px 0;">${window.i18n.t('case.meta.note')}</div>`)
+      : '<div class="errors">' + c.errors.map(e =>
+          `<div class="error-item ${e.severity}"><span class="error-code">${e.code}</span><span>${e.text}</span></div>`
+        ).join('') + '</div>';
+
+    div.innerHTML = `
+      <div class="case-header">
+        <span class="badge ${c.badge}">${window.i18n.t(c.badgeTextKey)}</span>
+        <div class="case-asset">${c.asset}<span class="side">${c.side}</span></div>
+        <div class="case-decision">${c.decision}</div>
+      </div>
+      <div class="case-body">
+        <div class="case-row"><span class="label">${window.i18n.t('case.outcome')}</span><span class="value ${c.outcome==='WIN'?'pos':'neg'}">${c.outcome} ${c.pnl}</span></div>
+        <div class="case-row"><span class="label">${window.i18n.t('case.sources')}</span><span class="value">${c.layers.sources}</span></div>
+        <div class="case-row"><span class="label">${window.i18n.t('case.checks')}</span><span class="value">${c.layers.checks}</span></div>
+        <div class="case-row"><span class="label">${window.i18n.t('case.severity')}</span><span class="value">${c.layers.severity}</span></div>
+        <div class="case-reflection">
+          <h4>${window.i18n.t('case.reflection')}</h4>
+          ${errorsHtml}
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  /* re-apply i18n to badge text spans (data-i18n would need re-render setup) */
+}
+
+function renderKG() {
+  const container = document.getElementById('kg-viz');
+  KG_INSIGHTS.forEach(kg => {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--${kg.color});
+      border-radius: 8px;
+      padding: 16px;
+    `;
+    div.innerHTML = `
+      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${kg.layer}</div>
+      <div style="font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--${kg.color});">${kg.count}</div>
+      <div style="font-size:11px;color:var(--text-dimmer);margin-top:4px;">${window.i18n.t(kg.descKey)}</div>
+    `;
+    container.appendChild(div);
+  });
+}function openCase(c) {
+  document.querySelectorAll('.case').forEach(el => el.classList.remove('active'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  const modal = document.getElementById('modal-bg');
+  document.getElementById('modal-title').textContent = `${c.asset} — ${window.i18n.t(c.badgeTextKey)}`;
+  let errorsHtml = '';
+  if (c.errors.length === 0) {
+    errorsHtml = `<div style="padding:16px;background:var(--bg-3);border-radius:8px;color:var(--success);">${window.i18n.t('modal.no_errors')}</div>`;
+  } else {
+    errorsHtml = '<div class="errors">' + c.errors.map(e =>
+      `<div class="error-item ${e.severity}"><span class="error-code">${e.code}</span><span>${e.text}</span></div>`
+    ).join('') + '</div>';
+  }
+  const pnlColor = c.outcome === 'WIN' ? 'var(--success)' : 'var(--danger)';
+  document.getElementById('modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><div style="color:var(--text-dim);font-size:11px;text-transform:uppercase;">${window.i18n.t('modal.outcome')}</div><div style="font-size:18px;font-weight:600;color:${pnlColor};">${c.outcome} ${c.pnl}</div></div>
+      <div><div style="color:var(--text-dim);font-size:11px;text-transform:uppercase;">${window.i18n.t('modal.decision')}</div><div style="font-size:13px;">${c.decision}</div></div>
+    </div>
+    <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-dim);letter-spacing:1px;margin-bottom:8px;">${window.i18n.t('modal.reflection')}</h4>
+    ${errorsHtml}
+    <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-dim);letter-spacing:1px;margin:20px 0 8px;">${window.i18n.t('modal.system_learning')}</h4>
+    <div style="padding:12px;background:rgba(139,92,246,0.08);border-left:3px solid var(--meta);border-radius:6px;font-size:13px;line-height:1.6;">${c.lesson}</div>
+  `;
+  modal.classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('show');
+  document.querySelectorAll('.case').forEach(el => el.classList.remove('active'));
+}
+
+let stats = { signals: 0, checks: 0, errors: 0, meta: 12 };
+function updateStats() {
+  stats.signals += 1;
+  stats.checks += 27;
+  if (Math.random() < 0.3) stats.errors += 1;
+  if (Math.random() < 0.05) stats.meta += 1;
+  document.getElementById('stat-signals').textContent = stats.signals;
+  document.getElementById('stat-checks').textContent = stats.checks;
+  document.getElementById('stat-errors').textContent = stats.errors;
+  document.getElementById('stat-meta').textContent = stats.meta;
+}
+
+function tick() {
+  document.getElementById('clock').textContent = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  tick(); setInterval(tick, 1000);
+  renderCases();
+  renderKG();
+  setInterval(() => { renderSignals(); updateStats(); }, 5000);
+  for (let i = 0; i < 3; i++) renderSignals();
+  updateStats();
+
+  /* Language toggle */
+  var langBtn = document.getElementById('lang-toggle');
+  if (langBtn) {
+    langBtn.addEventListener('click', function() {
+      window.i18n.toggle();
+    });
+  }
+  /* Re-render dynamic content when language changes */
+  window.i18n.onChange(function() {
+    /* Re-render case cards so badge text + labels update */
+    var casesEl = document.getElementById('cases');
+    if (casesEl) { casesEl.innerHTML = ''; renderCases(); }
+    /* Re-render knowledge graph labels */
+    var kgEl = document.getElementById('kg-viz');
+    if (kgEl) { kgEl.innerHTML = ''; renderKG(); }
+  });
+});
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>

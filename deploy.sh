@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 # deploy.sh — push reflex-quant-public to GitHub in one command.
 # Usage:  ./deploy.sh <github-username> [repo-name]
-# Example: ./deploy.sh reflex-quant reflex-quant
 #
-# Requires:  GitHub Personal Access Token (fine-grained, repo scope)
-# Get one:  https://github.com/settings/tokens?type=beta
-#           → Generate new token → Name: "reflex-quant-deploy"
-#           → Repository access: only select repos → pick the new repo (or "all")
-#           → Permissions: Contents (read+write), Metadata (read-only)
-
-set -e
+# Robust version: every step prints, errors are visible, no silent aborts.
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$REPO_DIR"
@@ -20,37 +13,30 @@ REPO="${2:-reflex-quant}"
 if [ -z "$USER" ]; then
   cat <<EOF
 Usage: ./deploy.sh <github-username> [repo-name]
-
-Example:
-  ./deploy.sh reflex-quant reflex-quant
-  ./deploy.sh yourname reflex-quant
-
-You'll need a GitHub Personal Access Token (PAT).
-Get one at: https://github.com/settings/tokens?type=beta
-  - Generate new token
-  - Repository access: select repos you want to deploy to
-  - Permissions: Contents = read+write, Metadata = read-only
-
-The token is read securely (no echo) and used only for this push.
 EOF
   exit 1
 fi
 
+step() { echo; echo "==> $*"; }
+
 # 1. init repo if not already
+step "git init"
 if [ ! -d .git ]; then
-  echo "==> git init"
-  git init -b main > /dev/null
+  git init -b main > /dev/null 2>&1 || git init > /dev/null
+  echo "    -> initialized"
+else
+  echo "    -> already initialized"
 fi
 
-# 2. stage everything (respects .gitignore)
-echo "==> git add ."
+# 2. stage everything
+step "git add ."
 git add .
 
 # 3. commit (only if there are staged changes)
+step "git commit"
 if git diff --cached --quiet; then
-  echo "==> nothing to commit (working tree clean)"
+  echo "    -> nothing to commit (working tree clean)"
 else
-  echo "==> git commit"
   git commit -m "v225: initial public release
 
 - 30 docs + showcase + screenshots
@@ -58,77 +44,121 @@ else
 - 3 case studies (WTI short, XAU/USD long, WTI long + meta-loop)
 - 6 screenshot library for pitch decks
 - LICENSE-COMMERCIAL.html with interactive pricing calculator
-- Netlify + GitHub Pages deploy configs
-- Tech blog: 'How a self-aware AI caught its own blindspot'" \
-    --quiet
+- i18n (EN + 中文) on showcase + pricing
+- Tier-1 GH assets: CHANGELOG, CODEOWNERS, FUNDING, CodeQL, Dependabot
+- 404, robots, sitemap, social-preview, banner" 2>&1 | tail -3
 fi
 
 # 4. ask for token
-echo ""
-echo "==> GitHub Personal Access Token"
-echo "    (input is hidden; paste then press Enter)"
-echo ""
-read -s TOKEN
-echo ""
-
-if [ -z "$TOKEN" ]; then
-  echo "No token provided. Aborting."
-  exit 1
+# priority: $GITHUB_PAT env var > $2 arg > interactive prompt
+if [ -n "$GITHUB_PAT" ]; then
+  TOKEN="$GITHUB_PAT"
+  echo "==> using GITHUB_PAT env var (${#TOKEN} chars)"
+elif [ -n "$3" ]; then
+  TOKEN="$3"
+  echo "==> using token from arg 3 (${#TOKEN} chars)"
+else
+  echo
+  echo "==> GitHub Personal Access Token"
+  echo "    (input is hidden; paste then press Enter)"
+  echo
+  read -s TOKEN
+  echo
 fi
 
-# 5. create repo via API (idempotent: if it exists, this fails silently and we push anyway)
-echo "==> creating repo '$REPO' on github.com/$USER"
-HTTP_CODE=$(curl -s -o /tmp/_rq_create.json -w "%{http_code}" \
+if [ -z "$TOKEN" ]; then
+  echo "ERROR: No token provided. Aborting."
+  exit 1
+fi
+echo "    -> got token (${#TOKEN} chars)"
+
+# 5. create repo via API (idempotent)
+step "creating repo '$REPO' on github.com/$USER (idempotent)"
+HTTP_CODE=$(curl -sS --max-time 30 -o /tmp/_rq_create.json -w "%{http_code}" \
   -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/user/repos" \
-  -d "{\"name\":\"$REPO\",\"description\":\"Self-aware AI for quant trading — 7-layer reflection + meta-loop. Catches the trades your risk engine misses.\",\"private\":false,\"has_issues\":true,\"has_wiki\":false}")
+  -d "{\"name\":\"$REPO\",\"description\":\"Self-aware AI for quant trading — 7-layer reflection + meta-loop. Catches the trades your risk engine misses.\",\"private\":false,\"has_issues\":true,\"has_wiki\":false}" 2>&1) || HTTP_CODE="000"
 
+echo "    -> HTTP $HTTP_CODE"
 if [ "$HTTP_CODE" = "201" ]; then
-  echo "    -> repo created."
+  echo "    -> repo created"
 elif [ "$HTTP_CODE" = "422" ]; then
-  echo "    -> repo already exists (that's fine, continuing)."
+  echo "    -> repo already exists (continuing)"
+elif [ "$HTTP_CODE" = "401" ]; then
+  echo "    -> ERROR: bad credentials. Check PAT."
+  cat /tmp/_rq_create.json 2>/dev/null
+  exit 1
 else
-  echo "    -> HTTP $HTTP_CODE. Inspect /tmp/_rq_create.json. Continuing push anyway."
+  echo "    -> WARNING: unexpected HTTP code. Continuing push anyway."
+  cat /tmp/_rq_create.json 2>/dev/null
 fi
 
-# 6. set remote and push
-echo "==> git push"
+# 6. push
+step "git push to origin"
 git remote remove origin 2>/dev/null || true
 git remote add origin "https://${TOKEN}@github.com/${USER}/${REPO}.git"
-git push -u origin main --force
+if git push -u origin main --force 2>&1 | tail -8; then
+  echo "    -> push OK"
+else
+  echo "    -> ERROR: push failed. See above."
+  exit 1
+fi
 
 # 7. enable Pages
-echo ""
-echo "==> enabling GitHub Pages (source: main / root)"
-sleep 2  # give github a moment to register the repo
-curl -s -X POST \
+step "enabling GitHub Pages (source: main / root)"
+sleep 2
+HTTP_CODE=$(curl -sS --max-time 30 -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/repos/${USER}/${REPO}/pages" \
   -d '{"source":{"branch":"main","path":"/"}}' \
-  -o /tmp/_rq_pages.json -w "    -> HTTP %{http_code}\n"
+  -o /tmp/_rq_pages.json -w "%{http_code}" 2>&1) || HTTP_CODE="000"
 
-# 8. clean up token from git remote (best practice — don't leave in .git/config)
+echo "    -> HTTP $HTTP_CODE"
+if [ "$HTTP_CODE" = "201" ]; then
+  echo "    -> Pages enabled"
+elif [ "$HTTP_CODE" = "409" ]; then
+  echo "    -> Pages already enabled (that's fine)"
+elif [ "$HTTP_CODE" = "404" ]; then
+  echo "    -> ERROR: repo not found yet. Wait a few seconds and re-run."
+else
+  echo "    -> WARNING: unexpected code"
+  cat /tmp/_rq_pages.json 2>/dev/null
+fi
+
+# 8. clean up token from git remote
+step "scrubbing PAT from git remote"
 git remote set-url origin "https://github.com/${USER}/${REPO}.git"
+echo "    -> done"
 
-echo ""
+# 9. poll Pages build status (max 2 min)
+step "waiting for Pages build (max 2 min)"
+for i in 1 2 3 4 5 6 7 8; do
+  sleep 15
+  STATUS=$(curl -sS --max-time 10 \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/repos/${USER}/${REPO}/pages" 2>/dev/null \
+    | python3 -c 'import json,sys
+try:
+    d=json.load(sys.stdin)
+    print(d.get("status","?"))
+except: print("?")' 2>/dev/null)
+  echo "    [$((i*15))s] Pages status: $STATUS"
+  [ "$STATUS" = "built" ] && break
+done
+
+echo
 echo "================================================================"
-echo "Done."
-echo "Repo:    https://github.com/${USER}/${REPO}"
-echo "Pages:   https://${USER}.github.io/${REPO}/"
+echo "DONE."
+echo "Repo:     https://github.com/${USER}/${REPO}"
+echo "Pages:    https://${USER}.github.io/${REPO}/"
 echo "Showcase: https://${USER}.github.io/${REPO}/showcase/"
-echo "Pricing: https://${USER}.github.io/${REPO}/LICENSE-COMMERCIAL.html"
+echo "Pricing:  https://${USER}.github.io/${REPO}/LICENSE-COMMERCIAL.html"
 echo "================================================================"
-echo ""
-echo "Next steps:"
-echo "  1. Visit the repo, add topics: ai, quant-trading, self-reflection,"
-echo "     trading-bot, meta-learning, fintech, knowledge-graph"
-echo "  2. Settings -> About -> add website URL (your demo / domain)"
-echo "  3. Settings -> Pages -> confirm Pages is enabled (may take 1 min)"
-echo "  4. Optionally: drag the folder onto https://app.netlify.com/ for"
-echo "     instant Netlify deploy (uses the included netlify.toml)"
-echo ""
+echo "If 'Pages status: built' appeared above, visit the URLs now."
+echo "If not, give it 1 more minute — GitHub Pages first build can take 2 min total."

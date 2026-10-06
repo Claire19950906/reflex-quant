@@ -50,8 +50,11 @@ else
 fi
 
 # 4. ask for token
-# priority: $GITHUB_PAT env var > $2 arg > interactive prompt
-if [ -n "$GITHUB_PAT" ]; then
+# priority: $GITHUB_PAT_FILE > $GITHUB_PAT env var > $3 arg > interactive prompt
+if [ -n "$GITHUB_PAT_FILE" ] && [ -f "$GITHUB_PAT_FILE" ]; then
+  TOKEN="$(cat "$GITHUB_PAT_FILE")"
+  echo "==> using GITHUB_PAT_FILE ($GITHUB_PAT_FILE) -> ${#TOKEN} chars"
+elif [ -n "$GITHUB_PAT" ]; then
   TOKEN="$GITHUB_PAT"
   echo "==> using GITHUB_PAT env var (${#TOKEN} chars)"
 elif [ -n "$3" ]; then
@@ -71,6 +74,12 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 echo "    -> got token (${#TOKEN} chars)"
+
+# validate token shape: GitHub fine-grained PATs start with github_pat_
+if [[ "$TOKEN" != github_pat_* ]]; then
+  echo "    -> WARNING: token doesn't start with 'github_pat_' (looks wrong or truncated)"
+  echo "       first 20 chars: ${TOKEN:0:20}"
+fi
 
 # 5. create repo via API (idempotent)
 step "creating repo '$REPO' on github.com/$USER (idempotent)"

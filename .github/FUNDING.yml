@@ -3,7 +3,8 @@
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-repository/displaying-a-sponsor-button-in-your-repository
 
 # GitHub Sponsors (preferred — fee-free for OSS)
-github: reflex-quant
+# Set this to the sponsorable username when Sponsors is enabled.
+# github: Claire19950906
 
 # Open Collective
 # open_collective: reflex-quant

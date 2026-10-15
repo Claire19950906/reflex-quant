@@ -196,16 +196,35 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
                 48h 内无显著临界点. 后台 worker 每 5-10min 跑一次 (algo-first).
               </div>
             ) : (
-              <ul className="divide-y divide-muted-foreground/10">
+              <ul
+                className="divide-y divide-muted-foreground/10"
+                role="listbox"
+                aria-label="临界点列表 (用 Enter 选择, ↑↓ 移动焦点)"
+              >
                 {moves.map((m) => {
                   const badge = kindBadge(m.move_kind)
                   const isSelected = selectedMoveId === m.id
                   return (
                     <li
                       key={m.id}
+                      // v302+ P0 a11y: <li onClick> 无法被键盘/读屏访问. 升级为 listbox option:
+                      //   - role=option
+                      //   - tabIndex=0 (focusable)
+                      //   - aria-selected (选中的视觉状态也告诉 AT)
+                      //   - Enter / Space 键选择
+                      //   - ↑↓ 键在 option 间移动焦点 (符合 WAI-ARIA APG 1.2 listbox 模式)
+                      role="option"
+                      tabIndex={0}
+                      aria-selected={isSelected}
                       onClick={() => setSelectedMoveId(m.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSelectedMoveId(m.id)
+                        }
+                      }}
                       className={cn(
-                        'cursor-pointer px-2 py-1.5 font-mono text-[10.5px] transition hover:bg-muted/40',
+                        'cursor-pointer px-2 py-1.5 font-mono text-[10.5px] transition hover:bg-muted/40 focus:bg-muted/40 focus:outline-none focus:ring-1 focus:ring-foreground/40',
                         isSelected && 'bg-foreground/10',
                       )}
                     >
@@ -241,9 +260,13 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
           <div className="border-b border-muted-foreground/30 bg-muted/20 px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
             选中临界点的归因
             {selectedMoveId !== null && (
+              // v302+ P0 a11y: 加 type="button" (防 <button> 在 form 内被当成 submit)
+              // + aria-label (屏幕阅读器读 "✕ 取消" 后面跟着具体选中哪个)
               <button
+                type="button"
                 onClick={() => setSelectedMoveId(null)}
-                className="ml-2 text-[9px] text-muted-foreground/60 hover:text-foreground"
+                aria-label={`取消选中临界点 #${selectedMoveId}`}
+                className="ml-2 rounded px-1 text-[9px] text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-foreground/40"
               >
                 ✕ 取消
               </button>

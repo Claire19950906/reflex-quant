@@ -2355,7 +2355,8 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
               onClick={() => {
                 const raw = loadSnapshotRaw()
                 if (!raw) {
-                  alert(`未找到 ${selected} 的本地存档，请先点「💾 保存到本地」`)
+                  // v302+ P0: 用 toast.error 替代 window.alert — 不阻塞、不打断 K 线轮询
+                  toast.error(`未找到 ${selected} 的本地存档，请先点「💾 保存到本地」`)
                   return
                 }
                 const w = window.open('', '_blank', 'width=820,height=720')

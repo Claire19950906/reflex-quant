@@ -1360,8 +1360,17 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         .catch((err) => { if (alive) setLoadErr(String(err)) })
     }
     void load()
+    // v302+ P0 优化: 如果有 externalRefreshToken (page 在推统一 tick 60s),
+    // 不再启动内部 30s setInterval, 避免双重 poll (60s + 30s = ~20s 平均一次).
+    // 后端 market/movers 是中等开销, page tick 60s 足够
+    if (externalRefreshToken !== undefined) {
+      return () => { alive = false }
+    }
     const timer = window.setInterval(load, 30_000)
     return () => { alive = false; window.clearInterval(timer) }
+    // externalRefreshToken 仅用来决定要不要建 setInterval,
+    // 不进 deps 避免每次 page tick 重建 effect(fetch 仍由下面的 useEffect 负责)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe])
   // v2026.10.15: 响应 page 层统一 tick. externalRefreshToken 改变时立即拉取
   useEffect(() => {

@@ -281,7 +281,9 @@ function QualityView({ data, loading, byDim }: { data: QualityResp | null; loadi
       {byDim && byDim.ok && (() => {
         const dims = byDim.dimensions || {}
         const totals = byDim.totals || {}
-        const order: Array<keyof typeof dims> = ['A', 'B', 'C']
+        // 显式标注 A/B/C 联合 — `keyof typeof dims` 推成 string|number|symbol,
+        // 与 React.key 不兼容(symbol 被拒)
+        const order: Array<'A' | 'B' | 'C'> = ['A', 'B', 'C']
         return (
           <div className="rounded border border-muted-foreground/30 bg-card px-3 py-2">
             <div className="mb-2 flex items-baseline justify-between">
@@ -373,9 +375,18 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
       }
     }, [])
   useEffect(() => {
+    // v302+ P0 优化: 如果有 externalRefreshToken (page 在推统一 tick),
+    // 不再启动内部 setInterval, 避免与 page 推的 tick 重复 poll (60s + 60s = ~30s 平均一次)
     void fetchAll()
+    if (externalRefreshToken !== undefined) {
+      // page 推时由下面的 externalRefreshToken useEffect 负责拉取
+      return
+    }
     const id = setInterval(() => void fetchAll(), refreshMs)
     return () => clearInterval(id)
+    // fetchAll 是 useMemo([]) 稳定的; externalRefreshToken 仅用来决定要不要建 setInterval,
+    // 不进 deps 避免每次 page tick 重新挂载定时器(fetch 仍由下面的 useEffect 负责)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchAll, refreshMs])
   // v2026.10.15: 响应 page 层统一 tick. externalRefreshToken 改变时立即拉取,
   // 让 4 个 panel 错峰问题变同点拉取. 用 > 0 过滤初始 0 不触发.

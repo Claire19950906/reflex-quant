@@ -402,9 +402,21 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
         <h3 className="font-mono text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
           Missed Signal Reflection (v237)
         </h3>
-        <div className="flex items-center gap-1">
+        {/* v302+ P0 a11y: WAI-ARIA APG 1.2 tablist 模式
+            - container role=tablist
+            - 每个 tab role=tab + aria-selected + aria-controls
+            - tabpanel role=tabpanel + aria-labelledby */}
+        <div className="flex items-center gap-1" role="tablist" aria-label="Missed signal reflection views">
           {TABS.map((t) => (
-            <button key={t.key} type="button" onClick={() => setTab(t.key)}
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              id={`v237-tab-${t.key}`}
+              aria-selected={tab === t.key}
+              aria-controls={`v237-panel-${t.key}`}
+              tabIndex={tab === t.key ? 0 : -1}
+              onClick={() => setTab(t.key)}
               className={cn("rounded border px-2 py-0.5 font-mono text-[10px] transition",
                 tab === t.key
                   ? "border-foreground/60 bg-foreground/10 text-foreground"
@@ -414,7 +426,12 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
           ))}
         </div>
       </div>
-      <div className="min-h-[120px]">
+      <div
+        className="min-h-[120px]"
+        role="tabpanel"
+        id={`v237-panel-${tab}`}
+        aria-labelledby={`v237-tab-${tab}`}
+      >
         {tab === "missed" && <MissedList rows={missed} loading={loading} />}
         {tab === "calibration" && <CalibrationTable rows={calibration} loading={loading} />}
         {tab === "quality" && <QualityView data={quality} loading={loading} byDim={byDim} />}

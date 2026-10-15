@@ -82,7 +82,8 @@ describe('MissedSignalsPanel', () => {
     await waitFor(() => {
       expect(screen.getAllByText('BTC').length).toBeGreaterThan(0)
     })
-    const calTab = screen.getByRole('button', { name: '校准曲线' })
+    // v302+ P0 a11y: tab 按钮现在 role=tab 而非 button
+    const calTab = screen.getByRole('tab', { name: '校准曲线' })
     calTab.click()
     await waitFor(() => {
       expect(screen.getByText('2025-10-13')).toBeInTheDocument()
@@ -95,7 +96,7 @@ describe('MissedSignalsPanel', () => {
     await waitFor(() => {
       expect(screen.getAllByText('BTC').length).toBeGreaterThan(0)
     })
-    const qTab = screen.getByRole('button', { name: '判断力评分' })
+    const qTab = screen.getByRole('tab', { name: '判断力评分' })
     qTab.click()
     await waitFor(() => {
       expect(screen.getByText('Confidence Calibration Gap')).toBeInTheDocument()
@@ -110,7 +111,7 @@ describe('MissedSignalsPanel', () => {
     await waitFor(() => {
       expect(screen.getAllByText('BTC').length).toBeGreaterThan(0)
     })
-    const qTab = screen.getByRole('button', { name: '判断力评分' })
+    const qTab = screen.getByRole('tab', { name: '判断力评分' })
     qTab.click()
     await waitFor(() => {
       expect(screen.getByText(/Overconfidence Gap 趋势/)).toBeInTheDocument()
@@ -139,9 +140,9 @@ describe('MissedSignalsPanel', () => {
     render(<MissedSignalsPanel />)
     // click quality tab
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '判断力评分' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: '判断力评分' })).toBeInTheDocument()
     })
-    ;(screen.getByRole('button', { name: '判断力评分' }) as HTMLButtonElement).click()
+    ;(screen.getByRole('tab', { name: '判断力评分' }) as HTMLButtonElement).click()
     await waitFor(() => {
       expect(screen.getByText(/Error: table not migrated/)).toBeInTheDocument()
     })

@@ -359,8 +359,9 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
           fetch("/api/v237/missed-signals?limit=200&days=90").then((r) => r.json()),
           fetch("/api/v237/calibration?weeks=12").then((r) => r.json()),
           fetch("/api/v237/judgment-quality").then((r) => r.json()),
-          // v2026.10.15 bugfix: 也拉 by-dimension (trade_reflections_v2 表有真实 163 条数据,
-          // 比 missed_signals 表的 0 数据有用). quality 卡片展示.
+          // v2026.10.15: 也拉 by-dimension (trade_reflections_v2 表有真实 163 条数据,
+          // 比 missed_signals 表的 0 数据有用). quality tab 卡片展示 (A 买卖信号 / B 信息方向 / C 技术错误).
+          // 与 default tab 无关 — fetchAll 不管 tab 都拉, tab 只是切换显示哪个卡片.
           fetch("/api/v237/missed-signals/by-dimension?days=90").then((r) => r.json()),
         ])
         if (m && m.ok) setMissed(m.rows ?? [])

@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# TypeScript incremental
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# Local env files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+yarn-error.log
+pnpm-debug.log*
+.npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Test coverage / cache
+coverage/
+.nyc_output/
+.pytest_cache/
+__pycache__/
+
+# Vercel
+.vercel
+
+# Temporary / build artifacts
+*.tmp
+*.bak
+
+# 备用 lockfile (项目用 npm, 保留 package-lock.json, 删 pnpm-lock.yaml)
+pnpm-lock.yaml
+yarn.lock
+
+# Session 备忘 (不进 commit)
+SESSION_CONTINUATION.md
+
+# Windows-only scripts in macOS 项目 (team 无 Windows 用户)
+dev_clean_start.bat

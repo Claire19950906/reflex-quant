@@ -29,15 +29,15 @@ export const metadata: Metadata = {
 
 // v281 PWA: 客户端组件挂载时注册 service worker（/sw.js）。
 // 失败静默 — 不能因为 SW 注册问题影响主流程。
-const registerSW = `
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('/sw.js').catch(function (err) {
-      console.warn('[Trident SW] register failed:', err);
-    });
-  });
-}
-`
+// v282 修复（2026-10-18）：dev 模式不注册 SW — SW stale cache 会
+// 引用 .next 重生前的 webpack.js module id，导致客户端 hydration 时
+// `__webpack_require__` 拿到 undefined module，
+//   "Cannot read properties of undefined (reading 'call')" at options.factory
+// 注意：必须用 server 端的 process.env.NODE_ENV（layout.tsx 是 server
+// component），不能写 inline JS 字符串里 — 浏览器没 process 全局会 ReferenceError。
+const registerSW = process.env.NODE_ENV === 'production'
+  ? `if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function (err) { console.warn('[Trident SW] register failed:', err); }); }); }`
+  : ''
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',

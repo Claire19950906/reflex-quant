@@ -91,8 +91,9 @@ export default function AttributionPage() {
         loading={loading}
         title="News Impact Weights (Attribution)"
       />
-      {/* v237: 漏检反思区 — 在 NewsImpact 之下, Movers 之上 */}
-      <MissedSignalsPanel refreshMs={PAGE_REFRESH_MS} externalRefreshToken={pageTick} />
+      {/* v237: 漏检反思区 — 在 NewsImpact 之下, Movers 之上.
+         v302+ P0: id="missed" 供 deep-link /attribution#missed (LiveDesk 顶部 strip 跳转) */}
+      <MissedSignalsPanel id="missed" refreshMs={PAGE_REFRESH_MS} externalRefreshToken={pageTick} />
       {/* v291: 事件-行情归因 — 在漏检反思之下, Movers 之上 (algo-first) */}
       <EventMarketAttribution refreshMs={PAGE_REFRESH_MS} externalRefreshToken={pageTick} />
       <MoversPanel externalRefreshToken={pageTick} />

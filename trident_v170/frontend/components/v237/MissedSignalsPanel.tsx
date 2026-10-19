@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { fetchWithFallback } from '@/lib/api'
+import { MissedSignalsDimensionSummary } from './MissedSignalsDimensionSummary'
 
 type TabKey = 'missed' | 'calibration' | 'quality'
 const TABS: ReadonlyArray<{ key: TabKey; label: string }> = [
@@ -336,8 +338,12 @@ export type MissedSignalsPanelProps = {
   className?: string
   // v2026.10.15: page 层统一轮询时点 (number 改变时强制 fetchAll 一次)
   externalRefreshToken?: number
+  // v302+ P0: page 顶部已渲染 MissedSignalsDimensionSummary 时, 这里关掉避免重复
+  hideDimensionSummary?: boolean
+  // v302+ P0: HTML id (供 anchor 跳转 e.g. /attribution#missed)
+  id?: string
 }
-export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefreshToken }: MissedSignalsPanelProps) {
+export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefreshToken, hideDimensionSummary = false, id }: MissedSignalsPanelProps) {
   // 默认 tab = "missed" (漏检信号):
   //  1. panel 名字就是 "Missed Signal Reflection", 与主内容对齐
   //  2. 与 test(components/v237/MissedSignalsPanel.test.tsx:"renders 3 tabs and
@@ -357,12 +363,13 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
       try {
         const [m, c, q, bd] = await Promise.all([
           fetch("/api/v237/missed-signals?limit=200&days=90").then((r) => r.json()),
-          fetch("/api/v237/calibration?weeks=12").then((r) => r.json()),
+          fetchWithFallback("/api/v237/calibration?weeks=12"),
           fetch("/api/v237/judgment-quality").then((r) => r.json()),
           // v2026.10.15: 也拉 by-dimension (trade_reflections_v2 表有真实 163 条数据,
           // 比 missed_signals 表的 0 数据有用). quality tab 卡片展示 (A 买卖信号 / B 信息方向 / C 技术错误).
           // 与 default tab 无关 — fetchAll 不管 tab 都拉, tab 只是切换显示哪个卡片.
-          fetch("/api/v237/missed-signals/by-dimension?days=90").then((r) => r.json()),
+          // v2026.10.19 P0 fix: 去掉 /api 前缀 (fetchWithFallback base 已有 /api)
+          fetchWithFallback("/v237/missed-signals/by-dimension?days=90"),
         ])
         if (m && m.ok) setMissed(m.rows ?? [])
         if (c && c.ok) setCalibration(c.rows ?? [])
@@ -397,7 +404,11 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalRefreshToken])
   return (
-    <div className={cn("flex flex-col gap-2 rounded border border-muted-foreground/30 bg-card p-3", className)}>
+    <div id={id} className={cn("flex flex-col gap-2 rounded border border-muted-foreground/30 bg-card p-3", className)}>
+      {/* v302+ P0: 三维度错因总览提到主视图 (复用 /api/v237/missed-signals/by-dimension, 90d).
+         独立组件, 失败不抛 — 不影响下方 3 tab 渲染. 已有 v237 quality tab 内的 A/B/C 卡片保留 (深表).
+         page 顶部已渲染时 (hideDimensionSummary=true) 跳过, 避免重复. */}
+      {hideDimensionSummary ? null : <MissedSignalsDimensionSummary variant="full" />}
       <div className="flex items-center justify-between">
         <h3 className="font-mono text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
           Missed Signal Reflection (v237)

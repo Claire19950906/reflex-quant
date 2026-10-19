@@ -43,16 +43,27 @@ const mockQuality = {
   ],
 }
 
+// v2026.10.15: 用 Response 真实对象 (.ok=true + .json())，让 lib/api.fetchWithFallback
+// 的 `if (!r.ok)` 分支通过。之前的 `{ json: () => ... }` 缺 `.ok` → fetchWithFallback
+// 会判定失败并返 {ok:false}, calibration rows 永远空 → "switches to calibration tab"
+// 测试卡在 "No calibration data yet" 错误态。
+function jsonResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
+}
+
 beforeEach(() => {
   global.fetch = vi.fn((url: string) => {
     if (url.includes('missed-signals')) {
-      return Promise.resolve({ json: () => Promise.resolve(mockMissed) })
+      return Promise.resolve(jsonResponse(mockMissed))
     }
     if (url.includes('calibration')) {
-      return Promise.resolve({ json: () => Promise.resolve(mockCalibration) })
+      return Promise.resolve(jsonResponse(mockCalibration))
     }
     if (url.includes('judgment-quality')) {
-      return Promise.resolve({ json: () => Promise.resolve(mockQuality) })
+      return Promise.resolve(jsonResponse(mockQuality))
     }
     return Promise.reject(new Error('unknown url: ' + url))
   }) as unknown as typeof fetch

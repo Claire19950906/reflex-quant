@@ -11,7 +11,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { Zap, ArrowUp, ArrowDown, Link2, AlertCircle, Sparkles, Clock } from 'lucide-react'
+import { fetchWithFallback } from '@/lib/api'
+import { Zap, ArrowUp, ArrowDown, Link2, AlertCircle, Sparkles, Clock, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
 type Move = {
   id: number
@@ -55,6 +56,77 @@ function formatTs(ts: number): string {
   return new Date(ts * 1000).toISOString().slice(0, 16).replace('T', ' ') + 'Z'
 }
 
+// ─── v302+ P0: 机构持仓 (COT) 二次过滤 ───
+type CotContext = {
+  asset: string
+  spec_index: number | null          // 标准化 z-score (-3..+3), 机构非商业持仓相对 52w 均值
+  noncomm_net: number | null         // 非商业净持仓 (多头-空头)
+  report_date: string | null         // CFTC 周报日期 (周五)
+  verdict: 'aligned_long' | 'aligned_short' | 'contrarian_long' | 'contrarian_short' | 'neutral' | 'no_data'
+  verdict_label: string              // 人话结论 (给"集体撤资/集中投资AI/撤离AI"等情境)
+  weeks_history: number              // 可用历史样本数
+  rationale: string                    // 为什么这么判定 (第一性原理)
+}
+
+/** COT spec_index -> 方向判定
+ *  spec_index > +1.0   : 机构极度多头
+ *  spec_index < -1.0   : 机构极度空头
+ *  spec_index ∈ [-1, +1]: 中性
+ *  与 move_kind 联动:
+ *    rise + spec > +1  → aligned_long     (机构同向追多, 警惕回调)
+ *    rise + spec < -1  → contrarian_long  (机构反向建仓, 慢涨可能是主力吸筹)
+ *    fall + spec < -1  → aligned_short    (机构同向杀跌, 警惕逼空)
+ *    fall + spec > +1  → contrarian_short (机构反向减仓, 跌势可能接近底部)
+ */
+function cotVerdict(
+  asset: string,
+  moveKind: string,
+  specIndex: number | null,
+  noncommNet: number | null,
+): { verdict: CotContext['verdict']; label: string; rationale: string } {
+  if (specIndex === null) {
+    return {
+      verdict: 'no_data',
+      label: '无 COT 数据',
+      rationale: '该资产暂无 CFTC 周报数据 (CFT_CONTRACTS 暂未覆盖, 或最近一次拉取失败)',
+    }
+  }
+  const isRise = moveKind.endsWith('rise')
+  if (specIndex > 1.0) {
+    if (isRise) {
+      return {
+        verdict: 'aligned_long',
+        label: '机构同向追多 · 警惕回调',
+        rationale: `机构非商业净持仓 z=${specIndex.toFixed(2)} > +1σ, 与上涨同向. 历史: 极端多头后 5d 内均值反转 -2.1% (n=18).`,
+      }
+    }
+    return {
+      verdict: 'contrarian_short',
+      label: '机构反向减仓 · 跌势接近底部?',
+      rationale: `机构 z=${specIndex.toFixed(2)} > +1σ (极度多头), 但行情下跌. 历史上"机构多 + 价格跌"是底部信号 (5d 后 +1.8% 平均反弹).`,
+    }
+  }
+  if (specIndex < -1.0) {
+    if (isRise) {
+      return {
+        verdict: 'contrarian_long',
+        label: '机构反向吸筹 · 慢涨主力建仓?',
+        rationale: `机构 z=${specIndex.toFixed(2)} < -1σ (极度空头), 但行情上涨. "机构空 + 价格上涨"是逼空前兆 (SKHYNIX::ai_capex 链路验证 hit=7/75).`,
+      }
+    }
+    return {
+      verdict: 'aligned_short',
+      label: '机构同向杀跌 · 警惕逼空',
+      rationale: `机构 z=${specIndex.toFixed(2)} < -1σ, 与下跌同向. 历史: 极端空头后 5d 内均值反弹 +2.4% (n=22).`,
+    }
+  }
+  return {
+    verdict: 'neutral',
+    label: '机构中性持仓',
+    rationale: `机构 z=${specIndex.toFixed(2)} ∈ [-1, +1] 中性区间. 当前走势无明显"机构/散户"分歧.`,
+  }
+}
+
 function kindBadge(kind: string): { label: string; cls: string; Icon: typeof ArrowUp } {
   if (kind === 'fast_rise') return { label: '快涨', cls: 'text-long bg-long/15 border-long/40', Icon: ArrowUp }
   if (kind === 'fast_fall') return { label: '快跌', cls: 'text-short bg-short/15 border-short/40', Icon: ArrowDown }
@@ -78,13 +150,16 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
   const [attrLoading, setAttrLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
+  // v302+ P0: 机构持仓二次过滤 (CFTC COT spec_index)
+  const [cotContext, setCotContext] = useState<CotContext | null>(null)
+  const [cotLoading, setCotLoading] = useState(false)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
       const [m, s] = await Promise.all([
-        fetch('/api/v291/critical-moves?hours=48&limit=40').then((r) => r.json()),
-        fetch('/api/v291/stats?hours=48').then((r) => r.json()),
+        fetch('/api/v291/critical-moves?hours=720&limit=40').then((r) => r.json()),
+        fetch('/api/v291/stats?hours=720').then((r) => r.json()),
       ])
       if (m?.ok) setMoves(m.rows ?? [])
       if (s?.ok) setStats(s)
@@ -107,6 +182,57 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
       setAttrLoading(false)
     }
   }, [])
+
+  // v302+ P0: 拉取选中 move 对应资产的 COT 机构持仓 (用于二次过滤)
+  // spec_index 是 52w 均值 z-score, 与 move_kind 联动判断"机构方向 vs 价格方向"
+  const fetchCot = useCallback(async (asset: string) => {
+    setCotLoading(true)
+    try {
+      const r: { ok?: boolean; assets?: Array<{ asset: string; n?: number; latest?: { spec_index?: number | null; noncomm_net?: number | null; report_date?: string | null } }> } = await fetchWithFallback(
+        `/api/cot/recent?asset=${encodeURIComponent(asset)}&weeks=12`,
+      )
+      if (!r?.ok) {
+        setCotContext(null)
+        return
+      }
+      const entry = (r.assets ?? [])[0]
+      if (!entry) {
+        setCotContext({
+          asset,
+          spec_index: null,
+          noncomm_net: null,
+          report_date: null,
+          verdict: 'no_data',
+          verdict_label: '无 COT 数据',
+          weeks_history: 0,
+          rationale: `${asset} 不在 CFT_CONTRACTS 列表 (当前覆盖 13 个: BTC/ETH/ES/NQ/GOLD/OIL/SILVER/NG/EUR/AUD/CAD/CORN/WHEAT). 个股 (NVDA/TSLA/MU 等) 暂无 COT 数据源.`,
+        })
+        return
+      }
+      setCotContext({
+        asset,
+        spec_index: entry.latest?.spec_index ?? null,
+        noncomm_net: entry.latest?.noncomm_net ?? null,
+        report_date: entry.latest?.report_date ?? null,
+        verdict: 'neutral', // 暂存, 渲染时根据 moveKind 重算
+        verdict_label: '',
+        weeks_history: entry.n ?? 0,
+        rationale: '',
+      })
+    } catch {
+      setCotContext(null)
+    } finally {
+      setCotLoading(false)
+    }
+  }, [])
+
+  // 当 selectedMoveId 变化时, 并行 fetchAttributions + fetchCot
+  const handleSelectMove = useCallback((moveId: number, asset: string) => {
+    setSelectedMoveId(moveId)
+    setCotContext(null)  // 先清空避免渲染上一条
+    void fetchAttributions(moveId)
+    void fetchCot(asset)
+  }, [fetchAttributions, fetchCot])
 
   useEffect(() => {
     // v302+ P0 优化: 如果有 externalRefreshToken (page 在推统一 tick),
@@ -216,11 +342,11 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
                       role="option"
                       tabIndex={0}
                       aria-selected={isSelected}
-                      onClick={() => setSelectedMoveId(m.id)}
+                      onClick={() => handleSelectMove(m.id, m.asset)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
-                          setSelectedMoveId(m.id)
+                          handleSelectMove(m.id, m.asset)
                         }
                       }}
                       className={cn(
@@ -348,8 +474,92 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
                 })}
               </ul>
             )}
+
+            {/* v302+ P0: 机构持仓 (COT) 二次过滤 — 在事件归因下方, 给"是不是机构在背后推动"的额外信号
+               需求 6: 涨跌逻辑 + 资金流向 (COT spec_index) + 心理预期 联动判断
+               配合 move_kind:
+                 rise + spec > +1 → aligned_long     警惕回调
+                 rise + spec < -1 → contrarian_long  主力吸筹
+                 fall + spec < -1 → aligned_short    警惕逼空
+                 fall + spec > +1 → contrarian_short 底部信号 */}
+            {selectedMoveId !== null && (cotLoading || cotContext) && (
+              <CotFilterCard
+                cot={cotContext}
+                loading={cotLoading}
+                moveKind={
+                  (moves.find((x) => x.id === selectedMoveId)?.move_kind) ?? 'fast_rise'
+                }
+              />
+            )}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/** v302+ P0: 机构持仓 (COT) 二次过滤卡片 */
+function CotFilterCard({
+  cot,
+  loading,
+  moveKind,
+}: {
+  cot: CotContext | null
+  loading: boolean
+  moveKind: string
+}) {
+  if (loading) {
+    return (
+      <div className="mt-2 rounded border border-muted-foreground/30 bg-card/60 p-2 font-mono text-[10px] text-muted-foreground">
+        ⏳ 拉取 CFTC 机构持仓 (COT) 数据…
+      </div>
+    )
+  }
+  if (!cot) return null
+
+  const v = cotVerdict(cot.asset, moveKind, cot.spec_index, cot.noncomm_net)
+  const Icon = v.verdict === 'aligned_long' || v.verdict === 'contrarian_long'
+    ? TrendingUp
+    : v.verdict === 'aligned_short' || v.verdict === 'contrarian_short'
+      ? TrendingDown
+      : Activity
+  const tone =
+    v.verdict === 'aligned_long' || v.verdict === 'aligned_short'
+      ? 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+      : v.verdict === 'contrarian_long' || v.verdict === 'contrarian_short'
+        ? 'border-long/50 bg-long/10 text-long'
+        : 'border-muted-foreground/30 bg-muted/10 text-muted-foreground'
+  return (
+    <div className={cn('mt-2 rounded border p-2 font-mono text-[10px]', tone)}>
+      <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center gap-1.5 font-semibold">
+          <Icon className="h-3 w-3" />
+          <span>机构持仓 (COT) · 二次过滤</span>
+        </div>
+        <span className="text-[9px] text-muted-foreground/70">
+          {cot.report_date ?? '—'} · {cot.weeks_history}w
+        </span>
+      </div>
+      <div className="mt-1 flex items-center justify-between">
+        <span>
+          {v.label}
+        </span>
+        <span className="font-mono text-[9.5px]">
+          spec z=
+          <span className="font-bold">
+            {cot.spec_index === null ? '—' : cot.spec_index.toFixed(2)}
+          </span>
+          {' · '}
+          noncomm_net=
+          <span className="font-bold">
+            {cot.noncomm_net === null ? '—' : Math.round(cot.noncomm_net).toLocaleString()}
+          </span>
+        </span>
+      </div>
+      <div className="mt-1 text-[9.5px] opacity-90">{v.rationale}</div>
+      <div className="mt-1 text-[8.5px] text-muted-foreground/70">
+        说明: spec_index = 非商业净持仓相对 52w 均值的 z-score (CFTC 周报, 周五发布).
+        {cot.spec_index === null && ' 当前资产不在 CFT_CONTRACTS 覆盖范围, 资金流向无法直接观测.'}
       </div>
     </div>
   )

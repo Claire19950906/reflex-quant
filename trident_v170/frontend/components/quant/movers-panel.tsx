@@ -35,7 +35,7 @@ import {
   type Time,
 } from 'lightweight-charts'
 import { ExternalLink } from 'lucide-react'
-import { API_BASE } from '@/lib/api'
+import { API_BASE, fetchWithFallback } from '@/lib/api'
 import { useIsDark } from '@/hooks/use-is-dark'
 import { pivotPoint, pivotPeriodForTimeframe } from '@/lib/technical-indicators'
 import GateReflectionList from '@/components/quant/gate-reflection-list'
@@ -44,6 +44,9 @@ import { AssetHeatmap } from '@/components/quant/asset-heatmap'
 import { EventHeatmap } from '@/components/quant/event-heatmap'
 import { AnomalyTypePanel } from '@/components/quant/anomaly-type-panel'
 import { AbnormalDetailPanel } from '@/components/quant/abnormal-detail-panel'
+import { CotExtremePanel } from '@/components/quant/cot-extreme-panel'
+import { MoverNewsCard } from '@/components/quant/mover-news-card'
+import { COTPanel } from '@/components/quant/cot-panel'
 
 type MoverEvent = {
   ts: number
@@ -1115,8 +1118,26 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
       ])
       const barsJ = barsR.ok ? await barsR.json() : { bars: [] }
       const calJ = calR.ok ? await calR.json() : { events: [] }
-      const impactJ = impactR.ok ? await impactR.json() : { items: [] }
-      const signalJ = signalR && signalR.ok ? await signalR.json() : null
+      // impact/by-asset: 8000 一直 500, fallback 到 8100 bridge
+      let impactJ: any
+      if (impactR.ok) {
+        impactJ = await impactR.json()
+      } else {
+        const path = `/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&severity_min=low&limit=200`
+        impactJ = await fetchWithFallback<{ items?: any[] }>(path)
+      }
+      // trading/signals: 8000 一直 500, fallback 到 8100 bridge
+      let signalJ: any = null
+      if (signalR && signalR.ok) {
+        signalJ = await signalR.json()
+      } else {
+        const path = `/trading/signals?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&hide_neutral=1&limit=500`
+        try {
+          signalJ = await fetchWithFallback(path)
+        } catch {
+          signalJ = null
+        }
+      }
       const newBars = Array.isArray(barsJ?.bars) ? barsJ.bars : []
       const newCal = Array.isArray(calJ?.events) ? calJ.events : []
       const newImpact = Array.isArray(impactJ?.items) ? impactJ.items : []
@@ -3100,6 +3121,15 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
 
           {/* 异常详情面板 */}
           <AbnormalDetailPanel />
+
+          {/* CFTC COT 跨资产极值信号 (反向解读) */}
+          <CotExtremePanel />
+
+          {/* P0-3 相关新闻 (当前 selected asset) */}
+          <MoverNewsCard asset={selected} />
+
+          {/* P0-3 续: CFTC COT 机构持仓 (selected asset) */}
+          <COTPanel asset={selected} />
         </aside>
       </div>
     </main>

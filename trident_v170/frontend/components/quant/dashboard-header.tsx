@@ -36,8 +36,9 @@ export function DashboardHeader() {
       })
       .then((data) => {
         if (active) {
-          setModels(data.models)
-          setSelected(data.selected)
+          // v302+ R2 Round 4 防御: data.models/selected 可能为 undefined (兜底空响应)
+          setModels(Array.isArray(data?.models) ? data.models : [])
+          setSelected(typeof data?.selected === 'string' ? data.selected : '')
           setStatus('选择 AI 模型')
         }
       })
@@ -74,8 +75,9 @@ export function DashboardHeader() {
       })
       if (!response.ok) throw new Error('保存失败')
       const data = await response.json() as AIModelsResponse
-      setModels(data.models)
-      setSelected(data.selected)
+      // v302+ R2 Round 4 防御: 同上
+      setModels(Array.isArray(data?.models) ? data.models : [])
+      setSelected(typeof data?.selected === 'string' ? data.selected : '')
       setStatus('模型已切换')
     } catch {
       setSelected(previous)

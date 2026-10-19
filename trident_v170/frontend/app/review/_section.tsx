@@ -1,11 +1,12 @@
 'use client'
 
 /**
- * app/review/_section.tsx — 段标题 + 错误边界(v302+ P1 拆分自 page.tsx)
+ * app/review/_section.tsx — 段标题 + 错误边界 + 加载占位(v302+ P1/P3 拆分自 page.tsx)
  *
  * 设计:
  *  - SectionHeading 复用于 /review 的段头(icon + 标题 + 副标题)
  *  - SectionErrorBoundary 用 class component 写(React 18 标准),捕获 render/lifecycle 错误
+ *  - PanelLoadingSkeleton: a11y 友好的加载占位(role=status + aria-live=polite + minHeight 防 CLS)
  *  - 其它段的稳定性靠子组件自身 try/catch + Zod 校验兜底
  */
 
@@ -28,6 +29,32 @@ export function SectionHeading({
         {title}
       </h2>
       <p className="font-mono text-xs text-muted-foreground">{subtitle}</p>
+    </div>
+  )
+}
+
+/**
+ * v302+ P3+: a11y 友好的面板加载占位
+ *  - role="status" + aria-live="polite" — 屏幕阅读器会播报 label,但不抢焦点
+ *  - minHeight 锁高,防 Cumulative Layout Shift (CLS)
+ *  - 默认 label "载入中…" 跟其它面板一致
+ */
+export function PanelLoadingSkeleton({
+  label = '载入中…',
+  minHeight,
+}: {
+  label?: string
+  minHeight?: number
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={minHeight ? { minHeight: `${minHeight}px` } : undefined}
+      className="flex items-center justify-center rounded-md border border-border bg-card/50 p-6 font-mono text-xs text-muted-foreground"
+    >
+      <span aria-hidden className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+      {label}
     </div>
   )
 }
@@ -57,6 +84,16 @@ export class SectionErrorBoundary extends Component<
       error,
       info.componentStack,
     )
+  }
+
+  componentDidUpdate(prevProps: { name: string; children: ReactNode }) {
+    // v2026.10.19: HMR/页面切换后, 旧 state.error 会一直显示
+    // 当子组件身份变化 (例如某个 panel 修好后的新模块实例) 时自动重置
+    // 防御: 同一子树在连续两次 render 中抛同一错, 不应立即复位;
+    // 这里用 children 引用变化做信号, 这是 Next.js dev HMR 重新挂载子组件的标志
+    if (this.state.error && prevProps.children !== this.props.children) {
+      this.setState({ error: null })
+    }
   }
 
   render() {

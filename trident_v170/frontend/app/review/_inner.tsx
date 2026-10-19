@@ -11,7 +11,7 @@
  *  - 编译期类型保证:任何人漏声明 section 在某 mode 下的可见性,TS 立刻报错
  */
 
-import { useMemo, type ComponentType, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, type ComponentType, type KeyboardEvent, type ReactNode } from 'react'
 import { ReviewPanel } from '@/components/replay/review-panel'
 import { ReviewHistoryPanel } from '@/components/replay/review-history-panel'
 import { FailureStatsPanel } from '@/components/replay/failure-stats-panel'
@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 import { PeriodSelector, resolvePeriod, type PeriodRange } from '@/lib/data-channel-standards'
 import { LazySection } from '@/lib/lazy-section'
 import { useReviewUrlState } from '@/lib/use-review-url-state'
+import type { AbTab } from '@/lib/use-review-url-state'
 import { SectionErrorBoundary, SectionHeading } from './_section'
 import {
   REVIEW_SECTIONS,
@@ -34,6 +35,27 @@ import {
   selectReviewPanel,
   type ReviewPanelKey,
 } from './_spec'
+
+// v302+ P4: WAI-ARIA APG 1.2 tab pattern — 锁定 id 命名(测试断言依赖)
+//   - tab a/b:    review-tab-a / review-tab-b
+//   - tabpanel:   review-tabpanel
+// 改这些 id 会同时炸 4 条双向链测试
+const REVIEW_TAB_IDS: Record<AbTab, string> = {
+  a: 'review-tab-a',
+  b: 'review-tab-b',
+}
+const REVIEW_TABPANEL_ID = 'review-tabpanel'
+
+// tab 顺序(roving tabindex 用) — 单源,改顺序只需改这里
+const AB_TABS: readonly AbTab[] = ['a', 'b'] as const
+function nextTab(cur: AbTab, dir: 1 | -1): AbTab {
+  const i = AB_TABS.indexOf(cur)
+  const n = AB_TABS.length
+  return AB_TABS[(i + dir + n) % n]!
+}
+function clampTab(cur: AbTab, target: AbTab): AbTab {
+  return target
+}
 
 // 复盘面板组件注册表 — 把组件 import 与 spec key 绑定
 const REVIEW_PANEL_COMPONENTS: {
@@ -55,6 +77,103 @@ function wrapWithLazy(
   content: ReactNode,
 ) {
   return lazy ? <LazySection minHeight={minHeight!}>{content}</LazySection> : content
+}
+
+/**
+ * v302+ P3+/P3++/P4: 完整 WAI-ARIA APG 1.2 tab pattern 实现
+ *  - Roving tabindex(选中=0,其他=-1)— 让 Tab 进出 tablist 一次
+ *  - ArrowLeft/Right 切换 + 末位循环
+ *  - Home/End 跳到首/末
+ *  - 切换时 .focus() 真正移动焦点(不止改 tabIndex)
+ *  - 每个 tab 的 id + aria-controls 指向 panel,panel 的 aria-labelledby 指回选中 tab
+ */
+function ReviewModeTabs({
+  abTab,
+  onChange,
+}: {
+  abTab: AbTab
+  onChange: (next: AbTab) => void
+}) {
+  const tabARef = useRef<HTMLButtonElement>(null)
+  const tabBRef = useRef<HTMLButtonElement>(null)
+
+  const focusTab = useCallback((t: AbTab) => {
+    const ref = t === 'a' ? tabARef : tabBRef
+    ref.current?.focus()
+  }, [])
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLButtonElement>) => {
+      let target: AbTab | null = null
+      switch (e.key) {
+        case 'ArrowRight':
+          target = nextTab(abTab, 1)
+          break
+        case 'ArrowLeft':
+          target = nextTab(abTab, -1)
+          break
+        case 'Home':
+          target = AB_TABS[0]!
+          break
+        case 'End':
+          target = AB_TABS[AB_TABS.length - 1]!
+          break
+        default:
+          return
+      }
+      e.preventDefault()
+      onChange(clampTab(abTab, target))
+      // 把焦点真正挪到新 tab — 否则下次按 Tab 键会跳错位置
+      focusTab(target)
+    },
+    [abTab, onChange, focusTab],
+  )
+
+  const tabClass = (active: boolean) =>
+    cn(
+      'rounded-md px-3 py-1.5 font-mono text-xs transition-all',
+      active
+        ? 'bg-background text-foreground shadow-sm'
+        : 'text-muted-foreground hover:text-foreground',
+    )
+
+  return (
+    <div
+      role="tablist"
+      aria-label="复盘模式"
+      className="inline-flex self-start rounded-lg border border-border bg-secondary/50 p-0.5"
+    >
+      <button
+        ref={tabARef}
+        id={REVIEW_TAB_IDS.a}
+        type="button"
+        role="tab"
+        aria-selected={abTab === 'a'}
+        aria-controls={REVIEW_TABPANEL_ID}
+        // Roving Tabindex: 只有"当前选中的 tab"才是 Tab 序列的一部分
+        tabIndex={abTab === 'a' ? 0 : -1}
+        onClick={() => onChange('a')}
+        onKeyDown={handleKeyDown}
+        className={tabClass(abTab === 'a')}
+      >
+        A · 历史真实交易复盘
+      </button>
+      <button
+        ref={tabBRef}
+        id={REVIEW_TAB_IDS.b}
+        type="button"
+        role="tab"
+        aria-selected={abTab === 'b'}
+        aria-controls={REVIEW_TABPANEL_ID}
+        tabIndex={abTab === 'b' ? 0 : -1}
+        onClick={() => onChange('b')}
+        onKeyDown={handleKeyDown}
+        className={tabClass(abTab === 'b')}
+      >
+        B · 快速评测复盘
+      </button>
+    </div>
+  )
 }
 
 export function ReviewPageInner() {
@@ -86,7 +205,15 @@ export function ReviewPageInner() {
   const ReviewPanelComponent = reviewPanelKey ? REVIEW_PANEL_COMPONENTS[reviewPanelKey] : null
 
   return (
-    <main className="mx-auto flex w-full max-w-[1600px] min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 md:p-4">
+    <main
+      aria-labelledby="review-page-heading"
+      className="mx-auto flex w-full max-w-[1600px] min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 md:p-4"
+    >
+      {/* v302+ P3++: 页面级 h1 — SR 从 h1 开始扫页面
+          视觉隐藏但 screen reader 可见,正好配合 <main aria-labelledby> */}
+      <h1 id="review-page-heading" className="sr-only">
+        复盘 · Trident 量化平台诊断与交易复盘
+      </h1>
       <section
         aria-label="全局时段选择"
         className="flex flex-wrap items-center gap-2 rounded-md border border-border/60 bg-secondary/30 px-3 py-2"
@@ -187,51 +314,28 @@ export function ReviewPageInner() {
             aria-label={REVIEW_SECTIONS.review.label}
             className="scroll-mt-3"
           >
-            {isAll && (
-              <div
-                role="tablist"
-                aria-label="复盘模式"
-                className="inline-flex self-start rounded-lg border border-border bg-secondary/50 p-0.5"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={abTab === 'a'}
-                  onClick={() => setAbTab('a')}
-                  className={cn(
-                    'rounded-md px-3 py-1.5 font-mono text-xs transition-all',
-                    abTab === 'a'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  A · 历史真实交易复盘
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={abTab === 'b'}
-                  onClick={() => setAbTab('b')}
-                  className={cn(
-                    'rounded-md px-3 py-1.5 font-mono text-xs transition-all',
-                    abTab === 'b'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  B · 快速评测复盘
-                </button>
-              </div>
-            )}
-            {wrapWithErrorBoundary(
-              REVIEW_SECTIONS.review.label,
-              REVIEW_SECTIONS.review.errorBoundary,
-              wrapWithLazy(
-                REVIEW_SECTIONS.review.lazy,
-                REVIEW_SECTIONS.review.minHeight,
-                ReviewPanelComponent ? <ReviewPanelComponent period={period} /> : null,
-              ),
-            )}
+            {isAll && <ReviewModeTabs abTab={abTab} onChange={setAbTab} />}
+            {/* v302+ P4: tabpanel 容器
+                - isAll 时:role=tabpanel + aria-labelledby 跟随选中 tab
+                  (WAI-ARIA APG 1.2 tab pattern 双向链:tab.aria-controls → panel.id,
+                   panel.aria-labelledby → selected tab.id)
+                - journal 时:仅保留 id 锚点,不挂 role(没有 tab 可控,挂 role 反而
+                  误导 SR 去找不存在的 tab) */}
+            <div
+              id={REVIEW_TABPANEL_ID}
+              role={isAll ? 'tabpanel' : undefined}
+              aria-labelledby={isAll ? REVIEW_TAB_IDS[abTab] : undefined}
+            >
+              {wrapWithErrorBoundary(
+                REVIEW_SECTIONS.review.label,
+                REVIEW_SECTIONS.review.errorBoundary,
+                wrapWithLazy(
+                  REVIEW_SECTIONS.review.lazy,
+                  REVIEW_SECTIONS.review.minHeight,
+                  ReviewPanelComponent ? <ReviewPanelComponent period={period} /> : null,
+                ),
+              )}
+            </div>
           </section>
         )}
 

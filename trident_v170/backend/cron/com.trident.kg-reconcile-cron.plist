@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Label: launchd 唯一标识，必须与文件名一致 -->
+    <key>Label</key>
+    <string>com.trident.kg-reconcile-cron</string>
+
+    <!-- ProgramArguments: 启动命令 -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/.cline/data/workspaces/chat/trident_v170/backend/cron/run_kg_reconcile.sh</string>
+    </array>
+
+    <!-- StartCalendarInterval: 每天 04:30 跑一次（紧跟 04:00 kg_review_cron + 04:10 causal_expand） -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>4</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <!-- WorkingDirectory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/.cline/data/workspaces/chat/trident_v170/backend</string>
+
+    <!-- EnvironmentVariables: 必须显式注入 PATH（launchd 默认 PATH 很窄） -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+    </dict>
+
+    <!-- StandardOutPath / StandardErrorPath -->
+    <key>StandardOutPath</key>
+    <string>/Users/claire/.cline/data/workspaces/chat/trident_v170/backend/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/claire/.cline/data/workspaces/chat/trident_v170/backend/logs/launchd.err.log</string>
+
+    <!-- RunAtLoad: 不加载时立即跑（方便测试） -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- KeepAlive: 不重试（避免一次失败反复跑） -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- ProcessType: Background -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

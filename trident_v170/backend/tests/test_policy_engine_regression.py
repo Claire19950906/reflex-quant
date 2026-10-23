@@ -374,13 +374,13 @@ class TestShadowProjection:
         assert any("P2 #10" in l for l in labels)
 
     def test_current_gate_filters(self, shadow_db):
-        """闸门 10 时 conf=5 不通过 (5<10)；conf=50 通过 2 条 (50>=10)"""
+        """闸门 20 时 conf=5 不通过 (5<20)；conf=50 通过 2 条 (50>=20)"""
         from trade_decisions import get_gate_shadow_projection
         r = get_gate_shadow_projection(shadow_db, lookback_days=7)
         cur = r["scenarios"][0]
-        # 2026-10-08 闸门 40→20→10，current_gate 默认从 config.EVIDENCE_CONFIDENCE_GATE 读
-        assert cur["gate"] == 10.0
-        assert cur["would_pass"] == 2  # 决策 1+2 (conf=50)，conf=5 仍被 10 卡住
+        # 2026-10-08 闸门 40→20，current_gate 默认从 config.EVIDENCE_CONFIDENCE_GATE 读
+        assert cur["gate"] == 20.0
+        assert cur["would_pass"] == 2  # 决策 1+2 (conf=50)
         assert cur["projected_pnl_pct"] == 1.0  # +3 + (-2) = +1
         assert cur["win_rate_pct"] == 50.0
 

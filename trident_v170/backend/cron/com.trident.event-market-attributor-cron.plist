@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.trident.event-market-attributor-cron</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_event_market_attributor.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/claire/Desktop/金融1.0/backend/src_python</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PYTHONIOENCODING</key><string>utf-8</string>
+    <key>PYTHONUNBUFFERED</key><string>1</string>
+    <key>PATH</key><string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/Users/claire/android-runtime/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartInterval</key>
+  <integer>300</integer>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Users/claire/.trident/log/event_market_attributor.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/claire/.trident/log/event_market_attributor.err.log</string>
+</dict>
+</plist>

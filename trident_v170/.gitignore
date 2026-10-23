@@ -126,6 +126,8 @@ dashboard/*.xlsx
 
 # 模拟盘一键重置的自动备份（JSON + Excel 留档）
 backend/backups/
+# 运行时上传产物 (每次运行生成, 非源码)
+backend/uploads/
 
 # ── Media / Large Binaries ─────────────────────────────────
 *.mp4

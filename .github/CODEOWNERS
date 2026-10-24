@@ -1,0 +1,28 @@
+# CODEOWNERS — Reflex Quant
+# Each line is a file pattern followed by one or more owners.
+# When a PR touches matching files, the owners are auto-requested for review.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-repository/about-code-owners
+
+# Default owners for everything not matched below
+*                          @reflex-quant/maintainers
+
+# Core reflection engine & meta-loop
+/reflex_quant/             @reflex-quant/maintainers
+/docs/ARCHITECTURE.md      @reflex-quant/maintainers
+/docs/PHILOSOPHY.md        @reflex-quant/maintainers
+/docs/ROADMAP.md           @reflex-quant/maintainers
+
+# Public-facing & brand
+/README.md                 @reflex-quant/maintainers
+/LICENSE                   @reflex-quant/maintainers
+/LICENSE-COMMERCIAL.md     @reflex-quant/maintainers
+/LICENSE-COMMERCIAL.html   @reflex-quant/maintainers
+/CHANGELOG.md              @reflex-quant/maintainers
+/.github/                  @reflex-quant/maintainers
+
+# Showcase & examples
+/showcase/                 @reflex-quant/maintainers
+/examples/                 @reflex-quant/maintainers
+
+# Workflows
+/.github/workflows/        @reflex-quant/maintainers

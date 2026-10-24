@@ -1,0 +1,38 @@
+# Netlify deployment configuration for Reflex Quant public site
+# Deploy with: netlify deploy --prod
+# Or connect this repo at https://app.netlify.com/ for auto-deploy on git push
+
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/showcase/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[redirects]]
+  from = "/demo"
+  to = "/showcase/index.html"
+  status = 301
+
+[[redirects]]
+  from = "/pricing"
+  to = "/LICENSE-COMMERCIAL.html"
+  status = 301
+
+[[redirects]]
+  from = "/blog"
+  to = "/docs/blog/"
+  status = 301

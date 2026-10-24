@@ -1,0 +1,113 @@
+# ==========================================
+# Reflex Quant — .gitignore
+# This file controls what NEVER leaves your machine.
+# ==========================================
+
+# ----- ENV / SECRETS -----
+.env
+.env.local
+.env.production
+.env.development
+*.pem
+*.key
+*.crt
+secrets/
+
+# ----- PYTHON -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+build/
+dist/
+*.whl
+
+# ----- NODE / NEXT.JS -----
+node_modules/
+.next/
+out/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# ----- DATA (NEVER commit) -----
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+data/raw/
+data/cache/
+data/reflex.db*
+reflex.db*
+backend/data/
+backend/*.db
+backend/*.sqlite
+
+# ----- LOGS (may contain sensitive info) -----
+*.log
+logs/
+backend/logs/
+*.pid
+
+# ----- BACKUPS -----
+backups/
+*.bak
+*.tar.gz
+*.zip
+
+# ----- IDE / OS -----
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*.local
+
+# ----- REFLECTION OUTPUT (your real cycles) -----
+reflection_cycles/
+review_insights/
+decision_errors/
+META_REFLECTION.md
+meta_loop_log/
+
+# ----- TRADING CREDENTIALS -----
+api_keys.json
+trading_keys/
+exchange_creds/
+binance_*
+coinbase_*
+
+# ----- CRON / LOCAL -----
+crontab.local
+supervisord.local
+
+# ----- LLM INTERACTION LOGS -----
+llm_calls/
+openrouter_logs/
+prompt_history/
+*.prompt.json
+
+# ----- KG DATA -----
+kg_nodes/
+kg_edges/
+knowledge_base/
+
+# ===== EXPLICITLY ALLOWED =====
+# These ARE allowed in the public repo:
+# - examples/ (sample cases)
+# - docs/   (documentation)
+# - frontend/ (UI code)
+# - showcase/ (interactive demo)
+# - README.md, LICENSE, etc.

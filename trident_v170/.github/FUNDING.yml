@@ -1,0 +1,15 @@
+# These are the funding platforms supported by GitHub Sponsors.
+# To enable, remove the `# ` prefix on the relevant line.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+# github: [Claire19950906]   # ← replace with your GitHub Sponsors username
+# patreon: # reflexquant
+# open_collective: # reflex-quant
+# ko_fi: # reflexquant
+# tidelift: # npm/reflex-quant
+# community_bridge: # reflex-quant
+# liberapay: # reflexquant
+# issuehunt: # reflexquant
+# otechie: # reflex-quant
+# lfx: # reflex-quant
+custom: ["https://github.com/Claire19950906/reflex-quant/issues"]

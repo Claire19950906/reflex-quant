@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trident v300 — 投资人活动仪表盘</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1220; color: #e5e7eb; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #9ca3af; font-size: 13px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: #1f2937; border-radius: 8px; padding: 16px; border: 1px solid #374151; }
+  .card h3 { font-size: 13px; color: #9ca3af; margin-bottom: 8px; }
+  .card .num { font-size: 28px; font-weight: 600; color: #60a5fa; }
+  table { width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 8px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #374151; font-size: 13px; }
+  th { background: #111827; color: #9ca3af; font-weight: 500; }
+  tr:hover { background: #374151; cursor: pointer; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; }
+  .tag-200 { background: #065f46; color: #d1fae5; }
+  .tag-429 { background: #92400e; color: #fed7aa; }
+  .tag-403 { background: #991b1b; color: #fecaca; }
+  .tag-500 { background: #7f1d1d; color: #fecaca; }
+  .tag-honeypot { background: #581c87; color: #e9d5ff; }
+  button { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  button:hover { background: #1d4ed8; }
+  input, select { background: #111827; color: #e5e7eb; border: 1px solid #374151; padding: 6px 10px; border-radius: 4px; font-size: 13px; margin-right: 8px; }
+  .toolbar { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .live-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  pre { background: #111827; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x: auto; max-height: 200px; }
+</style>
+</head>
+<body>
+<h1>🛡️ Trident 投资人活动仪表盘</h1>
+<p class="sub"><span class="live-dot"></span>实时刷新 · 数据来自 <code>trident_audit.db</code></p>
+
+<div class="grid">
+  <div class="card">
+    <h3>今日独立访客</h3>
+    <div class="num" id="kpi-visitors">—</div>
+  </div>
+  <div class="card">
+    <h3>今日总请求</h3>
+    <div class="num" id="kpi-requests">—</div>
+  </div>
+  <div class="card">
+    <h3>限流次数</h3>
+    <div class="num" id="kpi-429">—</div>
+  </div>
+  <div class="card">
+    <h3>蜜罐命中</h3>
+    <div class="num" id="kpi-honeypot">—</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="filter-ip" placeholder="按 IP 过滤..." />
+  <input type="text" id="filter-iid" placeholder="按投资人 ID 过滤..." />
+  <select id="filter-status">
+    <option value="">所有状态码</option>
+    <option value="200">200 OK</option>
+    <option value="429">429 限流</option>
+    <option value="403">403 拒绝</option>
+    <option value="500">500 错误</option>
+  </select>
+  <button onclick="refresh()">🔄 刷新</button>
+  <button onclick="exportCSV()">📥 导出 CSV</button>
+  <span style="margin-left:auto;color:#9ca3af;font-size:12px">
+    刷新间隔：<select id="refresh-interval" onchange="setInterval2()">
+      <option value="5000">5s</option>
+      <option value="15000" selected>15s</option>
+      <option value="60000">60s</option>
+      <option value="0">手动</option>
+    </select>
+  </span>
+</div>
+
+<table id="visitors-table">
+  <thead>
+    <tr>
+      <th>时间</th><th>IP</th><th>投资人 ID</th><th>路径</th>
+      <th>状态</th><th>延迟</th><th>水印</th>
+    </tr>
+  </thead>
+  <tbody id="visitors-tbody">
+    <tr><td colspan="7" style="text-align:center;color:#6b7280">加载中...</td></tr>
+  </tbody>
+</table>
+
+<h2 style="margin-top:32px;font-size:16px">📊 热门路径（今日）</h2>
+<table style="margin-top:12px">
+  <thead><tr><th>路径</th><th>次数</th><th>独立 IP</th></tr></thead>
+  <tbody id="paths-tbody"><tr><td colspan="3" style="text-align:center;color:#6b7280">—</td></tr></tbody>
+</table>
+
+<h2 style="margin-top:32px;font-size:16px">🌍 TOP IP（今日）</h2>
+<table style="margin-top:12px">
+  <thead><tr><th>IP</th><th>请求数</th><th>最后访问</th><th>动作</th></tr></thead>
+  <tbody id="ips-tbody"><tr><td colspan="4" style="text-align:center;color:#6b7280">—</td></tr></tbody>
+</table>
+
+<script>
+const API = "/api/admin/visitors";
+let timer = null;
+let lastData = [];
+
+async function refresh() {
+  try {
+    const r = await fetch(API);
+    if (!r.ok) {
+      document.getElementById("visitors-tbody").innerHTML =
+        `<tr><td colspan="7" style="text-align:center;color:#ef4444">无法连接后端（${r.status}）— 请确认 api_server.py 已启动 + TRIDENT_ANTI_BOT=1</td></tr>`;
+      return;
+    }
+    const d = await r.json();
+    lastData = d.events || [];
+    render(d);
+  } catch (e) {
+    document.getElementById("visitors-tbody").innerHTML =
+      `<tr><td colspan="7" style="text-align:center;color:#ef4444">网络错误: ${e.message}</td></tr>`;
+  }
+}
+
+function render(d) {
+  document.getElementById("kpi-visitors").textContent = d.kpi?.visitors ?? "—";
+  document.getElementById("kpi-requests").textContent = d.kpi?.requests ?? "—";
+  document.getElementById("kpi-429").textContent = d.kpi?.rate_limited ?? "—";
+  document.getElementById("kpi-honeypot").textContent = d.kpi?.honeypot ?? "—";
+
+  const fIp = document.getElementById("filter-ip").value.toLowerCase();
+  const fIid = document.getElementById("filter-iid").value.toLowerCase();
+  const fStatus = document.getElementById("filter-status").value;
+  const rows = lastData.filter(r =>
+    (!fIp || (r.client_ip || "").includes(fIp)) &&
+    (!fIid || (r.api_key_id || "").toLowerCase().includes(fIid)) &&
+    (!fStatus || String(r.status) === fStatus)
+  );
+
+  const tbody = document.getElementById("visitors-tbody");
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280">无数据</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.slice(0, 100).map(r => {
+      const tagClass = r.note && r.note.includes("HONEYPOT") ? "tag-honeypot"
+        : r.status === 200 ? "tag-200"
+        : r.status === 429 ? "tag-429"
+        : r.status === 403 ? "tag-403" : "tag-500";
+      const note = r.note && r.note.includes("HONEYPOT") ? " 🍯" : "";
+      return `<tr>
+        <td>${(r.ts || "").slice(0,19).replace("T"," ")}</td>
+        <td><code>${r.client_ip || "—"}</code></td>
+        <td>${r.api_key_id || "—"}</td>
+        <td><code>${r.path || "—"}</code></td>
+        <td><span class="tag ${tagClass}">${r.status || "?"}${note}</span></td>
+        <td>${(r.latency_ms || 0).toFixed(0)}ms</td>
+        <td style="font-family:monospace;font-size:11px;color:#9ca3af">${(r.watermark || "").slice(0,16)}…</td>
+      </tr>`;
+    }).join("");
+  }
+
+  const paths = d.top_paths || [];
+  document.getElementById("paths-tbody").innerHTML = paths.length === 0
+    ? `<tr><td colspan="3" style="text-align:center;color:#6b7280">—</td></tr>`
+    : paths.map(p => `<tr><td><code>${p.path}</code></td><td>${p.count}</td><td>${p.unique_ips}</td></tr>`).join("");
+
+  const ips = d.top_ips || [];
+  document.getElementById("ips-tbody").innerHTML = ips.length === 0
+    ? `<tr><td colspan="4" style="text-align:center;color:#6b7280">—</td></tr>`
+    : ips.map(p => `<tr>
+        <td><code>${p.ip}</code></td>
+        <td>${p.count}</td>
+        <td>${(p.last_seen || "").slice(0,19).replace("T"," ")}</td>
+        <td><button onclick="blockIp('${p.ip}')" style="background:#991b1b;font-size:11px;padding:4px 8px">🚫 拉黑</button></td>
+      </tr>`).join("");
+}
+
+async function blockIp(ip) {
+  if (!confirm(`确认拉黑 ${ip} 1 小时？`)) return;
+  await fetch("/api/admin/block", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ip, ttl: 3600}),
+  });
+  refresh();
+}
+
+function exportCSV() {
+  const rows = [["时间","IP","投资人ID","方法","路径","状态","延迟ms","水印","备注"]];
+  lastData.forEach(r => rows.push([
+    r.ts, r.client_ip, r.api_key_id, r.method, r.path, r.status,
+    r.latency_ms?.toFixed(0), r.watermark, r.note,
+  ]));
+  const csv = rows.map(r => r.map(c => `"${(c||"").toString().replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `trident_visitors_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function setInterval2() {
+  if (timer) { clearInterval(timer); timer = null; }
+  const ms = parseInt(document.getElementById("refresh-interval").value);
+  if (ms > 0) timer = setInterval(refresh, ms);
+}
+
+["filter-ip","filter-iid","filter-status"].forEach(id =>
+  document.getElementById(id).addEventListener("input", () =>
+    render({events:lastData, kpi:{}, top_paths:[], top_ips:[]})));
+
+refresh();
+setInterval2();
+</script>
+</body>
+</html>

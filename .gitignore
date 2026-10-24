@@ -111,3 +111,9 @@ knowledge_base/
 # - frontend/ (UI code)
 # - showcase/ (interactive demo)
 # - README.md, LICENSE, etc.
+
+# ----- LOCAL WORKSPACE NOISE (not part of the project) -----
+# Cline 多会话共享工作区的说明文件与本地临时脚本目录
+/AGENTS.md
+/fin_sources/
+/social-ai-tools/

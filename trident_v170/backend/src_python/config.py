@@ -247,10 +247,14 @@ LOCAL_LLM_MAX_CONCURRENT = int(os.getenv("LOCAL_LLM_MAX_CONCURRENT", "2"))
 LOCAL_LLM_TIMEOUT    = float(os.getenv("LOCAL_LLM_TIMEOUT", "90"))
 
 # 火山方舟（Volcengine Ark）DeepSeek v4 分析通道 — 国内直连（保留原模型地址，新增此通道）
+# ARK_API_KEY / ARK_MODEL 一律从环境变量读取, 不要把值写进代码或 .env.example:
+#   1) .env 是本机私有文件, 提交到仓库会泄露凭据
+#   2) 即便是模型 endpoint id, 也会被 GitHub Push Protection 误判为 API Key
+#      而直接拦截整个 push (历史中的字面量同样会被扫描, 需一并清理)
 ARK_API_KEY = os.getenv("ARK_API_KEY", "").strip()
 ARK_BASE_URL = os.getenv("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/coding/v3").strip().rstrip("/")
 ARK_MODEL = os.getenv("ARK_MODEL", "").strip()
-# 默认开启；没配 ARK_API_KEY 时 build 阶段会自动跳过（不影响其它模型）
+# 默认开启；没配 ARK_API_KEY / ARK_MODEL 时 build 阶段会自动跳过（不影响其它模型）
 ARK_ENABLED = os.getenv("ARK_ENABLED", "1").strip().lower() not in ("0", "false", "False")
 
 # 被墙行情/新闻源（OKX www.okx.com、BlockBeats api.theblockbeats.news）是否走 env 代理
@@ -388,8 +392,8 @@ if AIPING_ENABLED and AIPING_API_KEY:
         "purpose": ["main"],
         "key_alias": "aiping",
     })
-# 6) 火山方舟 DeepSeek v4（国内直连）— 没配 ARK_API_KEY 时跳过
-if ARK_ENABLED and ARK_API_KEY:
+# 6) 火山方舟 DeepSeek v4（国内直连）— 没配 ARK_API_KEY / ARK_MODEL 时跳过
+if ARK_ENABLED and ARK_API_KEY and ARK_MODEL:
     _AI_MODEL_ROSTER_LIST.append({
         "id": "ark/deepseekv4",
         "request_model": ARK_MODEL,

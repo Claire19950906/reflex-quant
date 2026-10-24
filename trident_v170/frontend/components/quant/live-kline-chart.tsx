@@ -117,6 +117,25 @@ const COLOR_ANOM_BULL = '#22c55e' // green-500  看涨
 const COLOR_ANOM_BEAR = '#ef4444' // red-500    看跌
 const COLOR_ANOM_NEUT = '#fbbf24' // amber-400  中性
 
+// R15+: 价格结构形态 (双顶/双底/吞没/锤子/射击之星/十字星) — 形态即描述, 不预报方向
+const STRUCTURE_COLOR: Record<string, string> = {
+  double_top: '#a855f7',      // purple-500 顶部反转
+  double_bottom: '#a855f7',   // purple-500 底部反转
+  shooting_star: '#ef4444',   // red-500 顶部反转(单K)
+  bearish_engulfing: '#ef4444', // red-500 顶部反转(双K)
+  hammer: '#22c55e',          // green-500 底部反转(单K)
+  bullish_engulfing: '#22c55e', // green-500 底部反转(双K)
+  doji: '#fbbf24',            // amber-400 方向不明
+}
+const STRUCTURE_LABEL: Record<string, string> = {
+  double_top: '双顶', double_bottom: '双底',
+  shooting_star: '射击之星', bearish_engulfing: '看跌吞没',
+  hammer: '锤子', bullish_engulfing: '看涨吞没',
+  doji: '十字星',
+}
+
+interface StructureMarker { ts: number; name: string; name_zh: string; high: number; low: number; close: number; info: any }
+
 // v277+ — 布林带 + Squeeze 期专用色
 const COLOR_BOLL_UP = '#60a5fa'    // blue-400   上轨
 const COLOR_BOLL_MID = '#facc15'   // yellow-400 中轨
@@ -520,9 +539,14 @@ export function LiveKlineChart({ market, events }: Props) {
   const [labelPositions, setLabelPositions] = useState<Record<string, { x: number; y: number }>>({})
   // 需求：K 线周期统一为 10m 默认 + 5m/3m 切换（币安/OKX 原生 3m/5m，10m 后端 5m 聚合）
   const [timeframe, setTimeframe] = useState('10m')
-  // v221.7: 异常识别覆盖范围（30 天）。K 线本身仍只画最近 144 根（密集 2 天），
-  // markers 把 30 天内的异常全部叠加上去；窗口外的 marker 钉在窗口边缘 + label 写 Nx ago。
+  // v221.7: 异常识别覆盖范围（30 天）。
+  // v304: K 线改为全量加载 —— HISTORY_LIMIT 根送进图表, 默认只显示
+  //   VISIBLE_BARS 根(锚定右端), 用户可缩放/拖动回看全部历史。
   const ANOMALY_WINDOW_DAYS = 30
+  // 后端一次返回的最大根数(10m × 4320 ≈ 30 天, 日线 × 3000 ≈ 8 年)
+  const HISTORY_LIMIT = timeframe === '1d' ? 3000 : 4320
+  // 默认可见根数(barSpacing=28 时约铺满一屏)
+  const VISIBLE_BARS = timeframe === '1d' ? 60 : 48
 
   // 当前品种直接关联事件（按 target_asset 精确/别名匹配，避免跨品种误标）
   const relatedEvents = useMemo(
@@ -585,6 +609,7 @@ export function LiveKlineChart({ market, events }: Props) {
   // 最近一次拉到的 K 线 + anomalies，供 crosshair 查表
   const [chartBars, setChartBars] = useState<HistoryBar[]>([])
   const [chartAnomalies, setChartAnomalies] = useState<AnomalyMarker[]>([])
+  const [chartStructures, setChartStructures] = useState<StructureMarker[]>([])
 
   // 建图表（主题切换重建）
   useEffect(() => {
@@ -611,6 +636,14 @@ export function LiveKlineChart({ market, events }: Props) {
         tickMarkFormatter: shTickFormatter,
         timeVisible: true,
         secondsVisible: false,
+        // v304: 默认放大到截图那种程度 —— barSpacing 14 → 28
+        //   28px/根, 一屏约 45~55 根 10m K 线, 实体和影线细节清晰可辨
+        barSpacing: 28,
+        minBarSpacing: 4,
+        maxBarSpacing: 60,
+        rightOffset: 6,
+        fixLeftEdge: false,
+        lockVisibleTimeRangeOnResize: true,
       },
       localization: { timeFormatter: shTickFormatter },
     })
@@ -740,20 +773,82 @@ export function LiveKlineChart({ market, events }: Props) {
     let alive = true
     setMissing('')
     setError(null)
-    fetch(`${API_BASE}/market/history/${meta.asset}?interval=${timeframe}&limit=2160&days_back=${ANOMALY_WINDOW_DAYS}`, { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d: HistoryResp) => {
+    // R15+: 并行拉价格结构形态 (失败不影响 K 线渲染)
+    const structuresP = fetch(
+      `${API_BASE}/tech/structure?symbol=${encodeURIComponent(meta.asset)}&days=${ANOMALY_WINDOW_DAYS}`,
+      { cache: 'no-store' },
+    ).then((r) => (r.ok ? r.json() : { structures: [] })).catch(() => ({ structures: [] }))
+    // v304: 异常点改为"先算当前窗口并落库, 再读累积历史" ——
+    //   单纯读 /tech/anomaly 只反映当前 30 天, 历史累积的异常无法回看。
+    //   persist 默认 true, 每次调用都会写入 anomaly_history(幂等, 永不删除)。
+    const anomalyP = fetch(
+      `${API_BASE}/tech/anomaly?symbol=${encodeURIComponent(meta.asset)}` +
+      `&interval=${encodeURIComponent(timeframe)}&days=${ANOMALY_WINDOW_DAYS}&persist=true`,
+      { cache: 'no-store' },
+    )
+      .then((r) => (r.ok ? r.json() : { anomalies: [] }))
+      .catch(() => ({ anomalies: [] }))
+      .then(async (a: any) => {
+        // 再拉累积历史(长期保存的异常点, 供回看与反思)
+        try {
+          const h = await fetch(
+            `${API_BASE}/tech/anomaly-history?symbol=${encodeURIComponent(meta.asset)}` +
+            `&interval=${encodeURIComponent(timeframe)}&limit=3000`,
+            { cache: 'no-store' },
+          )
+          if (h.ok) {
+            const hd = await h.json()
+            if (Array.isArray(hd.anomalies) && hd.anomalies.length) {
+              return { anomalies: hd.anomalies, persisted: a.persisted ?? 0 }
+            }
+          }
+        } catch { /* 历史读不到就用当次计算结果 */ }
+        return { anomalies: a.anomalies ?? [], persisted: a.persisted ?? 0 }
+      })
+    Promise.all([
+      fetch(`${API_BASE}/market/history/${meta.asset}?interval=${timeframe}&limit=${HISTORY_LIMIT}&days=${ANOMALY_WINDOW_DAYS}`, { cache: 'no-store' }),
+      structuresP,
+      anomalyP,
+    ]).then(([r, struct, anom]) => {
+      if (!alive || !candleRef.current || !chartRef.current) return
+      if (!r.ok) return Promise.reject(new Error(`HTTP ${r.status}`))
+      return Promise.all([r.json(), Promise.resolve(struct), Promise.resolve(anom)])
+    })
+      .then((triple) => {
+        // 上游 then 有两处 early return（!alive / !candleRef / !chartRef / !r.ok），
+        // 所以这里收到的可能是 undefined。strict 模式下直接解构会报错，先挡一道。
+        if (!triple) return
+        const [d, struct, anom] = triple as [HistoryResp, any, any]
         if (!alive || !candleRef.current || !chartRef.current) return
         const palette = isDark ? CHART_THEME.dark : CHART_THEME.light
         const allBars = [...(d.bars ?? [])].sort((a, b) => a.time - b.time)
-        const anomalies = (d.anomalies ?? []) as AnomalyMarker[]
-        // v221.7: K 线密集画最近 144 根（2 天），但 markers 用全部 30 天异常
-        const DISPLAY_BARS = 144
-        const bars = allBars.length > DISPLAY_BARS ? allBars.slice(-DISPLAY_BARS) : allBars
-        // v278 — 存「全量 K 线」给 pivot/orderbook 等需要 24h+ 跨度的功能用（pivotPeriodForTimeframe 3m→480 / 5m→288 / 10m→144 / 1d→7 等）
-        //       旧版存截断后 bars（144 根）会令 3m/5m 视图下 period > chartBars.length，pivot 静默失败
+        const structures: StructureMarker[] = Array.isArray(struct?.structures)
+          ? struct.structures : []
+        ;(chartRef.current as any).__structures = structures
+        // v304: 异常点来自 anomaly_history(累积保存), 后端结构为
+        //   {ts, kind, pattern, evidence, score}; 前端 AnomalyMarker 用
+        //   {ts, type, direction, indicator}, 这里做映射。
+        const rawAnoms: any[] = Array.isArray(anom?.anomalies) ? anom.anomalies : []
+        const anomalies: AnomalyMarker[] = rawAnoms.map((a: any) => {
+          const kind = a.kind ?? a.type ?? 'anomaly'
+          const direction: AnomalyMarker['direction'] =
+            kind === 'top_reversal' ? 'bearish'
+              : kind === 'bottom_reversal' ? 'bullish' : 'neutral'
+          const ev: string[] = Array.isArray(a.evidence) ? a.evidence : []
+          return {
+            ts: a.ts ?? null,
+            type: a.pattern ? String(a.pattern) : kind,
+            direction,
+            indicator: ev.length ? ev.join('+') : (a.kind ?? kind),
+          }
+        })
+        // v304: 不再截断 DISPLAY_BARS —— 全量历史 K 线送进图表(setData),
+        //   默认可见根数由 VISIBLE_BARS 控制。用户可自由缩放/拖动回看全部历史。
+        const bars = allBars
+        // v278 — 存「全量 K 线」给 pivot/orderbook 等需要 24h+ 跨度的功能用
         setChartBars(allBars)
         setChartAnomalies(anomalies)
+        setChartStructures(structures)
         setMissing(d.missing || (bars.length ? '' : '该品种暂无历史 K 线数据'))
         candleRef.current.setData(
           bars.map((b) => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })),
@@ -862,10 +957,45 @@ export function LiveKlineChart({ market, events }: Props) {
         belowMarkersRef.current?.detach()
         belowMarkersRef.current = null
 
-        const aboveMarks: any[] = []   // 柱上：calendar + high_news + signal + trade_point（HTML overlay 区分 top:4/28/52/76）
-        const inBarMarks: any[] = []   // 柱内：当前为空（v283+ 信号全部上移到 aboveBar，柱体只留 native arrow）
-        const belowMarks: any[] = []   // 柱下：anomaly + news（HTML overlay 区分 bottom:20/44）
+        const aboveMarks: any[] = []   // 柱上：calendar + news + signal + trade_point（HTML overlay 区分 top:4/28/52/76）
+        const inBarMarks: any[] = []   // 柱内：价格结构形态（structure，因果形态识别）
+        const belowMarks: any[] = []   // 柱下：仅异常点 anomaly（v304: 事件文字已全部上移）
         const newLabels: MarkerLabel[] = []
+
+        // R15+: 价格结构形态 —— 用柱内 inBar 圆形 marker 显示
+        //   因果可识别, 形态即描述, 不预报方向
+        for (const s of structures) {
+          const alignedT = alignTime(s.ts, bars)
+          if (alignedT == null) continue
+          const color = STRUCTURE_COLOR[s.name] ?? '#fbbf24'
+          const shape =
+            s.name === 'double_top' || s.name === 'double_bottom' ? 'square' :
+            s.name === 'shooting_star' || s.name === 'hammer' ? 'arrowDown' :
+            'circle'
+          inBarMarks.push({
+            time: alignedT as Time,
+            position: 'inBar' as const,
+            color,
+            shape: shape as any,
+            text: '',
+          })
+          // 颈线/关键价位: 双顶双底画水平线参考
+          if (s.info?.level != null) {
+            try {
+              const ref = candleRef.current
+              if (ref) {
+                ref.createPriceLine({
+                  price: s.info.level,
+                  color: 'rgba(168,85,247,0.45)',
+                  lineWidth: 1,
+                  lineStyle: 3,                  // dashed
+                  axisLabelVisible: false,
+                  title: `${STRUCTURE_LABEL[s.name] ?? s.name} ${s.info.level.toFixed(2)}`,
+                })
+              }
+            } catch { /* 价格线已存在时抛错忽略 */ }
+          }
+        }
 
         // ── v283+ 取消时间窗口过滤 ───────────────────────────────────────
         // 历史版本有 `if (ts < t0 - 3600 || ts > t1 + 3600) continue` —— 这是
@@ -1029,7 +1159,9 @@ export function LiveKlineChart({ market, events }: Props) {
             }
           }
 
-          // ── (d) 柱下方 belowBar：🟥 淡红字 普通新闻 (HOLD 无 vip_tag) ──
+          // ── (d) 柱上方 aboveBar：🟥 淡红字 普通新闻 ──
+          //   v304 用户要求: K 线下方只放异常点, 事件内容文字一律放上方。
+          //   原为 belowBar, 与异常点抢同一层导致拥挤/遮挡。
           for (const e of relatedEvents) {
             if (e.action !== 'HOLD') continue
             if ((e.vip_tag ?? '').trim()) continue
@@ -1038,9 +1170,9 @@ export function LiveKlineChart({ market, events }: Props) {
             const alignedT = alignTime(ts, bars)
             const rowIndex = nextRow('news', alignedT)
             const fullText = (e.news_text ?? '').replace(/\s+/g, ' ').trim() || '普通新闻'
-            belowMarks.push({
+            aboveMarks.push({
               time: alignedT as Time,
-              position: 'belowBar' as const,
+              position: 'aboveBar' as const,
               color: COLOR_NEWS,
               shape: 'circle' as const,
               text: '',
@@ -1053,13 +1185,15 @@ export function LiveKlineChart({ market, events }: Props) {
                 time: alignedT,
                 text: labelText,
                 color: COLOR_NEWS,
-                position: 'belowBar',
+                position: 'aboveBar',
                 rowIndex,
               })
             }
           }
 
           // ── (e) 柱下方 belowBar：⭐ 彩色异动 (K 线异常，按 direction 分色) ──
+          //   v304 用户要求: 所有异常点一律在 K 线下方, 不论方向/颜色;
+          //   上方留给日历与事件内容文字。
           for (const a of anomalies) {
             if (a.ts == null) continue
             let alignedT = alignTime(a.ts, bars)
@@ -1099,6 +1233,17 @@ export function LiveKlineChart({ market, events }: Props) {
         }
 
         // v221.9: 三个 position 各自 createSeriesMarkers
+        // 先 detach 旧的 (防止 reload 累积)
+        // 用局部函数而不是内联 `ref.current?.detach()`: strict 模式下 CFA 会把
+        // .current 收窄成 null(下方才有非空赋值), 内联可选链会报 "detach 不存在于
+        // never"。走函数参数可以把类型还原成声明的联合类型, 不丢类型信息。
+        const detachMarkers = (r: { current: { detach: () => void } | null }) => {
+          r.current?.detach()
+          r.current = null
+        }
+        detachMarkers(aboveMarkersRef)
+        detachMarkers(inBarMarkersRef)
+        detachMarkers(belowMarkersRef)
         if (aboveMarks.length) {
           aboveMarkersRef.current = createSeriesMarkers(candleRef.current, aboveMarks)
         }
@@ -1109,7 +1254,19 @@ export function LiveKlineChart({ market, events }: Props) {
           belowMarkersRef.current = createSeriesMarkers(candleRef.current, belowMarks)
         }
         setMarkerLabels(newLabels)
-        window.requestAnimationFrame(() => chartRef.current?.timeScale().fitContent())
+        // R16+/v304: 锚定右端, 默认只显示最后 VISIBLE_BARS 根(铺满一屏)。
+        //   不用 fitContent() —— 那会把全量历史(数千根)挤成一条线。
+        window.requestAnimationFrame(() => {
+          const ts = chartRef.current?.timeScale()
+          if (!ts) return
+          const total = bars.length
+          if (total === 0) {
+            ts.fitContent()
+            return
+          }
+          const visible = Math.min(total, VISIBLE_BARS)
+          ts.setVisibleLogicalRange({ from: total - visible - 4, to: total - 1 })
+        })
       })
       .catch(() => {
         if (alive) setError('K 线加载失败')
@@ -1492,12 +1649,12 @@ export function LiveKlineChart({ market, events }: Props) {
             </button>
           ))}
         </div>
-        {/* v221.7: 异常识别覆盖范围徽章（K 线仍画 2 天密集，markers 覆盖 30 天） */}
+        {/* v304: K 线已改为全量历史加载 + 可缩放回看, 异常点累积保存(永不删除) */}
         <span
           className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
-          title={`K 线密集 2 天；markers 覆盖过去 ${ANOMALY_WINDOW_DAYS} 天`}
+          title={`全量 K 线历史已加载（最多 ${HISTORY_LIMIT} 根），可缩放/拖动回看；异常点来自 anomaly_history 累积记录，扫描窗口 ${ANOMALY_WINDOW_DAYS} 天`}
         >
-          异常范围 {ANOMALY_WINDOW_DAYS}d
+          全量历史 · 异常累积
         </span>
 
         {/* v277+ — 布林带主图叠加 toggle */}
@@ -1653,7 +1810,7 @@ export function LiveKlineChart({ market, events }: Props) {
           <span
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px]"
             style={{ background: 'linear-gradient(90deg, rgba(34,197,94,0.12), rgba(239,68,68,0.12), rgba(251,191,36,0.12))' }}
-            title={`过去 ${ANOMALY_WINDOW_DAYS} 天内 ${chartAnomalies.length} 个异常（按 direction 分色，⭐ 可点按 AI 归因）`}
+            title={`累积历史共 ${chartAnomalies.length} 个异常点（来自 anomaly_history，永不删除；按 direction 分色，⭐ 可点按 AI 归因）`}
           >
             <span style={{ color: COLOR_ANOM_BULL }}>⭐</span> {chartAnomalies.length} 异动
           </span>
@@ -1749,9 +1906,10 @@ export function LiveKlineChart({ market, events }: Props) {
               · 日历   (calendar)    aboveBar top:28 + rowIndex*24
               · 高优新闻(high_news)  aboveBar top:52 + rowIndex*24
               · 交易信号(signal)     aboveBar top:76 + rowIndex*24   (v283+ 从 inBar 上移)
-              · 异常   (anomaly)     belowBar bottom:20 + rowIndex*24  (可点按 AI 归因)
-              · 普通新闻(news)       belowBar bottom:44 + rowIndex*24
-            v283+ 硬约束：所有文字标签严格在 aboveBar / belowBar 两区，柱体本身永远干净。
+              · 普通新闻(news)       aboveBar top:100+ rowIndex*24   (v304 从下方上移, 独占第 5 层)
+              · 异常   (anomaly)     belowBar bottom:20 + rowIndex*24 (v304: 下方独占, 可点按 AI 归因)
+            v283+/v304 硬约束：文字标签严格在 aboveBar / belowBar 两区，柱体本身永远干净。
+              v304 用户要求：K 线下方只放异常点，事件内容文字（日历/新闻/信号）一律在上方。
               ① 文字用事件本身颜色（lbl.color）
               ② 容器 pointer-events: none，仅异常可点击
               ③ 堆叠 >3 折叠为 "+N more" chip，不再向柱体方向扩张 */}
@@ -1781,10 +1939,12 @@ export function LiveKlineChart({ market, events }: Props) {
                 if (lbl.kind === 'trade_point') baseTop = 4
                 else if (lbl.kind === 'high_news') baseTop = 52
                 else if (lbl.kind === 'signal') baseTop = 76
+                // v304: news(事件内容文字) 已上移, 独占第 5 层, 不与日历抢 top:28
+                else if (lbl.kind === 'news') baseTop = 100
                 chipLayerStyle = { top: `${baseTop + 3 * 24}px`, bottom: 'auto' }
               } else {
-                const baseBottom = lbl.kind === 'news' ? 44 : 20
-                chipLayerStyle = { bottom: `${baseBottom + 3 * 24}px`, top: 'auto' }
+                // v304: 下方只剩 anomaly → 统一 bottom:20
+                chipLayerStyle = { bottom: `${20 + 3 * 24}px`, top: 'auto' }
               }
               return (
                 <div
@@ -1872,11 +2032,12 @@ export function LiveKlineChart({ market, events }: Props) {
               if (lbl.kind === 'trade_point') baseTop = 4
               else if (lbl.kind === 'high_news') baseTop = 52
               else if (lbl.kind === 'signal') baseTop = 76
+              // v304: news(事件内容文字) 独占第 5 层 top:100
+              else if (lbl.kind === 'news') baseTop = 100
               layerStyle = { top: `${baseTop + lbl.rowIndex * 24}px`, bottom: 'auto' }
             } else {
-              // 柱下方：anomaly bottom:20 / news bottom:44
-              const baseBottom = lbl.kind === 'news' ? 44 : 20
-              layerStyle = { bottom: `${baseBottom + lbl.rowIndex * 24}px`, top: 'auto' }
+              // v304: 柱下方只剩异常点 → 统一 bottom:20
+              layerStyle = { bottom: `${20 + lbl.rowIndex * 24}px`, top: 'auto' }
             }
             // 异常 marker 加 cursor: pointer + onClick → AI 归因
             const isAnomaly = lbl.kind === 'anomaly'

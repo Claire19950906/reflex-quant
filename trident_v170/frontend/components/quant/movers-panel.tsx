@@ -35,7 +35,7 @@ import {
   type Time,
 } from 'lightweight-charts'
 import { ExternalLink } from 'lucide-react'
-import { API_BASE, fetchWithFallback } from '@/lib/api'
+import { API_BASE, BRIDGE_BASE, fetchWithFallback } from '@/lib/api'
 import { useIsDark } from '@/hooks/use-is-dark'
 import { pivotPoint, pivotPeriodForTimeframe } from '@/lib/technical-indicators'
 import GateReflectionList from '@/components/quant/gate-reflection-list'
@@ -113,7 +113,7 @@ type MoverItem = {
 
 type HistoryBar = { time: number; open: number; high: number; low: number; close: number; volume?: number }
 type HistoryPoint = { time: number; close: number }
-type HistoryResp = { points: HistoryPoint[]; bars: HistoryBar[]; count: number; missing: string }
+type HistoryResp = { points: HistoryPoint[]; bars: HistoryBar[]; count: number; missing: string; ok?: boolean; hint?: string; error?: string }
 
 // 资产代号 → 中文名,集中定义在 lib/asset-meta.ts (v302+ P0 重构,消除 4 处重复)
 import { ASSET_META as ASSET_META_LIB } from '@/lib/asset-meta'
@@ -500,22 +500,90 @@ const MACD_COLORS = {
 // v172: 异动标签具体化（用户反馈"大K线徒增量能没识别"——光"量能异动"三字看不出触发原因）
 //   拼装优先级：'both' 同时给 pct + 量比；'volume' 只给量比；'pct' 只给 pct
 //   示例：'+3.2%' / '2.5×量' / '+3.2% 2.5×量'
+// v303 R12：异动标签改为展示**技术指标依据**（旧版只有模糊的涨跌幅/量比）
+//   信号来自后端 tech_signals 的 signal_json，每条 hit = {k, v, w}
+//   没有命中明细时不编造标签，直接退回类型名
+const TECH_TYPE_LABEL: Record<string, string> = {
+  divergence: '背离',
+  volume: '量能',
+  support: '支撑',
+  volatility: '波动',
+  reversal: '转折',
+  liquidation: '爆单',
+  pct: '涨跌幅',
+  combo: '组合',
+}
+
+function techHitLabel(h: { k: string; v: unknown }): string | null {
+  const k = h.k
+  const v = h.v as any
+  switch (k) {
+    case 'pct_1d':
+    case 'pct_3d':
+      return typeof v === 'number' ? `${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : null
+    case 'vol_extreme':
+    case 'vol_spike':
+      return typeof v === 'number' ? `${v.toFixed(1)}×量` : null
+    case 'atr_expand':
+      return typeof v === 'number' ? `波动${v.toFixed(1)}×` : null
+    case 'rsi_overbought':
+    case 'rsi_oversold':
+    case 'rsi_extreme':
+      return typeof v === 'number' ? `RSI${v.toFixed(0)}` : null
+    case 'div_top':
+      return v && typeof v === 'object' ? `顶背离 RSI${v.rsi_a}→${v.rsi_b}` : '顶背离'
+    case 'div_bottom':
+      return v && typeof v === 'object' ? `底背离 RSI${v.rsi_a}→${v.rsi_b}` : '底背离'
+    case 'macd_top_div':
+      return 'MACD顶背离'
+    case 'macd_bot_div':
+      return 'MACD底背离'
+    case 'ema_golden':
+      return '金叉'
+    case 'ema_death':
+      return '死叉'
+    case 'support_test':
+      return v && typeof v === 'object' ? `支撑位${Number(v.level).toFixed(2)}` : '支撑位'
+    case 'liquidation':
+      return v && typeof v === 'object' && v.total_usd
+        ? `爆单$${(v.total_usd / 1e6).toFixed(1)}M`
+        : '爆单'
+    case 'reversal_top':
+    case 'reversal_bottom':
+      return typeof v === 'number' ? `转折${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : '转折点'
+    default:
+      return null
+  }
+}
+
 function abnormalLabel(a: AbnormalPoint): string {
-  const parts: string[] = []
   const t = a.trigger_type
-  // v221：新增 'swing' 类型（5 根累计 swing 触发，pct 为累计涨跌幅）
-  if (a.pct_change != null && (t === 'pct' || t === 'both' || t === 'swing')) {
-    const pct = a.pct_change
-    parts.push(`${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`)
+  const base = TECH_TYPE_LABEL[t]
+  // v221：swing 拐点仍沿用旧文案
+  if (t === 'swing' || t === 'cum4') {
+    const parts: string[] = []
+    if (a.pct_change != null) {
+      parts.push(`${a.pct_change >= 0 ? '+' : ''}${a.pct_change.toFixed(1)}%`)
+    }
+    parts.push('连摆')
+    return parts.join(' ')
   }
-  if (a.vol_ratio != null && (t === 'volume' || t === 'both')) {
-    parts.push(`${a.vol_ratio.toFixed(1)}×量`)
+  // v303 R12：优先展示真实技术指标命中项
+  const hits = Array.isArray((a as any).signals) ? (a as any).signals : []
+  const labels = hits
+    .map((h: any) => techHitLabel(h))
+    .filter((x: string | null): x is string => !!x)
+  const seen = new Set<string>()
+  const uniq = labels.filter((x: string) => (seen.has(x) ? false : (seen.add(x), true)))
+  if (uniq.length) return uniq.slice(0, 3).join(' ')
+  // 无明细时只给类型名，不编造数值
+  if (base) return base
+  const parts: string[] = []
+  if (a.pct_change != null) {
+    parts.push(`${a.pct_change >= 0 ? '+' : ''}${a.pct_change.toFixed(1)}%`)
   }
-  if (t === 'swing') {
-    parts.push('连摆')  // 标识滚动摆动触发
-  }
-  if (!parts.length) return '异动'
-  return parts.join(' ')
+  if (a.vol_ratio != null) parts.push(`${a.vol_ratio.toFixed(1)}×量`)
+  return parts.length ? parts.join(' ') : '异动'
 }
 
 // 需求2：异动点方向配色（涨绿 / 跌红，与 K 线涨跌色一致；无涨跌数据时中性金）
@@ -1109,35 +1177,13 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
     try {
       const now = Math.floor(Date.now() / 1000)
       const from30 = now - 30 * 86400
-      // 并发拉：bars / calendar / impact / signals
-      const [barsR, calR, impactR, signalR] = await Promise.all([
-        fetch(`${API_BASE}/market/history/${encodeURIComponent(selected)}?interval=4h&limit=180`, { cache: 'no-store' }),
-        fetch(`${API_BASE}/v189/calendar/events-for-asset?asset=${encodeURIComponent(selected)}&hours=720&star_min=3`, { cache: 'no-store' }),
-        fetch(`${API_BASE}/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&severity_min=low&limit=200`, { cache: 'no-store' }),
-        fetch(`${API_BASE}/trading/signals?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&hide_neutral=1&limit=500`, { cache: 'no-store' }).catch(() => null),
+      // 并发拉：bars / calendar / impact / signals — 全部走 fetchWithFallback (8000 死, bridge 接管)
+      const [barsJ, calJ, impactJ, signalJ] = await Promise.all([
+        fetchWithFallback<{ bars?: any[]; missing?: string }>(`/market/history/${encodeURIComponent(selected)}?interval=4h&limit=180`),
+        fetchWithFallback<{ events?: any[] }>(`/v189/calendar/events-for-asset?asset=${encodeURIComponent(selected)}&hours=720&star_min=3`),
+        fetchWithFallback<{ items?: any[] }>(`/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&severity_min=low&limit=200`),
+        fetchWithFallback<any>(`/trading/signals?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&hide_neutral=1&limit=500`).catch(() => null),
       ])
-      const barsJ = barsR.ok ? await barsR.json() : { bars: [] }
-      const calJ = calR.ok ? await calR.json() : { events: [] }
-      // impact/by-asset: 8000 一直 500, fallback 到 8100 bridge
-      let impactJ: any
-      if (impactR.ok) {
-        impactJ = await impactR.json()
-      } else {
-        const path = `/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&severity_min=low&limit=200`
-        impactJ = await fetchWithFallback<{ items?: any[] }>(path)
-      }
-      // trading/signals: 8000 一直 500, fallback 到 8100 bridge
-      let signalJ: any = null
-      if (signalR && signalR.ok) {
-        signalJ = await signalR.json()
-      } else {
-        const path = `/trading/signals?asset=${encodeURIComponent(selected)}&from_ts=${from30}&to_ts=${now}&hide_neutral=1&limit=500`
-        try {
-          signalJ = await fetchWithFallback(path)
-        } catch {
-          signalJ = null
-        }
-      }
       const newBars = Array.isArray(barsJ?.bars) ? barsJ.bars : []
       const newCal = Array.isArray(calJ?.events) ? calJ.events : []
       const newImpact = Array.isArray(impactJ?.items) ? impactJ.items : []
@@ -1354,9 +1400,11 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
     const key = `${asset}:${ts}`
     setAttribLoading(key)
     try {
-      const r = await fetch(`${API_BASE}/market/attribute?asset=${encodeURIComponent(asset)}&ts=${ts}`, { cache: 'no-store' })
-      const d = r.ok ? await r.json() : null
-      const attr: Attribution | null = d?.attribution ?? d ?? null
+      // v303 Q1 cont: 8000 死, 改用 fetchWithFallback
+      const d = (await fetchWithFallback<any>(
+        `/market/attribute?asset=${encodeURIComponent(asset)}&ts=${ts}`,
+      )) as { attribution?: Attribution | null } | null
+      const attr: Attribution | null = d?.attribution ?? (d as Attribution | null) ?? null
       setAttribMap((m) => ({ ...m, [key]: attr }))
     } catch {
       setAttribMap((m) => ({ ...m, [key]: { error: 'AI 归因失败' } }))
@@ -1370,8 +1418,8 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
     let alive = true
     const load = () => {
       // v170: 透传 timeframe 让后端异动检测切到对应 interval
-      fetch(`${API_BASE}/market/movers?timeframe=${timeframe}`, { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      // v303 Q1 cont: 8000 死, 改用 fetchWithFallback
+      fetchWithFallback<{ items?: MoverItem[] }>(`/market/movers?timeframe=${timeframe}`)
         .then((d) => {
           if (!alive) return
           const list = Array.isArray(d.items) ? (d.items as MoverItem[]) : []
@@ -1396,8 +1444,8 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
   // v2026.10.15: 响应 page 层统一 tick. externalRefreshToken 改变时立即拉取
   useEffect(() => {
     if (externalRefreshToken && externalRefreshToken > 0) {
-      fetch(`${API_BASE}/market/movers?timeframe=${timeframe}`, { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      // v303 Q1 cont: 8000 死, 改用 fetchWithFallback
+      fetchWithFallback<{ items?: MoverItem[] }>(`/market/movers?timeframe=${timeframe}`)
         .then((d) => {
           const list = Array.isArray(d.items) ? (d.items as MoverItem[]) : []
           setItems(list)
@@ -1599,12 +1647,34 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
     // v220：30d 走 4h × 180 = 30 天；其他按时段对应 limit
     const limit = TF_TO_BAR_LIMIT[timeframe] ?? 144
     const interval = TF_TO_INTERVAL[timeframe] ?? timeframe
-    fetch(`${API_BASE}/market/history/${selected}?interval=${interval}&limit=${limit}`, { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    // v303 Q1 cont: 8000 已死, 改用 fetchWithFallback 走 bridge (8100) — K线主体数据
+    fetchWithFallback<HistoryResp>(`/market/history/${selected}?interval=${interval}&limit=${limit}`)
       .then(async (d: HistoryResp) => {
+        if (!d) return Promise.reject(new Error('no response'))
+        if (!alive) return
+        // 后端 "ok:false + missing" 是软空态（有明确原因+回填建议），不要 reject
+        //   否则走 catch 会吞掉提示、显示通用"走势数据加载失败"
+        //   只有"完全拿不到响应/网络挂了"才走 catch
+        if (d.ok === false) {
+          const msg = d.missing || d.hint || d.error || 'no K-line data'
+          setMissing(msg)
+          // 清空画布，避免显示上一次选中的残留 K 线
+          try { candleRef.current?.setData([]) } catch { /* noop */ }
+          return
+        }
         if (!alive || !candleRef.current || !chartRef.current) return
         const palette = isDark ? CHART_THEME.dark : CHART_THEME.light
-        const bars = [...(d.bars ?? [])].sort((a, b) => a.time - b.time)
+        // v303 Q1 cont: 后端 bar 可能只给 ts 不给 time (bridge 早期版本), 统一归一化。
+        // 不做这步 → lightweight-charts 收到 time=undefined 直接抛错 → "走势数据加载失败"
+        const rawBars = (d.bars ?? []) as Array<HistoryBar & { ts?: number }>
+        const bars = rawBars
+          .map((b) => ({ ...b, time: b.time ?? (b as { ts?: number }).ts ?? 0 }))
+          .filter((b) => Number.isFinite(b.time) && b.time > 0)
+          .sort((a, b) => a.time - b.time)
+        if (rawBars.length > 0 && bars.length === 0) {
+          setMissing('K线数据缺少时间字段(ts/time)，无法绘制')
+          return
+        }
         setMissing(d.missing || (bars.length ? '' : '该品种暂无历史 K 线数据'))
         candleRef.current.setData(
           bars.map((b) => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })),
@@ -1694,31 +1764,30 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
           created_at: string | null
         }
         const horizonH = Math.max(24, Math.ceil((t1 - t0) / 3600) + 12)
-        const calP = fetch(
-          `${API_BASE}/v189/calendar/events-for-asset?asset=${encodeURIComponent(selected)}&hours=${horizonH}&star_min=3`,
-          { cache: 'no-store' },
-        ).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        // v275: 蓝色事件 K 线影响验证
-        const calImpactP = fetch(
-          `${API_BASE}/v275/calendar/impact-by-asset?asset=${encodeURIComponent(selected)}&hours=${horizonH}&star_min=3&window_min=30`,
-          { cache: 'no-store' },
-        ).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        const impactP = fetch(
-          `${API_BASE}/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${t0 - 3600}&to_ts=${t1 + 3600}&severity_min=low&limit=200`,
-          { cache: 'no-store' },
-        ).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        const signalP = fetch(
-          // v221.3: limit 20→500（30 天窗口下覆盖密度），新增 from_ts/to_ts 时间窗
-          //         hide_neutral=1 默认过滤 HOLD+score=0（无方向噪声）
-          `${API_BASE}/trading/signals?asset=${encodeURIComponent(selected)}&limit=500&from_ts=${t0 - 3600}&to_ts=${t1 + 3600}&hide_neutral=1`,
-          { cache: 'no-store' },
-        ).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        // v221.3: 拐点图层（swing/cum4 + 事前氛围核实）
-        const swingP = fetch(
-          `${API_BASE}/abnormal/swing-points?asset=${encodeURIComponent(selected)}&timeframe=${encodeURIComponent(timeframe === '10m' ? '10m' : '3m')}&pre_window_hours=4`,
-          { cache: 'no-store' },
-        ).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        const [calRes, calImpactRes, impactRes, signalRes, swingRes] = await Promise.all([calP, calImpactP, impactP, signalP, swingP])
+        // v303 Q1 cont: 5 个并发全部走 fetchWithFallback — 8000 死, bridge 接管
+        const [calRes, calImpactRes, impactRes, signalRes, swingRes] = await Promise.all([
+          fetchWithFallback<{ events?: any[] }>(
+            `/v189/calendar/events-for-asset?asset=${encodeURIComponent(selected)}&hours=${horizonH}&star_min=3`,
+          ).catch(() => null),
+          // v275: 蓝色事件 K 线影响验证
+          fetchWithFallback<{ events?: any[] }>(
+            `/v275/calendar/impact-by-asset?asset=${encodeURIComponent(selected)}&hours=${horizonH}&star_min=3&window_min=30`,
+          ).catch(() => null),
+          fetchWithFallback<{ items?: any[] }>(
+            `/v201/impact/by-asset?asset=${encodeURIComponent(selected)}&from_ts=${t0 - 3600}&to_ts=${t1 + 3600}&severity_min=low&limit=200`,
+          ).catch(() => null),
+          fetchWithFallback<any>(
+            // v221.3: limit 20→500（30 天窗口下覆盖密度），新增 from_ts/to_ts 时间窗
+            //         hide_neutral=1 默认过滤 HOLD+score=0（无方向噪声）
+            `/trading/signals?asset=${encodeURIComponent(selected)}&limit=500&from_ts=${t0 - 3600}&to_ts=${t1 + 3600}&hide_neutral=1`,
+          ).catch(() => null),
+          // v221.3: 拐点图层（swing/cum4 + 事前氛围核实）
+          // 类型用 any 而非 any[]: bridge(8100) 可能返 {items:[...]} / {points:[...]},
+          // 只有 any 才表达得了下面那三种形态的兼容分支（与 signalRes 同理）。
+          fetchWithFallback<any>(
+            `/abnormal/swing-points?asset=${encodeURIComponent(selected)}&timeframe=${encodeURIComponent(timeframe === '10m' ? '10m' : '3m')}&pre_window_hours=4`,
+          ).catch(() => null),
+        ])
 
         // v275: 把 K 线影响验证结果按 ts_bj 索引
         const calImpactMap: Record<number, any> = {}
@@ -1735,9 +1804,34 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         //       bars 用当前 timeframe 的新 bars（lightweight-charts 不支持混合时间粒度）
         const newCalendar = calEvents
         const newImpact = impactRes?.items ?? []
-        const newSignals = Array.isArray(signalRes) ? signalRes : []
-        const newAbnormals = abnormals
-        const newSwing = Array.isArray(swingRes) ? swingRes : []
+        // v303 Q1 cont: bridge (8100) 的 /trading/signals 返回 {ok, signals:[...]},
+        // 老 8000 返回裸 array — 两种都兼容, 否则 signals marker 恒空
+        const newSignals = Array.isArray(signalRes)
+          ? signalRes
+          : (Array.isArray(signalRes?.signals) ? signalRes.signals
+            : (Array.isArray(signalRes?.items) ? signalRes.items : []))
+        // v303 Q1 cont: swing 同理 (bridge 可能返 {items:[...]})
+        const swingAll = Array.isArray(swingRes)
+          ? swingRes
+          : (Array.isArray(swingRes?.items) ? swingRes.items
+            : (Array.isArray(swingRes?.points) ? swingRes.points : []))
+        // v221.6: 后端 swing-points 现已返回全量 scan_abnormals 结果。
+        //   拆两路 —— swing/cum4 走拐点图层，其余(volume/pct/big_candle)走 belowBar 异动圆点。
+        //   修复前 abnormals 只有 localStorage 来源，从不重新拉取 → 量能点恒为空。
+        const newSwing = swingAll.filter(
+          (p: any) => p?.trigger_type === 'swing' || p?.trigger_type === 'cum4',
+        )
+        const fetchedAbnormals = swingAll
+          .filter((p: any) => p?.trigger_type && p.trigger_type !== 'swing' && p.trigger_type !== 'cum4')
+          .map((p: any) => ({
+            ts: Number(p.ts ?? 0),
+            pct_change: p.pct_change ?? null,
+            vol_ratio: p.vol_ratio ?? null,
+            trigger_type: p.trigger_type,
+            interval: timeframe === '10m' ? '10m' : '3m',
+          }))
+          .filter((p: any) => p.ts > 0)
+        const newAbnormals = fetchedAbnormals
         setMarkersData((cur) => ({
           calendar: mergeUnique(
             cur.calendar ?? [],
@@ -1805,9 +1899,23 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         // 槽位: aboveBar (顶部) — 与 ★3+ 日历冲突时降级 (slot 仲裁时丢弃)
         const impactItems: ImpactRow[] = impactRes?.items ?? []
         const seenNewsKeys = new Set<string>()
+        // v303 R11 原逻辑 `if (it.event_source === 'critical_price_moves') continue`
+        //   意图是避免同一条异动画两遍(柱底 abnormal 圆点 + 柱顶 impact 红字)。
+        //   但实测 event_move_attribution 表对所有资产均为空(2026-10-22 核查),
+        //   impact/by-asset 的数据 100% 来自 critical_price_moves 兜底分支
+        //   → 该过滤把整批 marker 全丢掉了(SKHYNIX 价格异动/缓涨 全都不显示)。
+        // 改为按"已绘制的 abnormal K 线桶"精确去重,只跳真正重复的那几条。
+        const abnormalBuckets = new Set<number>(
+          (abnormals ?? []).map((a: any) => {
+            const ts = Number(a?.ts ?? 0)
+            return ts > 0 ? (alignTime(ts, bars) as number) : -1
+          }),
+        )
         for (const it of impactItems) {
           if (it.event_time < t0 - 3600 || it.event_time > t1 + 3600) continue
           const at = alignTime(it.event_time, bars)
+          // 同一根 K 线上已有异动圆点 → 跳过,避免同点位重复标注
+          if (abnormalBuckets.has(at as number)) continue
           const ttl = titleText(it.event_title)
           if (!ttl) continue
           // 同 K 线桶去重 (避免 worker 多次写入同一事件的重复标题)
@@ -1829,7 +1937,9 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
 
         // v216 绿色交易信号 — 来自 ai_decisions (首页交易信号)
         // 槽位: inBar (柱内中部) — 与柱顶/柱底文字互不干扰 (用户："在首页我们截取进来的交易信号显示在这个K线上用绿色点")
-        const signals: SignalRow[] = Array.isArray(signalRes) ? signalRes : []
+        // v303 R10: 用上面已做形状兼容的 newSignals, 不能直接 Array.isArray(signalRes)
+        // — bridge 返 {signals:[...]}, 原写法恒为 [] → 绿点 signal marker 全丢
+        const signals: SignalRow[] = newSignals
         const seenSignalKeys = new Set<string>()
         for (const s of signals) {
           const tsRaw = s.news_time ?? null
@@ -1993,6 +2103,28 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
               _src: 'abnormal',
               _group: abGroup,
             })
+            // v303 R12：异动点上方挂**真实新闻归因**
+            //   后端只在 [ts-3d, ts+3d] 内匹配到真实新闻时才给 news 数组，
+            //   匹配不到就是空数组 → 这里不画任何东西（不写"无新闻影响"占位）。
+            const aNews: any[] = Array.isArray((a as any).news) ? (a as any).news : []
+            for (const n of aNews.slice(0, 1)) {
+              const headline = String(n.headline || n.content || '').trim()
+              if (!headline) continue
+              const near = n.action === 'BUY' ? '#22c55e' : n.action === 'SELL' ? '#ef4444' : '#94a3b8'
+              marks.push({
+                time: at,
+                position: 'aboveBar' as const,
+                color: near,
+                shape: 'arrowDown' as const,
+                // 截断避免超长标题压垮图表（不改变语义）
+                text: headline.length > 22 ? `${headline.slice(0, 21)}…` : headline,
+                _pri: -1,                     // 优先级高于 swing/signal
+                _slot: 'aboveBar',
+                _src: 'abnormal_news',
+                _group: abGroup,
+                _news: n,
+              })
+            }
             // v221.3：拐点 marker（swing/cum4 专属）— 在 aboveBar 顶层画大三角
             //   已预期(label=expected) → 蓝色三角（市场已铺垫）
             //   凭空突袭(label=surprise) → 紫色三角（无预警）
@@ -2084,6 +2216,28 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
           if (g === 'green' && !clueFilters.green) return false
           return true
         })
+        // v304：按来源配额截断 —— 纯 _pri 排序会让高优先级类别(日历 _pri=4、impact _pri=4)
+        //   吃满 MAX_MARKS，异动点(_pri=0，含量能激增)被整体挤掉，表现为"成交量激增色点没有"。
+        //   这里先按 _src 各取一部分(异动优先保底)，剩余名额再按全局优先级补齐，
+        //   保证任一类别都不会被另一类别完全吞掉。
+        const SRC_QUOTA: Record<string, number> = { abnormal: 60, abnormal_news: 40 }
+        const quotaPicked: any[] = []
+        const quotaSeen = new Map<string, number>()
+        for (const m of filteredMarks) {
+          const src = (m as any)._src as string | undefined
+          const cap = src ? SRC_QUOTA[src] : undefined
+          if (cap === undefined || src === undefined) continue
+          const used = quotaSeen.get(src) ?? 0
+          if (used >= cap) continue
+          quotaSeen.set(src, used + 1)
+          quotaPicked.push(m)
+        }
+        const quotaKeys = new Set(quotaPicked)
+        const rest = filteredMarks.filter((m) => !quotaKeys.has(m))
+        // 合并后仍按 _pri 降序；总量超 MAX_MARKS 时，让异动类优先保留
+        const cappedMarks = [...quotaPicked, ...rest]
+          .sort((a, b) => (b._pri ?? 0) - (a._pri ?? 0))
+          .slice(0, Math.max(MAX_MARKS, quotaPicked.length))
 
         // v279：构建 HTML overlay 文字层
         //   lw-charts 自带文字水平渲染，多 marker 同 X 时重叠堆在一起
@@ -2105,7 +2259,7 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         const slotCounter = new Map<string, number>()
         const slotSideToggle = new Map<string, number>()
         const overlayLabels: OverlayLabel[] = []
-        for (const m of filteredMarks.slice(0, MAX_MARKS)) {
+        for (const m of cappedMarks) {
           if (!m.text) continue  // 无文字（如异常圆点）跳过
           const slot = m.position === 'aboveBar' ? 'above' : m.position === 'belowBar' ? 'below' : 'inBar'
           const mts = (m.time as any)?.timestamp ?? (m.time as any)
@@ -2136,7 +2290,7 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
 
         // createSeriesMarkers 不读 _pri/_slot/_src/_group/_signal_action/_signal_score/_swing_*/_news_action — 剥掉私有字段
         // v279：再剥掉 text（交给 HTML overlay 渲染，避免 lw-charts 内置水平文字堆叠重叠）
-        const cleaned = filteredMarks.slice(0, MAX_MARKS).map(({
+        const cleaned = cappedMarks.map(({
           _pri, _slot, _src, _group, _signal_action, _signal_score,
           _swing_atmosphere, _swing_direction, _swing_trigger_type,
           _news_action, _verdict,
@@ -2152,7 +2306,12 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         setChartHeight(target)
         window.requestAnimationFrame(() => chartRef.current?.timeScale().fitContent())
       })
-      .catch(() => { if (alive) setMissing('走势数据加载失败') })
+      .catch((err: unknown) => {
+        if (!alive) return
+        // 透传真实错误原因(503/网络挂/CORS),不再吞掉
+        const msg = err instanceof Error ? err.message : String(err)
+        setMissing(`走势数据加载失败（${msg || '网络异常'}）`)
+      })
     return () => { alive = false }
   }, [selected, chartReady, items, isDark, timeframe, clueFilters])
 
@@ -2227,17 +2386,11 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
         // v2026.10.15 bugfix: API_BASE 已经包含 /api 前缀, 不要再加一次
         // 之前写成 /api/market/orderbook → 实际请求 /api/api/market/orderbook → 404
         // 后端真实路径是 /api/market/depth/{asset} (与 live-kline-chart.tsx:1465 同口径)
-        const r = await fetch(`${API_BASE}/market/depth/${selected}`)
+        // v303 Q1 cont: 8000 死, 用 fetchWithFallback — bridge 返 wrapper 也按 "unavailable" 处理
+        const j = await fetchWithFallback<{ bids?: any[]; asks?: any[] } | null>(`/market/depth/${selected}`)
         if (!alive) return
-        if (!r.ok) {
-          setOrderbookStatus('unavailable')
-          setTimeout(pick, 15000)
-          return
-        }
-        const j = await r.json()
-        if (!alive) return
-        if (j?.bids && j?.asks) {
-          setOrderbook({ bids: j.bids, asks: j.asks, ts_ms: Date.now() })
+        if (j && (j as any).bids && (j as any).asks && !(j as any)._bridge_fallback) {
+          setOrderbook({ bids: (j as any).bids, asks: (j as any).asks, ts_ms: Date.now() })
           setOrderbookStatus('ok')
         } else {
           setOrderbookStatus('unavailable')
@@ -2296,9 +2449,23 @@ export function MoversPanel({ externalRefreshToken }: { externalRefreshToken?: n
                   '清空 abnormal_signals（multi_factor/sector）并按 10m interval 全量重算？',
                   async () => {
                     try {
-                      const r = await fetch(`${API_BASE}/admin/abnormal-signals/recompute-10m`, { method: 'POST' })
-                      if (!r.ok) throw new Error(`HTTP ${r.status}`)
-                      const j = await r.json()
+                      // v303 Q1 cont: 8000 死, POST 需手动 fallback — fetchWithFallback 不支持 POST
+                      // 先打 8000, 失败/超时则改打 bridge (8100) catch-all
+                      let j: any = null
+                      try {
+                        const r = await fetch(`${API_BASE}/admin/abnormal-signals/recompute-10m`, { method: 'POST' })
+                        if (r.ok) j = await r.json()
+                      } catch {/* 8000 dead, 走 bridge */}
+                      if (!j) {
+                        try {
+                          const r = await fetch(`${BRIDGE_BASE}/admin/abnormal-signals/recompute-10m`, { method: 'POST' })
+                          if (r.ok) j = await r.json()
+                        } catch {/* bridge 也失败 */}
+                      }
+                      if (!j || j._bridge_fallback) {
+                        toast.error('重算失败：8000/8100 均不可用 (admin 端点未实现)')
+                        return
+                      }
                       toast.success(`重算完成：删除 ${j.deleted} 条，新增 ${j.inserted} 条 (触发 ${j.triggered} 个)`)
                     } catch (e) {
                       toast.error(`重算失败：${e instanceof Error ? e.message : String(e)}`)

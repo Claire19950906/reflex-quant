@@ -35,17 +35,26 @@ const sampleStats = {
   },
 }
 
+// v303: 改用真实 Response（带 .ok=true + .json()），让 lib/api.fetchWithFallback 的
+// `if (!r.ok)` 分支通过 — 见 MissedSignalsPanel.test.tsx 注释。
+function jsonResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
+}
+
 describe('EventMarketAttribution v291 a11y', () => {
   beforeEach(() => {
     global.fetch = vi.fn((url: string) => {
       if (url.includes('/api/v291/critical-moves')) {
-        return Promise.resolve({ json: () => Promise.resolve({ ok: true, rows: sampleMoves }) }) as never
+        return Promise.resolve(jsonResponse({ ok: true, rows: sampleMoves, items: sampleMoves })) as never
       }
       if (url.includes('/api/v291/stats')) {
-        return Promise.resolve({ json: () => Promise.resolve(sampleStats) }) as never
+        return Promise.resolve(jsonResponse(sampleStats)) as never
       }
       if (url.includes('/api/v291/move-attributions')) {
-        return Promise.resolve({ json: () => Promise.resolve({ ok: true, rows: [] }) }) as never
+        return Promise.resolve(jsonResponse({ ok: true, rows: [], items: [] })) as never
       }
       return Promise.reject(new Error(`unexpected url: ${url}`))
     }) as unknown as typeof fetch

@@ -69,6 +69,17 @@ export const ASSET_META: Readonly<Record<string, string>> = Object.freeze({
   SKHYNIX: '韩国海力士',
   US_HYNIX: '美国海力士',
   MU: '美国海力士',
+
+  // ── 聚合分类显示名 (Phase B 回灌兼容, 不在 trident 原表内) ──────────────
+  // trident v302+ P0 的设计文档判定这三个「是聚合分类, 不是品种代号本身,
+  // 应走业务层的合并逻辑」, 因此没放进上面的常量表。但金融版 ≤v301 的
+  // asset-heatmap / asset-leaderboard / event-heatmap 三个组件各自的本地
+  // ASSET_META 里是有这三个显示名的 —— 若 /api/market/movers 真返回聚合码,
+  // 直接删掉会让界面显示裸 token(US_STOCK 而不是「美股」)。
+  // 这里只补回显示名, 不改动品种代号本身的语义。
+  US_STOCK: '美股',
+  CN_STOCK: 'A股',
+  INDIVIDUAL_STOCK: '个股',
 })
 
 /**

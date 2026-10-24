@@ -362,9 +362,10 @@ export function MissedSignalsPanel({ refreshMs = 120000, className, externalRefr
       setLoading(true)
       try {
         const [m, c, q, bd] = await Promise.all([
-          fetch("/api/v237/missed-signals?limit=200&days=90").then((r) => r.json()),
+          // v303: 改用 fetchWithFallback — 8000 死后 fallback 到 8100 bridge
+          fetchWithFallback("/api/v237/missed-signals?limit=200&days=90"),
           fetchWithFallback("/api/v237/calibration?weeks=12"),
-          fetch("/api/v237/judgment-quality").then((r) => r.json()),
+          fetchWithFallback("/api/v237/judgment-quality"),
           // v2026.10.15: 也拉 by-dimension (trade_reflections_v2 表有真实 163 条数据,
           // 比 missed_signals 表的 0 数据有用). quality tab 卡片展示 (A 买卖信号 / B 信息方向 / C 技术错误).
           // 与 default tab 无关 — fetchAll 不管 tab 都拉, tab 只是切换显示哪个卡片.

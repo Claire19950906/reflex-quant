@@ -1,5 +1,5 @@
 /**
- * app/review/_spec.ts — /review 渲染规则的单一事实源 (v302+ 重构)
+ * app/review/_spec.ts — /review 渲染规则的单一事实源 (v302+ 重构 + v302+ P3 zod)
  *
  * 惊艳点 (什么叫惊艳 — 这里就是):
  *  - REVIEW_SECTIONS 是声明式 spec,加新 section 只改这里一行
@@ -8,15 +8,55 @@
  *  - 所有 (mode × ab × panel) 决策 = 数据查找,不再有命令式 if-else
  *  - 任一 SectionKey 加进 REVIEW_SECTIONS 必须显式出现在每个 mode 的 modes
  *    列表里(编译期保护,漏一个 TS 立刻报错)
+ *  - v302+ P3: zod schema 运行时校验 REVIEW_SECTIONS — JSON 持久化 / 跨进程
+ *    反序列化时类型擦除,zod 是最后一道防线(lazy=true 必须有 minHeight 等
+ *    复合不变量,TS 做不到的,zod .refine 兜底)
  *
  * 不上 fast-check 属性测试:项目 0 新依赖原则,要加属性测试另开 PR。
  * 但即使没属性测试,本 spec 已经把"决策表"从命令式 140 行收缩到 70 行数据。
  */
 
+import { z } from 'zod'
 import type { ReviewTab, AbTab } from '@/lib/use-review-url-state'
 
 // 复用 use-review-url-state 的类型(单一事实源:URL 状态类型只有一处定义)
 export type { ReviewTab, AbTab } from '@/lib/use-review-url-state'
+
+// ====== 0. zod 运行时 schema — JSON 持久化 / 跨进程 / 类型擦除场景的兜底 ======
+
+/** ReviewTab 的 zod 字面量集合 — 与 use-review-url-state 同步 */
+export const reviewTabEnum = z.enum(['all', 'journal', 'experiences'])
+
+/** 单个 section 元数据的 zod schema */
+export const sectionMetaSchema = z
+  .object({
+    modes: z.array(reviewTabEnum).min(1),
+    lazy: z.boolean(),
+    minHeight: z.number().int().positive().optional(),
+    errorBoundary: z.boolean(),
+    abAware: z.boolean().optional(),
+    id: z.string().min(1),
+    label: z.string().min(1),
+  })
+  .strict() // 拒绝未知字段,防止 typo 偷偷进入(zod .strict() 必须在 .refine() 之前)
+  // 复合不变量:lazy=true 时必须有 minHeight > 0(TS mapped type 做不到这个)
+  .refine((s) => !s.lazy || (typeof s.minHeight === 'number' && s.minHeight > 0), {
+    message: 'lazy=true 的 section 必须填写 minHeight (>0)',
+    path: ['minHeight'],
+  })
+  // id 不能重复(防止 DOM 锚点冲突)
+  // (此约束走集合级,见 reviewSectionsSchema)
+
+/** REVIEW_SECTIONS 的 zod schema — 完整 section 集合 */
+export const reviewSectionsSchema = z
+  .record(z.string().min(1), sectionMetaSchema)
+  .refine(
+    (sections) => {
+      const ids = Object.values(sections).map((s) => s.id)
+      return new Set(ids).size === ids.length
+    },
+    { message: 'id 在所有 section 间必须唯一(防止 DOM 锚点冲突)' },
+  )
 
 // ====== 1. Section 元数据(spec) ======
 
@@ -39,7 +79,8 @@ type SectionMeta = {
 }
 
 /** /review 上每个 section 的元数据 — 加新 section 改这里 */
-export const REVIEW_SECTIONS = {
+// 原始 spec 字面量 — 用 zod parse 后赋值给导出常量,保证运行时与编译期双重保护
+const REVIEW_SECTIONS_RAW = {
   draftSummary: {
     modes: ['all', 'journal', 'experiences'],
     lazy: false,
@@ -112,6 +153,16 @@ export const REVIEW_SECTIONS = {
     label: '数据健康',
   },
 } as const satisfies Record<string, SectionMeta>
+
+/**
+ * v302+ P3:zod 运行时校验。复合不变量(id 唯一、lazy 必带 minHeight)在编译期
+ * 类型系统无法完全保证,所以用 zod 在模块加载时 .parse() 兜底。
+ * 任何 typo / 漏字段 / 不变量违反 → 模块加载即抛错,生产环境 0 容忍。
+ */
+export const REVIEW_SECTIONS = reviewSectionsSchema.parse(REVIEW_SECTIONS_RAW) as Record<
+  keyof typeof REVIEW_SECTIONS_RAW,
+  SectionMeta
+>
 
 /** 所有 section key 的字面量联合 — 派生自 §[keyof],加新 key 自动生效 */
 export type SectionKey = keyof typeof REVIEW_SECTIONS

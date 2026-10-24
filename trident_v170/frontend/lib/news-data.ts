@@ -1,4 +1,4 @@
-import { API_BASE } from '@/lib/api'
+import { API_BASE, fetchWithFallback } from '@/lib/api'
 
 export type InternalNews = {
   id: number
@@ -118,7 +118,10 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 export const fetchInternalNews = async (): Promise<InternalNews[]> => {
   // 后端 /api/events 返回 {ok, items, count} 包装, 不是裸数组
   // 这里解 .items, 容错: 如果直返数组也支持
-  const r = await json<{ ok?: boolean; items?: InternalNews[]; count?: number } | InternalNews[]>('/events')
+  // v303: 改用 fetchWithFallback — 8000 死后自动 fallback 到 8100 bridge_server
+  const r = await fetchWithFallback<{ ok?: boolean; items?: InternalNews[]; count?: number } | InternalNews[]>(
+    '/api/events'
+  )
   if (Array.isArray(r)) return r
   return Array.isArray(r?.items) ? r.items : []
 }

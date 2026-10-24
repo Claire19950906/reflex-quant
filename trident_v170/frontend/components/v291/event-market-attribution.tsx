@@ -157,11 +157,12 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
+      // v303: 改用 fetchWithFallback — 8000 死后 fallback 到 8100 bridge
       const [m, s] = await Promise.all([
-        fetch('/api/v291/critical-moves?hours=720&limit=40').then((r) => r.json()),
-        fetch('/api/v291/stats?hours=720').then((r) => r.json()),
+        fetchWithFallback('/api/v291/critical-moves?hours=720&limit=40'),
+        fetchWithFallback('/api/v291/stats?hours=720'),
       ])
-      if (m?.ok) setMoves(m.rows ?? [])
+      if (m?.ok) setMoves(m.rows ?? m.items ?? [])
       if (s?.ok) setStats(s)
       setLastUpdated(Date.now())
     } catch {
@@ -174,8 +175,9 @@ export function EventMarketAttribution({ refreshMs = 60_000, className, external
   const fetchAttributions = useCallback(async (moveId: number) => {
     setAttrLoading(true)
     try {
-      const r = await fetch(`/api/v291/move-attributions?move_id=${moveId}&limit=5`).then((x) => x.json())
-      if (r?.ok) setAttributions(r.rows ?? [])
+      // v303: 改用 fetchWithFallback — 8000 死后 fallback 到 8100 bridge
+      const r = await fetchWithFallback(`/api/v291/move-attributions?move_id=${moveId}&limit=5`)
+      if (r?.ok) setAttributions(r.rows ?? r.items ?? [])
     } catch {
       setAttributions([])
     } finally {

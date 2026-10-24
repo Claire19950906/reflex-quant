@@ -176,12 +176,22 @@ function AttributionCard({ signalId }: { signalId: number }) {
     const ctrl = new AbortController()
     setLoading(true)
     setErr(null)
-    fetch(`${API_BASE}/abnormal-signals/${signalId}/attribution`, {
-      cache: 'no-store',
-      signal: ctrl.signal,
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => { if (alive) setData(d as AttributionResp) })
+    // v303 Q1 cont: 8000 死, 改用 fetchWithFallback 走 bridge (8100)
+    // bridge catch-all → {ok:true,_bridge_fallback:true} → 转成 "signal_id 不存在" 空态
+    fetchWithFallback<AttributionResp & { _bridge_fallback?: boolean }>(
+      `/abnormal-signals/${signalId}/attribution`,
+    )
+      .then((d) => {
+        if (!alive) return
+        if (d?._bridge_fallback) {
+          setData({
+            signal_id: signalId, asset: '', signal_kind: 'multi_factor', status: 'unknown',
+            error: 'bridge_fallback',
+          } as AttributionResp)
+          return
+        }
+        setData(d as AttributionResp)
+      })
       .catch((e) => {
         if (!alive || e?.name === 'AbortError') return
         setErr(String(e?.message || e))
@@ -334,12 +344,20 @@ function SimilarList({ signalId }: { signalId: number }) {
     const ctrl = new AbortController()
     setLoading(true)
     setErr(null)
-    fetch(`${API_BASE}/abnormal-signals/${signalId}/similar?since=30d&max_results=5`, {
-      cache: 'no-store',
-      signal: ctrl.signal,
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => { if (alive) setData(d as SimilarResp) })
+    // v303 Q1 cont: 8000 死, 改用 fetchWithFallback 走 bridge (8100)
+    // bridge catch-all 返回 {ok:true,_bridge_fallback:true,...} → 转成 "信号不存在" 空态
+    fetchWithFallback<SimilarResp & { _bridge_fallback?: boolean }>(
+      `/abnormal-signals/${signalId}/similar?since=30d&max_results=5`,
+    )
+      .then((d) => {
+        if (!alive) return
+        if (d?._bridge_fallback) {
+          // bridge 未实现该端点 → 明确提示, 不要伪装成"近 30d 无相似事件"
+          setData({ current: null, since_ts: 0, results: [], summary: '', error: 'bridge_fallback' } as SimilarResp)
+          return
+        }
+        setData(d as SimilarResp)
+      })
       .catch((e) => {
         if (!alive || e?.name === 'AbortError') return
         setErr(String(e?.message || e))
@@ -493,17 +511,10 @@ export function AbnormalDetailPanel() {
       // 取消上一轮未完成的请求，避免旧响应覆盖新数据
       if (ctrl) ctrl.abort()
       ctrl = new AbortController()
-      fetch(`${API_BASE}/abnormal-signals?signal_kind=multi_factor&status=all&limit=12`, {
-        cache: 'no-store',
-        signal: ctrl.signal,
-      })
-        .then((r) => {
-          if (r.ok) return r.json()
-          // 8000 一直 500, fallback 到 8100 bridge (用 fetchWithFallback,自带重试)
-          return fetchWithFallback<{ signals?: AbnormalSignal[] }>(
-            '/abnormal-signals?signal_kind=multi_factor&status=all&limit=12'
-          )
-        })
+      // v303 Q1 cont: 8000 死, 直接走 fetchWithFallback (内部先试 8000 再退 8100)
+      fetchWithFallback<{ signals?: AbnormalSignal[] }>(
+        '/abnormal-signals?signal_kind=multi_factor&status=all&limit=12',
+      )
         .then((d) => {
           if (!alive) return
           const list = Array.isArray(d.signals) ? (d.signals as AbnormalSignal[]) : []

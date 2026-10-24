@@ -10,6 +10,8 @@ import fc from 'fast-check'
  *  - fc.assert + fc.property 跑 N 次随机抽样,N 越大覆盖率越高
  *  - vitest 默认每个 property 跑 100 次 → 100 种 (mode × section × ab)
  *    组合,且每次随机 = 抓 bug 的概率随 N 线性增长
+ *  - v302+ P3: TEST_NUM_RUNS 常量集中 — 此前分散为 100/100/50/50/50/100/50/30
+ *    八个不同数字,无法统一调优。现集中到一处,CI 与本地共享同一标准。
  *
  * 与 _spec.test.ts 的关系:
  *  - _spec.test.ts:手写"已知重要 case"(回归断言,可读性高)
@@ -25,6 +27,15 @@ import {
   type SectionKey,
 } from './_spec'
 import type { ReviewTab, AbTab } from '@/lib/use-review-url-state'
+
+// ====== v302+ P3: 属性测试 numRuns 统一常量 ======
+//
+// 设计:不同性质属性有不同的"性价比" — 一致性检查 N=100 已足够,selector
+// 健全性 N=50 已足够,结构健全性 N=50 已足够,空白页守护 N=30 已足够(只有 3 个
+// mode 抽样)。如果未来 CI 跑得动,直接调这一个文件即可全网放大。
+const TEST_NUM_RUNS_HIGH = 100 // 一致性 / abAware 联动 — 主战场
+const TEST_NUM_RUNS_MID = 50 // selector / 结构健全性 — 二级战场
+const TEST_NUM_RUNS_LOW = 30 // 空白页守护 — 只有 3 个 mode 抽样
 
 // ====== Arbitraries(测试用例生成器) ======
 
@@ -45,7 +56,7 @@ describe('属性 — SECTION_MATRIX 一致性', () => {
         // ⚠️ 失败时 vitest 会输出具体的 mode 和 key(shrink 自动最小化反例)
         expect(actual, `${mode} × ${key}`).toBe(expected)
       }),
-      { numRuns: 100 },
+      { numRuns: TEST_NUM_RUNS_HIGH },
     )
   })
 
@@ -54,7 +65,7 @@ describe('属性 — SECTION_MATRIX 一致性', () => {
       fc.property(reviewTabArb, sectionKeyArb, (mode, key) => {
         expect(isSectionVisible(mode, key)).toBe(SECTION_MATRIX[mode][key])
       }),
-      { numRuns: 100 },
+      { numRuns: TEST_NUM_RUNS_HIGH },
     )
   })
 })
@@ -67,7 +78,7 @@ describe('属性 — selectReviewPanel 健全性', () => {
       fc.property(abTabArb, (ab) => {
         expect(selectReviewPanel('experiences', ab)).toBeNull()
       }),
-      { numRuns: 50 },
+      { numRuns: TEST_NUM_RUNS_MID },
     )
   })
 
@@ -82,7 +93,7 @@ describe('属性 — selectReviewPanel 健全性', () => {
           expect(['ReviewPanel', 'ReviewHistoryPanel']).toContain(panel)
         },
       ),
-      { numRuns: 50 },
+      { numRuns: TEST_NUM_RUNS_MID },
     )
   })
 })
@@ -114,7 +125,7 @@ describe('属性 — abAware section 与 selector 联动', () => {
           }
         },
       ),
-      { numRuns: 100 },
+      { numRuns: TEST_NUM_RUNS_HIGH },
     )
   })
 })
@@ -130,7 +141,7 @@ describe('属性 — REVIEW_SECTIONS 结构健全性', () => {
         expect(spec.id).toBeTruthy()
         expect(spec.label).toBeTruthy()
       }),
-      { numRuns: 50 },
+      { numRuns: TEST_NUM_RUNS_MID },
     )
   })
 
@@ -143,7 +154,7 @@ describe('属性 — REVIEW_SECTIONS 结构健全性', () => {
           expect(spec.minHeight).toBeGreaterThan(0)
         }
       }),
-      { numRuns: 50 },
+      { numRuns: TEST_NUM_RUNS_MID },
     )
   })
 })
@@ -158,7 +169,7 @@ describe('属性 — 永不空白页', () => {
         const visibleCount = sectionKeys.filter((k) => isSectionVisible(mode, k)).length
         expect(visibleCount, `${mode} mode 下任何 section 都不显示 → 空白页`).toBeGreaterThan(0)
       }),
-      { numRuns: 30 },
+      { numRuns: TEST_NUM_RUNS_LOW },
     )
   })
 })

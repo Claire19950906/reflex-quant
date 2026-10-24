@@ -25,6 +25,7 @@ import { NewsImpactList } from '@/components/news/news-impact-list'
 import { EntityImpactPanel } from '@/components/news/entity-impact-panel'
 import { MissedSignalsPanel } from '@/components/v237/MissedSignalsPanel'
 import { EventMarketAttribution } from '@/components/v291/event-market-attribution'
+import { AttributionQualityPanel } from '@/components/gub/attribution-quality-panel'
 import { useNewsImpact } from '@/lib/hooks/use-news-impact'
 import type { MarketState } from '@/components/news/news-impact-weight'
 
@@ -96,6 +97,12 @@ export default function AttributionPage() {
       <MissedSignalsPanel id="missed" refreshMs={PAGE_REFRESH_MS} externalRefreshToken={pageTick} />
       {/* v291: 事件-行情归因 — 在漏检反思之下, Movers 之上 (algo-first) */}
       <EventMarketAttribution refreshMs={PAGE_REFRESH_MS} externalRefreshToken={pageTick} />
+      {/* v307 GUB 补齐: 归因质量体检。
+          /v291/event-move-attribution 有 392 行数据但此前前端只展示不体检 ——
+          挂在这里让用户看到真因果/推导/事后拟合的真实比例 (实测真因果仅 16.6%)。
+          注: 市场基本面/挂单深度/资金费率已有 v291 面板, 见 /knowledge-graph 三个 tab,
+          此处不重复挂载。*/}
+      <AttributionQualityPanel />
       <MoversPanel externalRefreshToken={pageTick} />
     </div>
   )

@@ -69,13 +69,13 @@ type FeedbackResponse = {
   data_source?: string
 }
 
-function pctFmt(n, digits = 1) {
+function pctFmt(n: number | null | undefined, digits = 1) {
   if (n === null || n === undefined) return '—'
   const s = n >= 0 ? '+' : ''
   return `${s}${n.toFixed(digits)}%`
 }
 
-function tsFmt(ts) {
+function tsFmt(ts: number | null | undefined) {
   if (!ts) return '—'
   return new Date(ts * 1000).toISOString().slice(0, 10)
 }
@@ -88,7 +88,7 @@ const STATUS_META = {
   EXPIRED: { label: '数据缺', cls: 'border-slate-400/50 bg-slate-400/10 text-slate-400', icon: CircleDashed },
 }
 
-function dirArrow(dir) {
+function dirArrow(dir: ChainFeedback['expected_direction']) {
   if (dir === 'UP') return <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
   if (dir === 'DOWN') return <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
   return <Activity className="h-3.5 w-3.5 text-slate-400" />
@@ -274,7 +274,7 @@ function SummaryCell({
   )
 }
 
-function ChainFeedbackCard({ chain }) {
+function ChainFeedbackCard({ chain }: { chain: ChainFeedback }) {
   const [expanded, setExpanded] = useState(chain.outcomes_n > 0)
   const meta = chain.needs_recalibration
     ? {
@@ -353,7 +353,7 @@ function ChainFeedbackCard({ chain }) {
 
       {expanded && chain.recent_outcomes.length > 0 ? (
         <ul className="mt-2 space-y-1.5">
-          {chain.recent_outcomes.map((o, i) => {
+          {chain.recent_outcomes.map((o: RecentOutcome, i) => {
             const m = STATUS_META[o.status] || STATUS_META.PENDING
             const Icon = m.icon
             return (

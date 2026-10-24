@@ -62,6 +62,18 @@ vi.mock('@/lib/lazy-section', () => ({
 vi.mock('@/lib/use-review-url-state', () => ({
   useReviewUrlState: vi.fn(),
 }))
+vi.mock('@/lib/use-review-collapse', () => ({
+  useReviewCollapse: () => ({
+    collapsed: new Set<string>(),
+    isCollapsed: () => false,
+    toggle: () => {},
+    expandAll: () => {},
+    collapseAll: () => {},
+  }),
+}))
+vi.mock('@/lib/use-review-shortcuts', () => ({
+  useReviewShortcuts: () => ({ allExpanded: true }),
+}))
 
 import { useReviewUrlState } from '@/lib/use-review-url-state'
 import { ReviewPageInner } from './_inner'

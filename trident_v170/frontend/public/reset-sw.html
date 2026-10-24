@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>Reset Trident SW</title>
+<style>body{font-family:system-ui;max-width:640px;margin:48px auto;padding:0 16px;color:#222;background:#fff}li{margin:6px 0}code{background:#f0f0f3;padding:1px 6px;border-radius:4px}button{padding:8px 16px;border:0;border-radius:6px;background:#0a7;cursor:pointer;color:#fff;font-weight:600}</style>
+</head>
+<body>
+<h1>Trident · 一次性清理 SW</h1>
+<p id="s">正在处理 ...</p>
+<ol id="log" style="line-height:1.7"></ol>
+<p><button id="go" style="display:none" onclick="location.replace('/attribution')">👉 现在去 /attribution</button></p>
+<script>
+const log = document.getElementById('log');
+const out = document.getElementById('s');
+function step(t){ const li=document.createElement('li'); li.textContent=t; log.appendChild(li); }
+async function run(){
+  try {
+    if (!('serviceWorker' in navigator)) { out.textContent='当前浏览器无 SW API'; return; }
+    const regs = await navigator.serviceWorker.getRegistrations();
+    step('SW 注册数: ' + regs.length + (regs.length? ' → 全部注销并删除' : ' ✓ 无需处理'));
+    for (const r of regs) { try { await r.unregister(); } catch(_){} }
+    if (window.caches && caches.keys) {
+      const keys = await caches.keys();
+      step('CacheStorage 缓存: ' + (keys.join(', ')||'空'));
+      for (const k of keys) { try { await caches.delete(k); } catch(_){} }
+    }
+    try {
+      if (window.indexedDB && indexedDB.databases) {
+        const dbs = await indexedDB.databases();
+        step('IndexedDB 库: ' + (dbs.map(d=>d.name).join(', ')||'空'));
+        for (const d of dbs) { try { if (d.name) indexedDB.deleteDatabase(d.name); } catch(_){} }
+      }
+    } catch(_) {}
+    try { localStorage.clear(); sessionStorage.clear(); step('localStorage / sessionStorage 已清'); } catch(_) {}
+    out.textContent='清理完成, 关闭打开的旧 /attribution 标签页后点击下方按钮';
+    document.getElementById('go').style.display='inline-block';
+  } catch(e) { out.textContent='异常: '+e; }
+}
+run();
+</script>
+</body>
+</html>

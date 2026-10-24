@@ -11,7 +11,14 @@ export const BRIDGE_BASE = `${_bridgeHost.replace(/\/$/, '')}/api`
 
 // 哪些路径在 8000 失败时 fallback 到 8100 (基于真实 500 响应)
 const FALLBACK_PATHS = [
-  '/v237/missed-signals/by-dimension',  // 8000 缺 missed_signal_dimensions 模块
+  // v303 Q1+Q5: 8000 整体已死, 任何主路径都得 fallback — News 面板全靠 bridge
+  '/events',                           // useNewsImpact → Top Entity / News Impact
+  '/v237/missed-signals',              // MissedSignalsPanel 主数据
+  '/v237/missed-signals/by-dimension', // 8000 缺 missed_signal_dimensions 模块
+  '/v237/judgment-quality',            // MissedSignalsPanel 反思质量
+  '/v291/critical-moves',              // event-market-attribution panel
+  '/v291/stats',                       // event-market-attribution panel
+  '/v291/move-attributions',           // event-market-attribution panel (per-move drill)
   '/v291/attribution-stats',           // 桥接服务提供资金流交叉验证
   '/v291/causal-graph',                // 桥接服务提供因果图谱
   '/v237/calibration',                 // 桥接服务提供周维度校准
@@ -45,6 +52,30 @@ const FALLBACK_PATHS = [
   '/v291/reflections/summary',
   // v180+ P0-3: 新闻影响评估 (8000 缺评估逻辑, 桥接服务接管)
   '/news/impact-evaluate',
+  // v303 Q1 cont: K线主数据 (MoversPanel chart 数据, 8000 死 → 必须 fallback)
+  '/market/history',                    // K线 bar 主体 (1m/4h/30d)
+  '/v189/calendar',                     // 日历事件 (K线 marker)
+  // 桥接暂未实现但有 catch-all wrapper 的端点 (MoversPanel 其它并发 fetch)
+  '/market/attribute',                  // 资产异动归因 (K线下方面板)
+  '/market/movers',                     // 行情榜 (顶部分位卡片)
+  '/market/depth',                      // 深度/订单簿
+  '/v275/calendar/impact-by-asset',     // 日历 K线影响验证
+  '/abnormal/swing-points',             // 拐点 (swing/cum4)
+  '/admin/abnormal-signals/recompute-10m', // admin 异动重算
+  // v307 GUB 补齐 (2026-10-21 审计): 后端有 64 个端点, 这里补上此前漏接的。
+  // 判定依据 = 后端实测有真实数据返回, 但前端 0 处调用。详见 lib/api-gub.ts。
+  '/tech/signals',                      // 技术信号融合 (支撑位/多形态/分项权重)
+  '/tech/structure',                    // K线形态识别 (中文形态名)
+  '/tech/anomaly-history',              // 历史异动 + 形态/RSI/MACD 证据链
+  '/tech/anomaly',                      // 实时异动扫描 (已过噪声过滤)
+  '/health',                            // 数据新鲜度
+  '/v291/market-regime',                // COT 大型投机商仓位状态 (需求14 市场基本面)
+  '/v291/funding-rate',                 // 永续合约资金费率
+  '/v291/orderbook-depth',              // 订单簿深度
+  '/v291/event-move-attribution',       // 事件→行情归因明细 (392 行, 含因果质量标注)
+  '/v291/causal-chains/feedback',       // 因果链反馈闭环 + needs_recalibration 标记
+  '/v189/causal/accuracy-stats',        // 因果链命中率统计 (需求9)
+  '/review/causal-graph',               // 因果图谱节点/边
 ]
 
 /**
@@ -66,28 +97,47 @@ export async function fetchWithFallback<T = any>(path: string): Promise<T> {
   // v2026.10.19 P0 fix: 防御 caller 误传 /api 前缀 (base 已有 /api, 重复会拼成 /api/api/...
   // → 命中 bridge_server catch-all 返 wrapper, 真实端点 by-dimension/calibration 等被掩盖).
   // 这里 normalize 一下, 接受 '/api/v237/...' 或 '/v237/...' 两种写法
+  // v303 P0 fix: 同时检查 raw path (带 /api/) 和 normalized — 双保险, 防止 caller 写法变化
+  // 让 FALLBACK_PATHS 检查失效. 同时让 raw path + /api 路径都能正确识别.
   const normalized = path.startsWith('/api/') ? path.slice(4) : path
   const tryOne = async (base: string) => {
-    try {
-      // v2026.10.19 P0 fix: 显式 cache: 'no-store' — Next.js dev mode 默认
-      // force-cache 裸 fetch 响应, 第一次拿到 wrapper 后即使后端修好,
-      // 浏览器二次 fetch 仍命中缓存的 wrapper. 显式 no-store 强制实时打.
-      const r = await fetch(`${base}${normalized}`, { cache: 'no-store' })
-      // 关键: 非 2xx 一律按失败处理,避免 500 + {"detail":"..."} (ok:undefined)
-      // 被错误判为成功而不触发 fallback
-      if (!r.ok) {
-        const j = await r.json().catch(() => null)
-        return { ok: false, error: j?.detail || `${base}${path} HTTP ${r.status}` }
+    // v306 P0+: 5xx 瞬态(bridge 重载/SQL 锁/反代超时)自动重试,最多 3 次
+    //   退避 0.5 / 1 / 2 秒,避开 Next dev HMR / uvicorn reload 闪断
+    //   4xx 不重试(404/422 是稳定错误, 重试浪费往返)
+    let lastErr: { ok: false; error: string } | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 250 * (2 ** (attempt - 1))))
+      try {
+        // v2026.10.19 P0 fix: 显式 cache: 'no-store' — Next.js dev mode 默认
+        // force-cache 裸 fetch 响应, 第一次拿到 wrapper 后即使后端修好,
+        // 浏览器二次 fetch 仍命中缓存的 wrapper. 显式 no-store 强制实时打.
+        const r = await fetch(`${base}${normalized}`, { cache: 'no-store' })
+        if (!r.ok) {
+          if (r.status >= 500 && attempt < 2) {
+            lastErr = { ok: false, error: `${base}${path} HTTP ${r.status}` }
+            continue   // 5xx + 还有重试预算
+          }
+          const j = await r.json().catch(() => null)
+          return { ok: false, error: j?.detail || `${base}${path} HTTP ${r.status}` }
+        }
+        return await r.json().catch(() => ({ ok: false, error: `bad JSON from ${base}${path}` }))
+      } catch (e) {
+        // CSP 拒绝 / 网络错误 / DNS 失败 / abort — 不能冒到外层
+        // 同样视作瞬态, 重试
+        if (attempt < 2) {
+          lastErr = { ok: false, error: e instanceof Error ? e.message : String(e) }
+          continue
+        }
+        return { ok: false, error: e instanceof Error ? e.message : String(e) }
       }
-      return await r.json().catch(() => ({ ok: false, error: `bad JSON from ${base}${path}` }))
-    } catch (e) {
-      // CSP 拒绝 / 网络错误 / DNS 失败 / abort — 不能冒到外层
-      return { ok: false, error: e instanceof Error ? e.message : String(e) }
     }
+    return lastErr ?? { ok: false, error: `${base}${path} HTTP 5xx after retry` }
   }
   const primary = await tryOne(API_BASE)
   if (primary && primary.ok === true) return primary
-  if (FALLBACK_PATHS.some(p => normalized.startsWith(p))) {
+  // v303 P0 fix: 同时检查 raw path (带 /api/) 和 normalized — caller 传 /api/events 或 /events 都行
+  // FALLBACK_PATHS 条目统一带前导 /, 例如 '/events', '/v237/missed-signals'
+  if (FALLBACK_PATHS.some(p => path.startsWith(p) || path.startsWith(`/api${p}`))) {
     return await tryOne(BRIDGE_BASE) as T
   }
   return primary as T
@@ -125,7 +175,8 @@ export async function apiGet<T>(path: string, opts: ApiGetOptions = {}): Promise
     response = new Response(JSON.stringify({ detail: String(e) }), { status: 599 })
   }
   // 主服务失败时,fallback 到桥接服务(8100)
-  if (!response.ok && FALLBACK_PATHS.some(p => normalized.startsWith(p))) {
+  // v303 P0 fix: 同时检查 raw path (带 /api/) 和 normalized — caller 传 /api/events 或 /events 都行
+  if (!response.ok && FALLBACK_PATHS.some(p => path.startsWith(p) || path.startsWith(`/api${p}`))) {
     try {
       const fbUrl = `${BRIDGE_BASE}${normalized}`
       const fbResp = await fetch(fbUrl, { cache, signal, ...rest })

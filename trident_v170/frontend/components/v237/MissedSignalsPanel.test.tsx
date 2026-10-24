@@ -136,7 +136,7 @@ describe('MissedSignalsPanel', () => {
 
   it('shows empty state when no missed signals', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({ json: () => Promise.resolve({ ok: true, rows: [], count: 0 }) })
+      Promise.resolve(jsonResponse({ ok: true, rows: [], count: 0 }))
     ) as unknown as typeof fetch
     render(<MissedSignalsPanel />)
     await waitFor(() => {
@@ -145,8 +145,11 @@ describe('MissedSignalsPanel', () => {
   })
 
   it('shows error state when API fails', async () => {
+    // 用真实 Response 对象: fetchWithFallback 先判 `if (!r.ok)`,
+    // 旧式 `{ json: () => ... }` 缺 .ok 会被当成 HTTP 失败, 错误文案变成
+    // "... HTTP undefined" 而不是后端返回的 'table not migrated'.
     global.fetch = vi.fn(() =>
-      Promise.resolve({ json: () => Promise.resolve({ ok: false, error: 'table not migrated' }) })
+      Promise.resolve(jsonResponse({ ok: false, error: 'table not migrated' }))
     ) as unknown as typeof fetch
     render(<MissedSignalsPanel />)
     // click quality tab

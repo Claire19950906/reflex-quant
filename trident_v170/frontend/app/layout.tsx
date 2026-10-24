@@ -27,17 +27,25 @@ export const metadata: Metadata = {
   },
 }
 
-// v281 PWA: 客户端组件挂载时注册 service worker（/sw.js）。
-// 失败静默 — 不能因为 SW 注册问题影响主流程。
-// v282 修复（2026-10-18）：dev 模式不注册 SW — SW stale cache 会
-// 引用 .next 重生前的 webpack.js module id，导致客户端 hydration 时
-// `__webpack_require__` 拿到 undefined module，
-//   "Cannot read properties of undefined (reading 'call')" at options.factory
-// 注意：必须用 server 端的 process.env.NODE_ENV（layout.tsx 是 server
-// component），不能写 inline JS 字符串里 — 浏览器没 process 全局会 ReferenceError。
-const registerSW = process.env.NODE_ENV === 'production'
-  ? `if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function (err) { console.warn('[Trident SW] register failed:', err); }); }); }`
-  : ''
+// v307: 已彻底移除 Service Worker（v308 起）。
+//
+// 为什么删（不是继续修）：
+//   1. SW 的 `fetch` handler 拦截 `/api/*` 并做 network-first + 缓存兜底，
+//      网络失败时用 `new Response(..., {status:503})` 伪造响应。实测表现为
+//      attribution 页 MU 的 `/api/market/history/MU?interval=10m` 在浏览器里
+//      稳定返 503（耗时 3~4ms，纯缓存命中，没走网络），而同一 URL 用 curl
+//      直连 bridge(8100) / Next rewrite(3030) / 24 并发压测全部 200。
+//      → 前端把"网络故障"误读成"后端 503"，tryOne 重试 3 次全是缓存里的毒响应。
+//   2. SHELL_CACHE 缓存 `/_next/static/*`（stale-while-revalidate），在 `.next`
+//      重建后仍吐旧 webpack chunk，引用已删除的 module id，导致 hydration 报
+//      "Cannot read properties of undefined (reading 'call')"。
+//   3. SW 的设计目标是"弱网/离线下 /review、/replay 仍可读缓存壳"，但 v303
+//      起后端已由 bridge(8100) 全量接管且稳定返回结构化软空值，实时数据不再
+//      依赖离线兜底，该目标已过时。
+//
+// 保留 manifest.json / 图标：PWA 安装能力不受影响，只是没有离线壳缓存。
+// 迁移提示：已安装过 SW 的浏览器需手动清一次（DevTools → Application →
+// Service Workers → Unregister，或 Storage → Clear site data）。
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
@@ -62,8 +70,6 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {/* v281 PWA: 客户端挂载后注册 service worker */}
-        <script dangerouslySetInnerHTML={{ __html: registerSW }} />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
       </head>
       <body className="bg-background font-sans antialiased">

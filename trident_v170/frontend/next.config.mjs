@@ -31,7 +31,8 @@ const SECURITY_HEADERS = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
-      `connect-src 'self' ${backend} ${bridge} ws: wss:`,
+      // backend 与 bridge 默认同址(8100) → 去重, 避免 CSP 里出现重复源
+      `connect-src 'self' ${[...new Set([backend, bridge])].join(' ')} ws: wss:`,
       "font-src 'self' data:",
       "frame-ancestors 'none'",
       "base-uri 'self'",

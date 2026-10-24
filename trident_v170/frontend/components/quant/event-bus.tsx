@@ -1165,10 +1165,11 @@ const EventItem = memo(function EventItem({
         </div>
         <p
           className={
+            // v306 — 去掉 line-clamp-2,新闻正文始终完整展开(原信息丢失问题)
+            // 紧凑模式只保留 padding/字号差异,不再裁断文字
             'break-words font-semibold text-foreground/90 text-pretty ' +
-            // v285 — 紧凑模式：标题最多 2 行 + line-clamp；标准模式无行限（展开时全显示）
-            (compact && !open
-              ? 'text-[12px] leading-snug line-clamp-2'
+            (compact
+              ? 'text-[12px] leading-snug'
               : 'text-[13px] leading-relaxed')
           }
           title={item.news_text}

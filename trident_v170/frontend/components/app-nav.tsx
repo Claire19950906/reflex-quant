@@ -23,8 +23,9 @@ const MAIN_TABS: Tab[] = [
   // v2026.10.15: 去掉无解释的"9" badge, 改用 tooltip 提示「已收敛多源入口」
   { href: '/discover', label: '发现', badge: '多', badgeTitle: '已收敛 7+ 探索/宏观/资金入口' },
   // v302+ P3: 链上资金流向图 — 8 大类资产 × 4 类资金源(SVG 粒子动画)
-  // v302+ Round 2: /capital-flow 页面未建,临时指向 /discover (发现页) 避免 404
-  { href: '/discover', label: '资金流向', badge: '→', badgeTitle: '暂合并到 /discover, 待 /capital-flow 页面建好再拆开' },
+  // v302+ Round 3: /capital-flow 占位页已建,href 切到 /capital-flow 解决 React
+  // duplicate key warning (本 tab 与"发现"不能再共用 /discover 作为 key)
+  { href: '/capital-flow', label: '资金流向', badge: '→', badgeTitle: 'v302+ P3 链上资金流向 (8 资产 × 4 资金源 · SVG 粒子)' },
   // v302+ P3: 跨市场异动扫描器 — 4 源聚合 + WS 实时 + 8 大类资产 + sector/套利/告警面板
   // 测试期望 href=/market-scanner（components/app-nav.test.tsx）。注释里提的 Round 2 临时指向
   // /discover 已不再需要——测试契约稳定下来之后,直接使用 /market-scanner 路由。

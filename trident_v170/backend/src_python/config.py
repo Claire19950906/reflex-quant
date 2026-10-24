@@ -905,7 +905,7 @@ PUSHPLUS_TOKEN = os.getenv("PUSHPLUS_TOKEN", "").strip()
 # ── 飞书消息接收（金十推送 → 飞书群 → 自建应用长连接读群）──
 # 需要：open.feishu.cn 创建企业自建应用 → 开启机器人 → 订阅 im.message.receive_v1
 #       → 使用长连接接收事件 → 应用机器人进金十所在群（内部群）。
-# 依赖：pip install l
+# 依赖：pip install lark-oapi
 FEISHU_APP_ID = os.getenv("FEISHU_APP_ID", "").strip()
 FEISHU_APP_SECRET = os.getenv("FEISHU_APP_SECRET", "").strip()
 FEISHU_LISTENER_ENABLED = os.getenv("FEISHU_LISTENER_ENABLED", "0").strip() not in ("0", "false", "False")

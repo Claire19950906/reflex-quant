@@ -36,9 +36,31 @@ v300 修复: 为 causal_chains 表补齐"策略链路"schema 列, 修复 bridge_
 - 幂等: 重复执行安全 (已存在的列跳过)。
 - 默认 dry-run, 必须显式 --apply 才写库。
 - 写库前自动备份 (SQLite 在线备份 API, 正确处理 WAL)。
-- chain_id 由 id 派生 ('CC_'||id), 避免与 outcomes.chain_id 冲突。
+- chain_id 由 id 派生, 取值 CAST(id AS TEXT) —— 必须与
+  causal_chain_outcomes.chain_id 同键 (见下方"chain_id 同键约束")。
 - asset 置为 'UNKNOWN' —— 知识库条目没有资产维度, 不臆造。
 - trigger_pattern / chain_steps 置空 —— 知识库条目没有多步链路, 不臆造。
+
+chain_id 同键约束 (重要)
+-----------------------
+causal_chain_outcomes.chain_id 存的是 evaluator 写入的
+ChainRow.chain_id, 而 causal_chain_evaluator.load_active_chains 是
+"知识库版兼容层": 它 SELECT id, name, cause, effect, trigger_words,
+weight, 然后 chain_id=r[0] (即 causal_chains.id, 落库为 TEXT)。
+因此 outcomes.chain_id = CAST(causal_chains.id AS TEXT) = '103' 这种数字文本。
+
+v300 初版迁移把 chain_id 设成 'CC_'||id, 造成:
+  - 269 条历史 outcomes 全部变成孤儿 (o.chain_id = c.chain_id 匹配 0 条)
+  - recalibrate_signals.compute_new_rows 的 JOIN 静默返回空集
+  - gub_capability_audit 的 INNER JOIN 指标归零
+  - _edit_helper 按 chain_id 定位链时找不到行
+所以 chain_id 必须用 CAST(id AS TEXT), 与 outcomes 同键。
+
+新增链的 chain_id 由触发器补齐
+------------------------------
+causal_chains.create_chain 与 causal_chain_expander 都不写 chain_id,
+新行会是 NULL。本脚本建 AFTER INSERT 触发器统一补齐 chain_id/active/source,
+覆盖所有 INSERT 入口, 无需逐个改业务代码。
 
 用法
 ----
@@ -56,6 +78,10 @@ from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_DB = BACKEND_DIR / "trident_event_bus.db"
+
+# 派生规则与 evaluator 同源 (单一事实来源), 避免两套语义漂移。
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from causal_chain_evaluator import derive_strategy_columns  # noqa: E402
 
 # (列名, 类型定义) —— 顺序即添加顺序
 STRATEGY_COLUMNS: list[tuple[str, str]] = [
@@ -111,6 +137,29 @@ def analyze(db_path: Path) -> int:
         print(f"  已有 enabled (知识库版): {'enabled' in cols}")
         print(f"  已有 active  (策略版):   {'active' in cols}")
 
+        # chain_id 键一致性体检 (与 causal_chain_outcomes 同键才算正确)
+        if "chain_id" in cols:
+            n_mismatch = conn.execute(
+                "SELECT COUNT(*) FROM causal_chains "
+                "WHERE chain_id IS NULL OR chain_id='' "
+                "OR chain_id <> CAST(id AS TEXT)"
+            ).fetchone()[0]
+            print(f"  chain_id 与 CAST(id AS TEXT) 不一致的行数: {n_mismatch}"
+                  f"  {'[OK]' if n_mismatch == 0 else '[FIX] 迁移会修正'}")
+            if conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='causal_chain_outcomes'"
+            ).fetchone():
+                n_join = conn.execute(
+                    "SELECT COUNT(*) FROM causal_chain_outcomes o "
+                    "JOIN causal_chains c ON o.chain_id = c.chain_id"
+                ).fetchone()[0]
+                n_out = conn.execute(
+                    "SELECT COUNT(*) FROM causal_chain_outcomes"
+                ).fetchone()[0]
+                print(f"  outcomes 按 chain_id 关联成功: {n_join} / {n_out}"
+                      f"  {'[OK]' if n_join == n_out else '[FIX] 迁移会修复'}")
+
         if not missing:
             print("  [OK] 策略版列已齐全, 无需迁移")
             return 0
@@ -137,10 +186,6 @@ def backup(db_path: Path) -> Path:
         src.close()
     return dst
 
-    "chain_id", "asset", "trigger_pattern", "chain_steps", "confidence",
-    "hit_count", "miss_count", "version", "expected_direction",
-    "magnitude_lo", "magnitude_hi", "trigger_keywords", "last_verified_ts",
-
 
 def apply_migration(db_path: Path, do_backup: bool = True) -> int:
     if not db_path.exists():
@@ -155,9 +200,10 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
     try:
         cols = _existing_cols(conn, "causal_chains")
         before_rows = conn.execute("SELECT COUNT(*) FROM causal_chains").fetchone()[0]
+        has_outcomes = _table_exists(conn, "causal_chain_outcomes")
         before_outcomes = conn.execute(
             "SELECT COUNT(*) FROM causal_chain_outcomes"
-        ).fetchone()[0]
+        ).fetchone()[0] if has_outcomes else 0
 
         added = 0
         for name, typ in STRATEGY_COLUMNS:
@@ -169,18 +215,52 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
             print(f"  [OK] ADD COLUMN {name} {typ}")
 
         # 映射: enabled -> active, origin -> source
-        # chain_id 由 id 派生, 避免与 outcomes.chain_id 冲突
+        # chain_id 取 CAST(id AS TEXT): 与 causal_chain_outcomes.chain_id 同键
+        # (evaluator 写的是 causal_chains.id 的文本形式)。
+        # 无条件执行 → 幂等且能自愈早期迁移写入的 'CC_'||id 值。
         conn.execute(
             "UPDATE causal_chains SET "
             "  active = COALESCE(enabled, 1), "
             "  source = COALESCE(origin, 'manual'), "
-            "  chain_id = 'CC_' || id, "
+            "  chain_id = CAST(id AS TEXT), "
             "  asset = COALESCE(asset, 'UNKNOWN'), "
             "  trigger_pattern = COALESCE(trigger_pattern, 'unknown'), "
             "  chain_steps = COALESCE(chain_steps, '[]') "
-            "WHERE chain_id IS NULL OR chain_id = ''"
+        )
+
+        # 新插入的链 (create_chain / causal_chain_expander) 都不写 chain_id,
+        # 会留下 NULL —— 用触发器统一补齐, 覆盖所有 INSERT 入口。
+        conn.execute(
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_causal_chains_fill_strategy
+            AFTER INSERT ON causal_chains
+            BEGIN
+                UPDATE causal_chains SET
+                    chain_id       = CAST(NEW.id AS TEXT),
+                    active        = CASE WHEN NEW.enabled IS NULL
+                                        THEN COALESCE(NEW.active, 1)
+                                        ELSE NEW.enabled END,
+                    source        = COALESCE(NEW.origin, NEW.source, 'manual'),
+                    asset         = COALESCE(NEW.asset, 'UNKNOWN'),
+                    trigger_pattern = COALESCE(NEW.trigger_pattern, 'unknown'),
+                    chain_steps   = COALESCE(NEW.chain_steps, '[]')
+                WHERE id = NEW.id;
+            END
+            """
         )
         conn.commit()
+
+        # 从知识列派生策略列 (asset / trigger_keywords / expected_direction /
+        # confidence / magnitude_lo-hi)。规则与 causal_chain_evaluator.load_active_chains
+        # 完全同源: 资产取 trigger_words 里第一个有行情的 ticker。
+        # 必须做这一步 —— bridge 的 _match_chains_for_outcome 用
+        # `WHERE active=1 AND asset=?` 匹配, asset 全是 'UNKNOWN' 时命中恒为 0,
+        # hit/miss 反馈闭环会完全空转 (实测 hit/miss 累计 0/0)。
+        stats = derive_strategy_columns(conn)
+        conn.commit()
+        print(f"  [OK] 派生策略列: 更新 {stats['updated']} 行, "
+              f"其中 {stats['with_asset']} 行有真实资产 "
+              f"(可用行情资产 {stats['priced_assets']} 个)")
 
         print("\n=== 自检: bridge_server 实际查询 ===")
         ok = True
@@ -209,7 +289,7 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
         after_rows = conn.execute("SELECT COUNT(*) FROM causal_chains").fetchone()[0]
         after_outcomes = conn.execute(
             "SELECT COUNT(*) FROM causal_chain_outcomes"
-        ).fetchone()[0]
+        ).fetchone()[0] if has_outcomes else 0
         n_enabled = conn.execute(
             "SELECT COUNT(*) FROM causal_chains WHERE enabled=1").fetchone()[0]
         n_active = conn.execute(
@@ -217,6 +297,28 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
         n_null_cc = conn.execute(
             "SELECT COUNT(*) FROM causal_chains WHERE chain_id IS NULL "
             "OR chain_id=''").fetchone()[0]
+        n_cc_mismatch = conn.execute(
+            "SELECT COUNT(*) FROM causal_chains WHERE chain_id <> CAST(id AS TEXT)"
+        ).fetchone()[0]
+        n_out_join = conn.execute(
+            "SELECT COUNT(*) FROM causal_chain_outcomes o "
+            "JOIN causal_chains c ON o.chain_id = c.chain_id"
+        ).fetchone()[0] if has_outcomes else 0
+        n_out_total = conn.execute(
+            "SELECT COUNT(*) FROM causal_chain_outcomes"
+        ).fetchone()[0] if has_outcomes else 0
+        n_trigger = conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' "
+            "AND name='trg_causal_chains_fill_strategy'"
+        ).fetchone()[0]
+        n_real_asset = conn.execute(
+            "SELECT COUNT(*) FROM causal_chains "
+            "WHERE asset IS NOT NULL AND asset <> '' AND asset <> 'UNKNOWN'"
+        ).fetchone()[0]
+        n_unknown_asset = conn.execute(
+            "SELECT COUNT(*) FROM causal_chains "
+            "WHERE asset IS NULL OR asset = '' OR asset = 'UNKNOWN'"
+        ).fetchone()[0]
 
         print("\n=== 完整性自检 ===")
         print(f"  新增列数: {added}")
@@ -225,6 +327,18 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
         print(f"  enabled=1 行数: {n_enabled}")
         print(f"  active=1 行数:  {n_active}  (应等于 enabled)")
         print(f"  chain_id 为空的行数: {n_null_cc} (应为 0)")
+        print(f"  chain_id <> CAST(id AS TEXT) 的行数: {n_cc_mismatch} (应为 0)")
+        if has_outcomes:
+            print(f"  outcomes 与 chains 同键 join: {n_out_join} / {n_out_total} (应相等)")
+        else:
+            print("  outcomes 与 chains 同键 join: 跳过 (无 causal_chain_outcomes 表)")
+        print(f"  补齐触发器已安装: {'是' if n_trigger else '否'}")
+        print(f"  有真实资产的链: {n_real_asset}   (asset='UNKNOWN': {n_unknown_asset})")
+        dist = conn.execute(
+            "SELECT asset, COUNT(*) FROM causal_chains WHERE active=1 "
+            "GROUP BY asset ORDER BY 2 DESC LIMIT 8"
+        ).fetchall()
+        print(f"  active 链资产分布 (top8): {dist}")
 
         if before_rows != after_rows or before_outcomes != after_outcomes:
             ok = False
@@ -235,6 +349,15 @@ def apply_migration(db_path: Path, do_backup: bool = True) -> int:
         if n_enabled != n_active:
             ok = False
             print("  [FAIL] enabled 与 active 计数不一致")
+        if n_cc_mismatch != 0:
+            ok = False
+            print("  [FAIL] chain_id 与 CAST(id AS TEXT) 不一致 (会导致 outcomes 孤儿)")
+        if n_out_total and n_out_join != n_out_total:
+            ok = False
+            print("  [FAIL] outcomes 与 causal_chains 无法按 chain_id 关联")
+        if not n_trigger:
+            ok = False
+            print("  [FAIL] 补齐触发器未安装 (新链将缺 chain_id)")
 
         for label, sql in [
             ("知识库查询 (kb_facade)",
@@ -265,10 +388,29 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="实际写库 (默认 dry-run)")
     ap.add_argument("--db-path", default=str(DEFAULT_DB), help="数据库路径")
     ap.add_argument("--no-backup", action="store_true", help="跳过备份 (不推荐)")
+    ap.add_argument("--derive-only", action="store_true",
+                    help="只重新派生策略列 (不改结构, 不备份)")
     args = ap.parse_args()
 
     db_path = Path(args.db_path).expanduser().resolve()
     print(f"数据库: {db_path}\n")
+
+    if args.derive_only:
+        conn = sqlite3.connect(db_path, timeout=30)
+        try:
+            stats = derive_strategy_columns(conn)
+            conn.commit()
+            print("=== 派生策略列完成 ===")
+            print(f"  更新行数: {stats['updated']}")
+            print(f"  有真实资产的链: {stats['with_asset']}")
+            print(f"  可用行情资产: {stats['priced_assets']}")
+            return 0
+        except Exception as e:
+            conn.rollback()
+            print(f"[ERROR] {e}", file=sys.stderr)
+            return 2
+        finally:
+            conn.close()
 
     if not args.apply:
         print("=== DRY-RUN (只读体检, 未修改任何数据) ===\n")

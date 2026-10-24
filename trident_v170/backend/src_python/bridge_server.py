@@ -3849,12 +3849,27 @@ def _match_chains_for_outcome(conn, *, asset: str, outcome_pct: float, action: s
         print(f"[_match_chains_for_outcome SELECT err] {e}", file=sys.stderr)
         return {"matched": 0, "hits": 0, "misses": 0, "details": [], "error": str(e)}
 
+    try:
+        from causal_chain_evaluator import meaningful_keyword_hit
+    except Exception:  # evaluator 不可用 → 退回宽松匹配 (旧行为)
+        meaningful_keyword_hit = None
+
     blob = (text_blob or "").lower()
     hits = misses = matched = 0
     details: list[dict] = []
     for c in chains:
         keywords = [k.strip().lower() for k in (c["trigger_keywords"] or "").split(",") if k.strip()]
-        kw_matched = (not keywords) or any(kw in blob for kw in keywords)
+        if not keywords:
+            # 无关键词 → 视作方向-only (保持原行为)
+            kw_hits, kw_matched = [], True
+        elif meaningful_keyword_hit is None:
+            kw_hits, kw_matched = keywords, True
+        else:
+            # 与 evaluator._kw_match 同规则: 至少命中一个"有意义"的关键词。
+            # 否则 'buy'/'sell' 这类高频词会让同资产的所有链同时命中,
+            # 命中量被放大几十倍, hit_rate 失去意义。
+            kw_hits = meaningful_keyword_hit(blob, keywords, c["asset"] or "")
+            kw_matched = bool(kw_hits)
         if not kw_matched:
             details.append({"chain_id": c["chain_id"], "skip_reason": "kw_no_match"})
             continue
@@ -3879,7 +3894,7 @@ def _match_chains_for_outcome(conn, *, asset: str, outcome_pct: float, action: s
                 )
             hits += 1
             details.append({"chain_id": c["chain_id"], "verdict": "hit", "mag": round(mag, 2),
-                            "kws_hit": [k for k in keywords if k in blob][:3]})
+                            "kws_hit": kw_hits[:3]})
         elif not dir_match and mag_match:
             if not dry_run:
                 conn.execute(
@@ -3890,7 +3905,7 @@ def _match_chains_for_outcome(conn, *, asset: str, outcome_pct: float, action: s
                 )
             misses += 1
             details.append({"chain_id": c["chain_id"], "verdict": "miss", "mag": round(mag, 2),
-                            "kws_hit": [k for k in keywords if k in blob][:3]})
+                            "kws_hit": kw_hits[:3]})
         else:
             details.append({"chain_id": c["chain_id"], "skip_reason": "out_of_mag_range",
                             "mag": round(mag, 2), "need": f"{c['magnitude_lo']}~{c['magnitude_hi']}"})

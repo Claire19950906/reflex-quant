@@ -293,6 +293,8 @@ def expand_from_insights(
                         "origin": ins_origin,
                         "scope": ins_scope,
                     })
+        # trigger_words 被改动 → 派生的 asset/trigger_keywords 需要跟着重算
+        touched_ids: set[int] = set()
         if chain_addition_log:
             for cid, additions in chain_addition_log.items():
                 unique_additions = []
@@ -324,6 +326,7 @@ def expand_from_insights(
                             "UPDATE causal_chains SET trigger_words=?, updated_at=datetime('now','localtime') WHERE id=?",
                             (new_str, cid),
                         )
+                        touched_ids.add(int(cid))
                         # audit_log 表在某些部署不存在，做容错
                         try:
                             conn.execute(
@@ -361,6 +364,7 @@ def expand_from_insights(
                     ),
                 )
                 new_id = cur.lastrowid
+                touched_ids.add(int(new_id))
                 stats["new_chains"].append({
                     "id": new_id,
                     "name": new_name,
@@ -383,6 +387,15 @@ def expand_from_insights(
                 except sqlite3.OperationalError:
                     pass
         if not dry_run:
+            # 重新派生被改动链的策略列 (asset/trigger_keywords/expected_direction),
+            # 否则 trigger_words 变了而派生列没变, bridge 匹配到的仍是旧资产。
+            if touched_ids:
+                try:
+                    from causal_chain_evaluator import derive_strategy_columns
+                    d = derive_strategy_columns(conn, chain_ids=sorted(touched_ids))
+                    stats["derived_chains"] = d["updated"]
+                except Exception as e:  # 策略列尚不存在 → 不阻断主流程
+                    print(f"[R5] 派生策略列失败 (不影响主流程): {e}", file=sys.stderr)
             conn.commit()
     finally:
         conn.close()

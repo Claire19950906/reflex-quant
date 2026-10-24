@@ -12,10 +12,25 @@ CRUD 走 API（api_server），engine（ai_worker）只读命中条目（5s TTL 
 from __future__ import annotations
 
 import sqlite3
+import sys
 import time
 from typing import Any, Dict, List, Optional
 
 import db
+
+
+def _derive_strategy(conn, chain_id: int) -> None:
+    """把策略列从知识列派生出来 (best-effort, 失败不影响知识库入库)。
+
+    bridge 的因果链匹配用 `WHERE active=1 AND asset=?`, asset 必须是由
+    trigger_words 推导出的真实 ticker, 否则新链永远匹配不到、反馈闭环空转。
+    推导规则与 causal_chain_evaluator.load_active_chains 同源。
+    """
+    try:
+        from causal_chain_evaluator import derive_strategy_columns
+        derive_strategy_columns(conn, chain_ids=[chain_id])
+    except Exception as e:  # 策略列尚不存在 / 推导失败 → 不阻断入库
+        print(f"[causal_chains] 派生策略列失败 (不影响入库): {e}", file=sys.stderr)
 
 
 def _connect() -> sqlite3.Connection:
@@ -106,8 +121,12 @@ def add_chain(
              (invalidation or "").strip()[:500], origin, weight_f),
         )
         conn.commit()
+        new_id = int(cur.lastrowid)
+        # 派生策略列 (chain_id/asset/trigger_keywords/expected_direction/...)
+        _derive_strategy(conn, new_id)
+        conn.commit()
         _invalidate_cache()
-        return {"ok": True, "id": int(cur.lastrowid)}
+        return {"ok": True, "id": new_id}
     finally:
         if own:
             conn.close()

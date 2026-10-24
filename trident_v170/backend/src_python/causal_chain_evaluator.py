@@ -172,35 +172,131 @@ def load_active_chains(conn, priced_assets=None):
     return out
 
 
-def _kw_match(headline, body, kws, asset):
-    """返回匹配上的 keyword 列表.
-    规则: 至少 1 个非资产代码/常见词关键词命中 (避免单纯 ticker 误匹配)."""
-    text = (headline or "") + " " + (body or "")
+def derive_strategy_columns(conn, chain_ids=None) -> dict:
+    """把"策略链路"列从知识库列派生出来 —— 与 load_active_chains 完全同源.
+
+    背景: causal_chains 一表两用。
+      知识列 (name/cause/effect/trigger_words/enabled/origin/weight) —— 真实数据源
+      策略列 (chain_id/asset/trigger_keywords/expected_direction/magnitude_*) ——
+        bridge_server 与反馈闭环按这些列查询, 缺失时整条链路静默失效。
+
+    派生规则 (与 load_active_chains 逐条一致, 避免两套语义漂移):
+      chain_id            = CAST(id AS TEXT)   —— 必须与 outcomes.chain_id 同键
+      asset               = trigger_words 里第一个有行情的 ticker, 无则 'UNKNOWN'
+      trigger_keywords    = trigger_words 去掉全部 ticker 与结构性 stopword 后的剩余词
+      expected_direction  = _infer_direction(name)
+      magnitude_lo / hi   = DEFAULT_MAG_LO / DEFAULT_MAG_HI
+      confidence          = weight (夹到 [0, 1])
+
+    asset 必须是真实 ticker: bridge 的 _match_chains_for_outcome 用
+    `WHERE active=1 AND asset=?` 匹配, asset 为 'UNKNOWN' 时命中恒为 0,
+    hit/miss 反馈闭环会完全空转。
+
+    chain_ids=None → 全表; 否则只处理指定 id (新建链入库后立即调用)。
+    返回统计 dict: {"updated", "with_asset", "priced_assets"}。
+    """
+    priced_assets = _load_priced_assets(conn)
+
+    if chain_ids is None:
+        rows = conn.execute(
+            "SELECT id, name, trigger_words, weight FROM causal_chains"
+        ).fetchall()
+    else:
+        ids = [int(i) for i in chain_ids]
+        if not ids:
+            return {"updated": 0, "with_asset": 0, "priced_assets": len(priced_assets)}
+        qmarks = ",".join("?" * len(ids))
+        rows = conn.execute(
+            f"SELECT id, name, trigger_words, weight FROM causal_chains "
+            f"WHERE id IN ({qmarks})", ids
+        ).fetchall()
+
+    updated = with_asset = 0
+    for cid, name, trigger_words, weight in rows:
+        parts = [p.strip() for p in (trigger_words or "").split(",") if p.strip()]
+
+        # 资产: trigger_words 里第一个能匹配行情的 ticker
+        asset = None
+        for p in parts:
+            if p.upper() in priced_assets:
+                asset = p.upper()
+                break
+
+        # 关键词: 剔除所有 ticker (不只选中的那个) 与结构性 stopword,
+        # 否则残留 ticker 会被当成触发词造成跨资产串味。
+        kws = [p for p in parts
+               if p.lower() not in _CHAIN_STOPWORDS and p.upper() not in priced_assets]
+
+        try:
+            conf = float(weight)
+        except (TypeError, ValueError):
+            conf = 0.5
+        conf = max(0.0, min(1.0, conf))
+
+        if asset is None:
+            # 无行情资产 → bridge 无法按 asset 命中, 保持 UNKNOWN 且不给关键词
+            new_asset, new_kws = "UNKNOWN", ""
+        else:
+            new_asset, new_kws = asset, ",".join(kws)
+            with_asset += 1
+
+        conn.execute(
+            "UPDATE causal_chains SET chain_id=CAST(id AS TEXT), asset=?, trigger_keywords=?,"
+            " expected_direction=?, magnitude_lo=?, magnitude_hi=?, confidence=?,"
+            " updated_at=strftime('%s','now') WHERE id=?",
+            (new_asset, new_kws, _infer_direction(name),
+             DEFAULT_MAG_LO, DEFAULT_MAG_HI, conf, cid),
+        )
+        updated += 1
+
+    return {"updated": updated, "with_asset": with_asset,
+            "priced_assets": len(priced_assets)}
+
+
+_COMMON_TICKERS = {"btc", "eth", "sol", "solana", "xrp", "bnb", "ada", "doge", "mu",
+                   "tsla", "nvda", "wti", "xau", "gold", "oil", "skhynix", "micron",
+                   "cardano", "fed", "fomc", "sec", "opec"}
+# 常见 ticker/通用词 —— 单独出现不足以判定链路相关, 需额外 keyword 确认
+
+
+def meaningful_keyword_hit(text: str, kws: Iterable[str], asset: str = "") -> list[str]:
+    """返回命中的关键词, 但要求至少命中一个"有意义"的关键词。
+
+    规则 (与 _kw_match 一致, 供 bridge 等其它消费者复用):
+      - 纯 ASCII 关键词: 需 len>=4 且不在常见 ticker/通用词集合里
+      - 含非 ASCII 的关键词: 需 len>=2
+
+    只有 ticker 或过短词命中时视为未命中 —— 否则 'buy'/'sell' 这类
+    高频词会让所有链同时命中, 命中量被严重放大。
+    asset: 该链自身的资产代码, 同样不算有意义命中 (避免资产名自证)。
+    """
+    text = text or ""
     text_lower = text.lower()
-    asset_lower = asset.lower() if asset else ""
-    # 常见 ticker 列表 (避免 ticker 单独触发)
-    tickers = {asset_lower, "btc", "eth", "sol", "solana", "xrp", "bnb", "ada", "doge", "mu",
-               "tsla", "nvda", "wti", "xau", "gold", "oil", "skhynix", "micron", "cardano",
-               "fed", "fomc", "sec", "opec"}  # 增加常见 ticker/通用词, 需额外 keyword 确认
-    hit = []
-    hit_meaningful = []  # 非 ticker 命中
-    for k in kws:
+    tickers = set(_COMMON_TICKERS)
+    if asset:
+        tickers.add(asset.lower())
+    hit: list[str] = []
+    meaningful: list[str] = []
+    for k in kws or []:
         if not k:
             continue
         if re.match(r"^[A-Za-z0-9_]+$", k):
             if k.lower() in text_lower:
                 hit.append(k)
                 if k.lower() not in tickers and len(k) >= 4:
-                    hit_meaningful.append(k)
+                    meaningful.append(k)
         else:
             if k in text:
                 hit.append(k)
                 if len(k) >= 2:
-                    hit_meaningful.append(k)
-    # 必须有至少 1 个"有意义的"关键词
-    if not hit_meaningful:
-        return []
-    return hit
+                    meaningful.append(k)
+    return hit if meaningful else []
+
+
+def _kw_match(headline, body, kws, asset):
+    """返回匹配上的 keyword 列表.
+    规则: 至少 1 个非资产代码/常见词关键词命中 (避免单纯 ticker 误匹配)."""
+    return meaningful_keyword_hit((headline or "") + " " + (body or ""), kws, asset)
 
 
 def _load_news_with_content(conn, days):

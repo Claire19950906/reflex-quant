@@ -54,7 +54,11 @@ def decode_watermark_token(token: str) -> dict:
     try:
         padded = token + "=" * (-len(token) % 4)
         raw = base64.urlsafe_b64decode(padded.encode())
-        return json.loads(raw)
+        data = json.loads(raw)
+        # 2026-11-20: 只接受对象。base64 里塞一个 JSON 数组也是"合法 token"，
+        # 但下游一律按 dict 用（decoded.get("iid")）—— 不挡就在这里 AttributeError，
+        # 表现是整页 500，而不是"水印没注入"。
+        return data if isinstance(data, dict) else {}
     except Exception:
         return {}
 

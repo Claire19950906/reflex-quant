@@ -6,6 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
+[![ci](https://github.com/Claire19950906/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/Claire19950906/reflex-quant/actions)
 [![Stage](https://img.shields.io/badge/stage-paper%20only-orange)](#边界写在前面)
 
 **中文** | [English](./README.en.md)
@@ -126,6 +127,10 @@ cd frontend && npm install && npm run dev # :3000
 
 | 想了解 | 去哪 |
 |---|---|
+| 10 分钟跑起来 | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) |
+| 系统怎么运转 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
+| 常见疑问 | [`docs/FAQ.md`](./docs/FAQ.md) |
+| 下一步做什么 | [`docs/ROADMAP.md`](./docs/ROADMAP.md) |
 | 技术口径、实测表格、已知缺口 | [`docs/README-详细版.md`](./docs/README-详细版.md) |
 | 版本变更 | [`CHANGELOG.md`](./CHANGELOG.md) |
 | 部署 / 安全 / 参与 | [`DEPLOY.md`](./DEPLOY.md) · [`SECURITY.md`](./SECURITY.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) |

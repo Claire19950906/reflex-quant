@@ -15,7 +15,7 @@ name: ci
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, github-clean]
   pull_request:
   workflow_dispatch:
   # 每晚 03:17（UTC+8）跑一次全量；之前注释里写了 nightly，但 on: 里没有 schedule，

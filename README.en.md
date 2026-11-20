@@ -6,6 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
+[![ci](https://github.com/Claire19950906/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/Claire19950906/reflex-quant/actions)
 [![Stage](https://img.shields.io/badge/stage-paper%20only-orange)](#boundaries-up-front)
 
 **English** | [中文](./README.md)
@@ -126,6 +127,10 @@ Or `docker compose up`. Zero-cost deployment: [`DEPLOY.md`](./DEPLOY.md).
 
 | Looking for | Where |
 |---|---|
+| Run it in 10 minutes | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) |
+| How it works | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
+| FAQ | [`docs/FAQ.md`](./docs/FAQ.md) |
+| What is next | [`docs/ROADMAP.md`](./docs/ROADMAP.md) |
 | Technical detail, measured tables, known gaps | [`docs/README-详细版.md`](./docs/README-详细版.md) |
 | Changes | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Deploy / security / contributing | [`DEPLOY.md`](./DEPLOY.md) · [`SECURITY.md`](./SECURITY.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) |

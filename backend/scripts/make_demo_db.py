@@ -27,13 +27,20 @@ sys.path.insert(0, os.path.join(ROOT, "src_python"))
 
 import db  # noqa: E402
 
-SYMBOLS = ["BTCUSDT", "ETHUSDT", "XAUUSD", "SPX", "NVDA"]
+# 与系统口径一致（alt_fundamental.SUPPORTED / seed_event_dim.INITIAL_ASSETS）
+SYMBOLS = ["BTC", "ETH", "SOL", "XAU", "XAG", "CU", "WTI", "DXY",
+           "EURUSD", "USDJPY", "UST", "US2Y", "SPX", "NDX", "CSI300", "NVDA", "AAPL"]
 NEWS = [
-    ("现货比特币 ETF 单日净流出 4.2 亿美元", "BTCUSDT"),
+    ("现货比特币 ETF 单日净流出 4.2 亿美元", "BTC"),
     ("美联储官员称通胀回落慢于预期", "SPX"),
     ("半导体库存周期见底信号出现", "NVDA"),
-    ("黄金实际利率分位升至 92%", "XAUUSD"),
-    ("以太坊链上手续费环比下降 12%", "ETHUSDT"),
+    ("黄金实际利率分位升至 92%", "XAU"),
+    ("以太坊链上手续费环比下降 12%", "ETH"),
+    ("原油库存意外增加 380 万桶", "WTI"),
+    ("美元指数两年利差分位回到中性", "USDJPY"),
+    ("沪深300 估值分位降至近三年低位", "CSI300"),
+    ("白银金银比升至 92，相对黄金偏贵", "XAG"),
+    ("铜投机净多降至 4% 分位", "CU"),
 ]
 
 
@@ -129,6 +136,17 @@ def seed(conn: sqlite3.Connection, days: int = 400) -> dict:
         counts["t2_account"], counts["t2_positions"] = 1, 3
     except Exception as exc:  # 纸面账本不可用时不阻塞其它演示数据
         counts["t2_error"] = str(exc)[:80]
+
+    # ── 维度表（资产 / 事件类型）：让图谱、日历等页面有东西可显示 ──
+    try:
+        import seed_event_dim
+
+        conn.row_factory = sqlite3.Row   # seed_event_dim 用列名取值
+        counts.update({f"dim_{k}": v for k, v in seed_event_dim.seed_all(conn).items()})
+    except Exception as exc:
+        counts["dim_error"] = str(exc)[:80]
+    finally:
+        conn.row_factory = None
 
     conn.commit()
     return counts

@@ -81,6 +81,19 @@ def _is_already_decided(conn: sqlite3.Connection, signal_id: int) -> bool:
     return False
 
 
+def _opt(row, key, default=None):
+    """安全取列值：`critical_price_moves` 的行是 sqlite3.Row，**没有 .get()**。
+
+    v513: propose_one 原来写 `move.get("news_id")`，而调用方传的都是 sqlite3.Row，
+    每一行都会 AttributeError 抛在 write_decision 之前 —— 决策产线实际零产出
+    （run_backfill 里异常上抛，整批中断）。这里统一按"取不到就是 None"处理。
+    """
+    try:
+        return row[key]
+    except (IndexError, KeyError, TypeError):
+        return default
+
+
 def _action_from_move(move_pct: float) -> str:
     if move_pct > HOLD_BAND_PCT:
         return "BUY"
@@ -211,11 +224,11 @@ def propose_one(conn: sqlite3.Connection, move: sqlite3.Row) -> Dict[str, Any]:
         decision_type="ENTRY" if action in ("BUY", "SELL") else "REJECT",
         source=_dw.SOURCE_ALGO_MOVE,
         decision_ts=int(move["ts"]),
-        news_id=move.get("news_id"),
+        news_id=_opt(move, "news_id"),
         entry_price=price,
-        planned_stop=move.get("planned_stop"),
-        planned_target=move.get("planned_target"),
-        size_usdt=move.get("size_usdt"),
+        planned_stop=_opt(move, "planned_stop"),
+        planned_target=_opt(move, "planned_target"),
+        size_usdt=_opt(move, "size_usdt"),
         deny_reason=None if action in ("BUY", "SELL") else rationale[:2000],
         context=_ctx,
         score=confidence,
@@ -230,7 +243,7 @@ def propose_one(conn: sqlite3.Connection, move: sqlite3.Row) -> Dict[str, Any]:
     #       两跳), 命中才挂, 挂不上就**不挂** —— 挂错比不挂更危险。
     try:
         from feeds.news_decision_link import link_news_to_decision as _lnk
-        _lnk(conn, decision_id, move.get("news_id"))
+        _lnk(conn, decision_id, _opt(move, "news_id"))
     except Exception as exc:
         print(f"[DECISION-ENGINE] news link skipped: {type(exc).__name__}: {exc}",
               flush=True)

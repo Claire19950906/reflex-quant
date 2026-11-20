@@ -30,7 +30,7 @@ import realtime_filter
 
 requests.Session.trust_env = False
 BASE = "https://data.sec.gov/submissions/CIK{cik}.json"
-HEADERS = {"User-Agent": "trident-research/1.0 (claire@zhang.local)",
+HEADERS = {"User-Agent": "trident-research/1.0 (research@example.com)",
            "Accept": "application/json"}
 TIMEOUT = 15
 SOURCE = "sec_edgar"

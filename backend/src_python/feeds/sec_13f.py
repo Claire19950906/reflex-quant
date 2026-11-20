@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BACKEND_DIR, "trident_event_bus.db")
-UA = "Trident Research claire@example.com"
+UA = "Trident Research research@example.com"
 
 # 只放“公开、长期可查、13F 连续申报”的人/机构
 MANAGERS: List[Tuple[str, str, str]] = [

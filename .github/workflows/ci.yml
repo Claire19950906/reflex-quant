@@ -100,7 +100,7 @@ jobs:
         working-directory: backend
         run: |
           python -m pytest tests/ -q -p no:cacheprovider \
-            -k "dimension or reflection or risk or gate or contract or schema or registry or api_format or api_pure" \
+            -k "dimension or reflection or risk or gate or contract or schema or registry or api_format or api_pure or v50" \
             --maxfail=20 \
             --cov=src_python --cov-report=term --cov-report=xml \
             --cov-fail-under=20

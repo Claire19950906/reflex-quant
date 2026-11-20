@@ -53,9 +53,11 @@ def test_analyze_still_judged_hang_at_30min():
 
 
 def test_analyze_within_threshold_is_normal():
+    # STEP_HANG_AFTER_S 现为固定 700s（不再等于 3×threshold），
+    # 所以"阈值内不判死"这条要靠显式 hang_after 表达，不能吃默认值。
     hung, _, _, restart = wd.decide(
         True, age=5.0, uptime=3600.0, threshold=600.0,
-        step_age=1200.0, step="analyze")
+        step_age=1200.0, step="analyze", hang_after=1800.0)
     assert not hung and not restart
 
 

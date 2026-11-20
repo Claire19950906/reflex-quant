@@ -10,6 +10,8 @@
 """
 import sqlite3
 import sys
+
+import pytest
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -18,6 +20,11 @@ sys.path.insert(0, str(BACKEND / "src_python"))
 import causal_chains as cc
 
 LIVE_DB = BACKEND / "trident_event_bus.db"
+
+# 本文件从真库只读拷 schema；公开版仓库不带真库，此时整模块 skip，
+# 而不是在 import 期直接 OperationalError（那会让 CI 红而不是跳过）。
+if not LIVE_DB.exists():
+    pytest.skip("公开版无真库，跳过 schema 依赖用例", allow_module_level=True)
 
 
 def _temp_db() -> sqlite3.Connection:

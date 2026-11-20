@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.trident.hk-daily</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/claire/.trident/wrappers/run_hk_daily.sh</string>
+  </array>
+  <!-- 港股 16:00 收盘，17:10 HKT 跑；日线接口当天就可用 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>17</integer>
+    <key>Minute</key><integer>10</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Users/claire/.trident/log/hk_daily.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/claire/.trident/log/hk_daily.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>

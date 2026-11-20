@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trident 2.0 · 界面结构图</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316181D'/%3E%3Cpath d='M16 6 L26 25 H6 Z' fill='%231B4FD8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}
+:root{
+  --paper:#FBFBF7; --ink:#16181D; --ink2:#4A4F58; --ink3:#7C818A;
+  --line:#D7D7CD; --line2:#BEBEB2; --white:#fff;
+  --accent:#1B4FD8; --accent-soft:#E9EEFA;
+  --up:#12795A; --down:#B4342A; --warn:#A9701A;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.8;
+  background-color:#EDEDE7;
+  background-image:linear-gradient(to right,rgba(20,22,26,.032) 1px,transparent 1px),
+                    linear-gradient(to bottom,rgba(20,22,26,.032) 1px,transparent 1px);
+  background-size:24px 24px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px;margin:32px auto;background:var(--paper);border:1px solid #D2D2C9}
+.mast{padding:44px 56px 36px;border-bottom:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink3)}
+h1{font-size:40px;line-height:1.2;font-weight:500;margin:14px 0 10px;letter-spacing:-.01em}
+.sub{font-size:14px;color:var(--ink3);margin:0}
+.lede{font-size:15px;line-height:1.9;color:var(--ink2);max-width:62ch;margin:22px 0 0}
+.metrics{display:flex;flex-wrap:wrap;gap:0;margin-top:28px;border-top:1px solid var(--line)}
+.metric{flex:1 1 160px;min-width:140px;padding:14px 18px 0 0;border-right:1px solid var(--line)}
+.metric:last-child{border-right:0;padding-right:0}
+.metric b{display:block;font-family:var(--mono);font-size:22px;font-weight:500;line-height:1.3}
+.metric span{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.metric b small{font-size:11.5px;color:var(--ink3);font-weight:400;margin-left:4px}
+
+.body{display:grid;grid-template-columns:186px minmax(0,1fr);gap:54px;padding:40px 56px 56px}
+.toc{position:sticky;top:28px;align-self:start;font-size:12px}
+.toc h4{font-size:10.5px;font-family:var(--mono);color:var(--ink3);letter-spacing:.06em;margin:0 0 12px;font-weight:500}
+.toc a{display:flex;gap:10px;padding:9px 0;border-top:1px solid #E4E4DC;color:var(--ink2);text-decoration:none;line-height:1.5}
+.toc a:hover{color:var(--accent)}
+.toc a em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink3);padding-top:1px}
+.toc .foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink3);font-size:11px;line-height:1.7}
+
+main{min-width:0}
+.sec{padding-top:6px;margin-bottom:66px;scroll-margin-top:24px}
+.sec + .sec{border-top:1px solid var(--line);padding-top:38px}
+.shead{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.shead em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+h2{font-size:25px;font-weight:500;line-height:1.35;margin:0}
+.slead{font-size:14px;color:var(--ink2);max-width:64ch;margin:8px 0 26px}
+h3{font-size:16px;font-weight:500;margin:34px 0 12px}
+h3 span{font-family:var(--mono);font-size:11px;color:var(--ink3);font-weight:400;margin-left:8px}
+
+/* ---------- 通用 ---------- */
+.note{font-size:12px;color:var(--ink3);line-height:1.7}
+.rule-list{margin:0;padding:0;list-style:none}
+.rule-list li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid #E4E4DC;font-size:14px;color:var(--ink2)}
+.rule-list li i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--accent);padding-top:2px}
+.rule-list li b{color:var(--ink);font-weight:500}
+.quote{border-left:2px solid var(--accent);padding:2px 0 2px 16px;margin:28px 0 0;font-size:14px;color:var(--ink2)}
+.quote b{color:var(--ink);font-weight:500}
+
+/* ---------- 信息架构图 ---------- */
+.map{border:1px solid var(--line2);background:var(--line2);display:grid;gap:1px;grid-template-columns:2.1fr 1.25fr 1.5fr 1.22fr 1.22fr;font-size:12.5px}
+.map .cell{background:var(--white);padding:15px 14px 17px;min-width:0;display:flex;flex-direction:column}
+.map .shell{grid-column:1/-1;background:#F4F4EC;padding:11px 14px;font-family:var(--mono);font-size:11px;color:var(--ink2);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.map .shell span{color:var(--ink3)}
+.map .d{border-top:3px solid var(--line)}
+.map .d.primary{border-top-color:var(--accent)}
+.map .d .nm{font-size:15px;font-weight:500;line-height:1.4;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.map .d .nm u{text-decoration:none;font-family:var(--mono);font-size:9.5px;color:var(--ink3);letter-spacing:0}
+.map .d .q{font-size:11.5px;color:var(--accent);margin-top:6px;line-height:1.6}
+.map .d ul{margin:10px 0 0;padding:0;list-style:none;color:var(--ink2);font-size:11.5px;line-height:1.75}
+.map .d ul li::before{content:"·";color:var(--ink3);margin-right:6px}
+.map .d small{margin-top:auto;padding-top:10px;font-size:10.5px;color:var(--ink3);line-height:1.6}
+.map .d.back{grid-column:1/-1;background:#F6F6EF;border-top-style:dashed;flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:6px 18px;padding:11px 14px}
+.map .d.back .nm{color:var(--ink2);font-size:14px}
+.map .d.back .q{margin-top:0;color:var(--ink3)}
+.map .d.back ul{margin-top:0;display:flex;flex-wrap:wrap;gap:0 14px}
+.map .d.back ul li::before{content:"·";color:var(--ink3);margin-right:5px}
+.map .d.back small{margin-top:0;padding-top:0;margin-left:auto}
+
+.mapless{margin:10px 0 0;font-size:11.5px;color:var(--ink3);line-height:1.7}
+
+/* ---------- 映射表 ---------- */
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px;margin-top:8px}
+.tbl th{text-align:left;font-weight:500;font-size:10.5px;font-family:var(--mono);color:var(--ink3);padding:8px 10px;border-bottom:1px solid var(--line2);letter-spacing:.02em}
+.tbl td{padding:8px 10px;border-bottom:1px solid #E7E7DF;vertical-align:top;line-height:1.55}
+.tbl td.r{font-family:var(--mono);font-size:11.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbl td.n{color:var(--ink3)}
+.tbl tr:nth-child(even) td{background:#FCFCF8}
+.chip{display:inline-block;font-size:10px;line-height:1.6;padding:1px 7px;border:1px solid #D9D9CF;color:var(--ink2);white-space:nowrap}
+.chip.merge{color:var(--accent);border-color:#BECBEA;background:var(--accent-soft)}
+.chip.gone{color:#959A93;border-style:dashed;text-decoration:line-through}
+.chip.core{color:var(--ink);border-color:var(--ink2)}
+
+/* ---------- 线框 ---------- */
+.wf{background:var(--white);border:1px solid var(--line2);font-family:var(--mono);font-size:10px;color:#6C716F}
+.wf .bar{display:flex;border-bottom:1px dashed var(--line2)}
+.wf .rw{display:block;height:1px;background:#E7E7DE;margin:8px 0}
+.wf .bar.solid{border-bottom:1px solid var(--line2)}
+.wf .z{border-right:1px dashed #CDCDC2;padding:8px 10px;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.wf .z:last-child{border-right:0}
+.wf .z b{font-family:var(--sans);font-weight:500;font-size:11.5px;color:#2A2D33;line-height:1.45}
+.wf .z small{font-family:var(--sans);font-size:10px;color:#8B908C;line-height:1.5;margin-top:2px}
+.wf .z .m{font-size:9px;color:#A2A69F;margin-top:2px}
+.wf .hatch{background:repeating-linear-gradient(45deg,#F1F1EA,#F1F1EA 5px,#E5E5DC 5px,#E5E5DC 6px)}
+.wf .tall{min-height:86px}
+.wf .label{font-family:var(--mono);font-size:9px;color:#9AA096;letter-spacing:.02em}
+.wf .accentbar{height:3px;background:var(--accent);margin:-1px -1px 0;border:0}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:30px;align-items:start}
+.notes{margin:0;padding:0;list-style:none;font-size:11.5px;color:var(--ink2);line-height:1.7}
+.notes li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;padding:7px 0;border-top:1px solid #E7E7DF}
+.notes li i{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--accent);padding-top:2px}
+.notes li b{color:var(--ink);font-weight:500}
+
+/* 三层首页 */
+.layers{display:grid;gap:12px}
+.layer{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;align-items:start}
+.lbl{border-top:1px solid var(--line2);padding-top:6px}
+.lbl b{display:block;font-size:12px;font-weight:500}
+.lbl span{display:block;font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-top:2px;line-height:1.5}
+.stack{display:grid;gap:6px}
+.stack.three{grid-template-columns:repeat(3,1fr)}
+.layer .stack{display:grid;gap:6px}
+.layer .stack.two{grid-template-columns:1.6fr 1fr}
+.layer .stack.three{grid-template-columns:1.55fr 1fr .72fr}
+.layer .stack.four{grid-template-columns:1.6fr .82fr .82fr .55fr}
+.blk{border:1px solid var(--line2);background:var(--white);padding:9px 11px;min-height:56px}
+.blk b{display:block;font-size:11.5px;font-weight:500;line-height:1.45}
+.blk small{display:block;font-size:10px;color:#8B908C;margin-top:3px;line-height:1.5}
+.blk .tag{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--ink3);border:1px solid #DDDDD4;padding:0 4px;margin-top:5px}
+.blk.em{border-left:3px solid var(--accent);background:#FCFCFD}
+.blk.diag{background:repeating-linear-gradient(45deg,#F4F4EE,#F4F4EE 6px,#EAEAE2 6px,#EAEAE2 7px);border-style:dashed;min-height:0;padding:7px 11px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.pair h4{font-size:12px;font-weight:500;margin:0 0 8px;display:flex;align-items:baseline;gap:8px}
+.pair h4 u{text-decoration:none;font-family:var(--mono);font-size:9.5px;color:var(--ink3);font-weight:400}
+.oldcap{font-size:10.5px;color:var(--ink3);line-height:1.6;margin-top:8px}
+.oldcap s{color:#9AA096}
+.newcap{font-size:10.5px;color:var(--ink2);line-height:1.6;margin-top:8px}
+
+/* ---------- 模板卡 ---------- */
+.tpl{display:grid;grid-template-columns:1fr 1fr;gap:26px 30px}
+.timg{border:1px solid var(--line);border-radius:10px;background:var(--white);padding:16px 18px}
+.timg h4{font-size:14px;font-weight:500;margin:0 0 3px}
+.timg h4 u{text-decoration:none;font-family:var(--mono);font-size:10px;color:var(--ink3);font-weight:400;margin-left:6px}
+.timg p{font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.6}
+.timg .wf{min-height:190px}
+.tt{margin-top:8px;font-size:10.5px;color:var(--ink3);line-height:1.65}
+.tt b{color:var(--ink2);font-weight:500}
+
+/* ---------- 设计系统 ---------- */
+.specgrid{display:grid;grid-template-columns:1fr 1fr;gap:34px 40px}
+.spec{border:1px solid var(--line);border-radius:10px;background:var(--white);padding:16px 18px}
+.spec h4{font-size:12px;font-weight:500;margin:0 0 10px;color:var(--ink)}
+.spec h4 u{text-decoration:none;font-family:var(--mono);font-size:9.5px;color:var(--ink3);font-weight:400;margin-left:7px}
+.type{list-style:none;margin:0;padding:0}
+.type li{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:baseline;gap:14px;padding:7px 0;border-top:1px solid #E7E7DF}
+.type li em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--ink3)}
+.type li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.type li small{display:block;grid-column:2;font-size:10px;color:var(--ink3);font-family:var(--sans)}
+.sw{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.sw div{background:var(--white);padding:0 0 7px}
+.sw i{display:block;height:34px;margin-bottom:7px}
+.sw b{display:block;font-size:10.5px;font-weight:500;padding:0 8px}
+.sw span{display:block;font-family:var(--mono);font-size:9px;color:var(--ink3);padding:0 8px}
+.container-demo{display:grid;gap:10px}
+.lvl{border:1px solid var(--line2);padding:8px 10px;font-size:10.5px;color:var(--ink2)}
+.lvl b{font-family:var(--sans);font-size:11px;font-weight:500;color:var(--ink)}
+.lvl .in{margin-top:7px;border-top:1px solid var(--line);padding-top:7px}
+.lvl .in2{margin-top:7px;border:1px solid #E0E0D8;border-radius:8px;background:#fff;padding:6px 8px;font-size:10px}
+.states{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.st{background:var(--white);padding:10px 11px;font-size:10.5px;line-height:1.6}
+.st b{display:block;font-size:11px;font-weight:500;margin-bottom:3px}
+.st .rowline{display:block;height:1px;background:#E3E3DA;margin:6px 0}
+.st .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--warn);margin-right:5px;vertical-align:1px}
+.st .sk{display:block;height:6px;background:#EDEDE5;margin:5px 0;width:70%}
+.num-demo{display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;padding:12px 0;border-top:1px solid #E7E7DF}
+.num-demo b{font-family:var(--mono);font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+.num-demo small{font-size:10px;color:var(--ink3);margin-left:4px}
+.grid-demo{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:10px}
+.grid-demo i{display:block;height:26px;background:#EEEEE7;border:1px solid #E0E0D7}
+.grid-demo i.blue{background:var(--accent-soft);border-color:#C9D5F0}
+
+/* ---------- 时间轴 ---------- */
+.timeline{display:grid;grid-template-columns:86px 18px minmax(0,1fr);row-gap:18px;margin-top:6px}
+.tl-t{font-family:var(--mono);font-size:10.5px;color:var(--ink3);padding-top:2px;text-align:right}
+.tl-axis{position:relative;justify-self:center;width:1px;background:var(--line2)}
+.tl-axis::before{content:"";position:absolute;top:1px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.tl-c{padding-bottom:2px}
+.tl-c b{font-size:13.5px;font-weight:500;display:block}
+.tl-c p{font-size:11.5px;color:var(--ink2);margin:2px 0 0;line-height:1.65}
+.tl-c p span{color:var(--ink3)}
+.checklist{list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.checklist li{background:var(--white);padding:10px 12px;font-size:11.5px;color:var(--ink2);line-height:1.6}
+.checklist li u{text-decoration:none;font-family:var(--mono);color:var(--accent);margin-right:8px}
+.assume{border:1px solid var(--line);background:#F7F7F0;padding:20px 22px}
+.assume p{margin:0 0 8px;font-size:12px;color:var(--ink2);line-height:1.75}
+.assume p:last-child{margin:0}
+.assume b{color:var(--ink);font-weight:500}
+
+/* ---------- 核心视图 ---------- */
+.viz{position:relative;border:1px solid var(--line);background:#fff;height:150px;margin:12px 0 10px;overflow:hidden}
+.viz .grid{position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,transparent 0 28px,#EFEFE8 28px 29px),repeating-linear-gradient(to right,transparent 0 59px,#F4F4EE 59px 60px)}
+.viz svg{position:relative;display:block;width:100%;height:100%}
+.vlab{position:absolute;transform:translateX(-50%);font-size:9.5px;color:var(--ink2);white-space:nowrap;background:rgba(255,255,255,.9);padding:1px 3px;line-height:1.2;z-index:2}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--ink3);margin-top:4px}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.tmap{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:33px;gap:2px;margin:12px 0 10px}
+.tmap div{display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--mono);border:1px solid #E3E3DA;color:#3A3D42}
+.mini{list-style:none;padding:0;margin:8px 0 0;font-size:11px;color:var(--ink2);line-height:1.7}
+.mini li{padding-left:11px;position:relative}
+.mini li::before{content:"·";position:absolute;left:0;color:var(--ink3)}
+.bars7{display:flex;gap:4px;align-items:flex-end;height:64px;margin:14px 0 8px;border-bottom:1px solid #DCDCD1}
+.bars7 div{flex:1;background:#E4E4DA}
+
+/* ---------- 五段链路 ---------- */
+.chain{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr;margin:20px 0 6px}
+.step{border:1px solid var(--line);background:var(--white);padding:13px 13px 11px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.step em{font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.08em;color:var(--minor)}
+.step b{font-size:13.5px;font-weight:600}
+.step small{font-size:11px;color:var(--ink2);line-height:1.6}
+.step span{font-size:10.5px;color:var(--ink3);border-top:1px dashed var(--line);padding-top:6px;margin-top:auto;line-height:1.55}
+.arw{position:relative;display:flex;align-items:center;justify-content:center;font-size:0}
+.arw::before{content:"";width:10px;height:1px;background:#C2C2B6}
+.arw::after{content:"";position:absolute;right:2px;width:4px;height:4px;border-top:1px solid #C2C2B6;border-right:1px solid #C2C2B6;transform:rotate(45deg)}
+
+footer{padding:26px 56px 34px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;font-size:10.5px;color:var(--ink3);flex-wrap:wrap}
+footer span{font-family:var(--mono)}
+
+@media (max-width:980px){
+  .mast,footer{padding-left:26px;padding-right:26px}
+  .body{grid-template-columns:1fr;gap:26px;padding:26px 26px 40px}
+  .toc{position:static}
+  .toc a{display:inline-flex;margin-right:14px;border:0;padding:4px 0}
+  .toc .foot{display:none}
+  .map{grid-template-columns:1fr 1fr 1fr}
+  .map .cell:nth-child(7){grid-column:auto}
+  .split{grid-template-columns:1fr}
+  .pair,.tpl,.specgrid,.chain,.stack.three{grid-template-columns:1fr}
+  .chain .arw{height:16px;transform:rotate(90deg)}
+  .checklist{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .mast{padding-top:30px}
+  h1{font-size:30px}
+  .map{grid-template-columns:1fr}
+  .layer{grid-template-columns:1fr}
+  .layer .stack.two,.layer .stack.three,.layer .stack.four{grid-template-columns:1fr}
+  .wf .bar{flex-wrap:wrap}
+  .wf .z{flex:1 1 46%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">TRIDENT / 界面结构设计 · v4 · 2026-11-16</div>
+  <h1>从仪表盘改成塔台</h1>
+  <p class="sub">自动交易监控台的信息架构与页面骨架 · 供前端直接实现</p>
+  <p class="lede">系统自动下单以后，人不再是每笔都按按钮的人，而是值班的人：确认它在跑、看懂它在做什么、在异常时接管。所有动态和数据都要在一页里看得到，但不能平铺成面板墙——用一条可筛的流水承载全部事件，原始数据一次点击就能展开。</p>
+  <div class="metrics">
+    <div class="metric"><b>29 <small>→ 7</small></b><span>路由入口</span></div>
+    <div class="metric"><b>1 <small>条</small></b><span>全量动态流水</span></div>
+    <div class="metric"><b>5 <small>段</small></b><span>每笔自动单链路</span></div>
+    <div class="metric"><b>3 <small>级</small></b><span>人工干预</span></div>
+  </div>
+</header>
+
+<div class="body">
+
+<aside class="toc">
+  <h4>目录</h4>
+  <a href="#s1"><em>01</em>前提：值班方式</a>
+  <a href="#s2"><em>02</em>总图：五个目的地 + 后台</a>
+  <a href="#s3"><em>03</em>全局壳骨架</a>
+  <a href="#s4"><em>04</em>运行台首屏</a>
+  <a href="#s5"><em>05</em>四个页面模板</a>
+  <a href="#s6"><em>06</em>自动下单五段链路</a>
+  <a href="#s7"><em>07</em>四个核心视图</a>
+  <a href="#s8"><em>08</em>设计系统底线</a>
+  <a href="#s9"><em>09</em>迁移顺序与验收</a>
+  <a href="#s10"><em>10</em>待确认</a>
+  <a href="#s11"><em>11</em>三件能力扩展的落位</a>
+  <div class="foot">这份文档只定结构，不给最终视觉稿。颜色、字号、间距是底线约束，不是像素级规范。</div>
+</aside>
+
+<main>
+
+<!-- ================= 01 ================= -->
+<section class="sec" id="s1">
+  <div class="shead"><em>01</em><h2>先定值班方式，再定页面</h2></div>
+  <p class="slead">系统自动下单，人的角色从「操作者」变成「值班者」。页面不负责帮他找入场点，负责让他在十秒内确认系统正常、看懂刚发生了什么、决定要不要接管。</p>
+
+  <div class="pair">
+    <div>
+      <h4>谁在用<u>单人 / 小团队</u></h4>
+      <p class="note" style="font-size:12.5px;color:var(--ink2);line-height:1.8">单人操盘，偶尔有同伴看一眼。不需要协作、权限、多租户。任何为「别人也能用」做的妥协，最后都会变成主界面上的噪音。</p>
+    </div>
+    <div>
+      <h4>什么时候用<u>全天常开</u></h4>
+      <p class="note" style="font-size:12.5px;color:var(--ink2);line-height:1.8">页面长时间挂在副屏上；开盘前检查一次、盘中按流水巡检、收盘后复盘。它更像后台监控台，而不是一天打开三次的工具。</p>
+    </div>
+  </div>
+
+  <h3>四个问题<span>值班者要看的四件事</span></h3>
+  <ul class="rule-list">
+    <li><i>Q1</i><span><b>系统在跑吗？现在在做什么？</b> 引擎心跳、自动下单开关、今日第几单、卡在五段链路的哪一步。</span></li>
+    <li><i>Q2</i><span><b>仓位和订单对不对？</b> 持仓、挂单、成交、拒单、风控敞口、可用余额。</span></li>
+    <li><i>Q3</i><span><b>市场为什么动、钱流向哪？</b> 归因 K 线、全部新闻源标注、资金地图、板块轮动。</span></li>
+    <li><i>Q4</i><span><b>我们的大脑得出了什么、可靠吗？</b> 因果图谱、结论与置信、反思是否在跑、最近出了哪些错。</span></li>
+  </ul>
+
+  <h3>五条设计判断<span>用来砍需求</span></h3>
+  <ul class="rule-list">
+    <li><i>1</i><span><b>自动执行，人管例外。</b> 全局暂停常驻且一键可达；每笔自动单必须留下五段证据，缺一段就标黄。</span></li>
+    <li><i>2</i><span><b>所有动态走一条流水。</b> 新闻、决策、门闸、下单、成交、拒单、风控、系统事件放在同一条时间轴上，靠筛选器分类，不靠十二张卡片分类。</span></li>
+    <li><i>3</i><span><b>数据全部可见，但不平铺。</b> 原始指标、JSON、表格放抽屉，一次点击可达；主界面只留会改变判断的字段。</span></li>
+    <li><i>4</i><span><b>重要的东西必须画出来。</b> 归因、资金、因果、反思四个模块各给一张能扫视的图；表格只做图的补充，不做主体。</span></li>
+    <li><i>5</i><span><b>层级靠字号和留白。</b> 全站容器最多两层，同层不加阴影；红色只跟钱和破坏性操作走。</span></li>
+  </ul>
+
+  <div class="quote"><b>自动下单改变的是首屏任务：</b>从「我该不该买」变成「机器刚才做了什么、现在要不要拦」。塔台不替飞机飞，但必须一直看着它飞、随时能叫停。</div>
+</section>
+
+<!-- ================= 02 ================= -->
+<section class="sec" id="s2">
+  <div class="shead"><em>02</em><h2>总图：五个目的地，一条流水</h2></div>
+  <p class="slead">主线是「看运行 → 管仓位 → 复盘 → 找情报 → 做研究」。流水是首页主体，其他页面都是同一条流水的不同切面；设置与系统不参与主线，常驻右侧。</p>
+
+  <div class="map">
+    <div class="shell"><strong>全局壳</strong><span>头部 · 市场与运行状态条 · 导航 · 12 栏内容栅格</span></div>
+
+    <div class="cell d primary">
+      <div class="nm">运行台<u>/</u></div>
+      <div class="q">在跑吗、在做什么</div>
+      <ul><li>运行条：引擎 / AUTO / 风控 / 延迟</li><li>全量动态流水</li><li>仓位摘要 + 归因 K 线（当前品种）</li></ul>
+      <small>自动下单后的默认落点。所有动态都从这里看，不跳页。</small>
+    </div>
+
+    <div class="cell d">
+      <div class="nm">交易<u>/paper</u></div>
+      <div class="q">仓位和订单对不对</div>
+      <ul><li>账户条</li><li>策略卡（AUTO ON · 暂停）</li><li>持仓 · 委托 · 成交 · 拒单</li></ul>
+      <small>手工干预只在这一页发生；参数与平仓走抽屉。</small>
+    </div>
+
+    <div class="cell d">
+      <div class="nm">复盘<u>/review</u></div>
+      <div class="q">为什么动、漏了什么</div>
+      <ul><li>归因 K 线 · 全部源</li><li>漏检清单</li><li>反思状态与错误</li></ul>
+      <small>默认就是归因图；每笔自动单还能回放五段链路。</small>
+    </div>
+
+    <div class="cell d">
+      <div class="nm">情报<u>/intel</u></div>
+      <div class="q">钱去哪了、外面发生什么</div>
+      <ul><li>资金地图</li><li>事件 Feed</li><li>今日主题 TOP3</li></ul>
+      <small>资金流、新闻流、发现、人群画像都并到这里。</small>
+    </div>
+
+    <div class="cell d">
+      <div class="nm">研究<u>/research</u></div>
+      <div class="q">大脑得出了什么</div>
+      <ul><li>因果图谱</li><li>结论与置信</li><li>反事实 / 问库 / 回测</li></ul>
+      <small>默认是图谱；二级 tab 分载，不挤在一屏。</small>
+    </div>
+
+    <div class="cell d back">
+      <div class="nm">设置 · 系统<u>/settings · /admin</u></div>
+      <div class="q">让系统继续跑</div>
+      <ul><li>交易参数</li><li>信息源</li><li>成绩单</li><li>通道</li><li>任务</li><li>日志</li></ul>
+      <small>后台只做深配置。异常事件仍会汇入运行台流水，不需要来后台才看得见。</small>
+    </div>
+  </div>
+  <p class="mapless">导航只放前五个加一个「设置」入口；「系统」在设置页底部用一行小字链过去，不参与主线。</p>
+
+  <h3>旧页面都去哪了<span>29 → 7</span></h3>
+  <table class="tbl">
+    <colgroup><col style="width:23%"><col style="width:17%"><col style="width:36%"><col style="width:24%"></colgroup>
+    <thead><tr><th>旧路由</th><th>旧页面</th><th>新位置</th><th>处理</th></tr></thead>
+    <tbody>
+      <tr><td class="r">/</td><td>实时信号台</td><td>运行台 /</td><td><span class="chip core">重构</span></td></tr>
+      <tr><td class="r">/replay</td><td>模拟盘</td><td>交易 /paper</td><td><span class="chip core">重构</span></td></tr>
+      <tr><td class="r">/attribution</td><td>行情归因</td><td>复盘 /review?t=why</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/missed-signals</td><td>漏检信号</td><td>复盘 ?t=missed</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/review</td><td>反思系统</td><td>复盘 ?t=learn</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/discover</td><td>发现</td><td>情报 /intel?t=theme</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/crowd</td><td>人群画像</td><td>情报 ?t=theme</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/news</td><td>新闻流</td><td>情报 /intel</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/analysis-process</td><td>分析过程</td><td>复盘详情抽屉</td><td><span class="chip">降级为抽屉</span></td></tr>
+      <tr><td class="r">/counterfactual</td><td>反事实</td><td>研究 ?t=counter</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/knowledge-graph</td><td>因果图谱</td><td>研究 ?t=graph</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/causal-chains</td><td>因果链</td><td>研究 ?t=graph</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/asset-graph</td><td>资产图谱</td><td>研究 ?t=graph</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/ask</td><td>问库</td><td>研究 ?t=ask</td><td><span class="chip">保留为 tab</span></td></tr>
+      <tr><td class="r">/memory</td><td>记忆</td><td>研究 ?t=memory</td><td><span class="chip">保留为 tab</span></td></tr>
+      <tr><td class="r">/backtest</td><td>策略回测</td><td>研究 ?t=backtest</td><td><span class="chip">保留为 tab</span></td></tr>
+      <tr><td class="r">/history</td><td>历史回溯</td><td>研究 ?t=history</td><td><span class="chip">保留为 tab</span></td></tr>
+      <tr><td class="r">/capital-flow</td><td>资金流</td><td>情报 ?t=flow</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/flows</td><td>流向</td><td>情报 ?t=flow</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/market-scanner</td><td>市场扫描</td><td>情报筛选器</td><td><span class="chip">降级为筛选</span></td></tr>
+      <tr><td class="r">/calendar</td><td>财经日历</td><td>状态条 + 数据带</td><td><span class="chip">降级为提示</span></td></tr>
+      <tr><td class="r">/journal</td><td>日志</td><td>复盘 ?t=learn</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/experiences</td><td>经验</td><td>复盘 ?t=learn</td><td><span class="chip merge">合并</span></td></tr>
+      <tr><td class="r">/d</td><td>演示页</td><td>无</td><td><span class="chip gone">下线</span></td></tr>
+      <tr><td class="r">/capabilities</td><td>能力扩展（08 新增）</td><td>研究 ?t=scenario / ?t=research；问账本 → 交易抽屉</td><td><span class="chip merge">拆入 tab</span></td></tr>
+      <tr><td class="r">/settings</td><td>交易设置</td><td>设置 /settings</td><td><span class="chip core">保留</span></td></tr>
+      <tr><td class="r">/sources</td><td>信息源</td><td>设置 /settings/sources</td><td><span class="chip core">保留</span></td></tr>
+      <tr><td class="r">/scorecard</td><td>成绩单</td><td>设置 /settings/scorecard</td><td><span class="chip core">保留</span></td></tr>
+      <tr><td class="r">/connectivity</td><td>联通</td><td>系统 /admin/system</td><td><span class="chip">移入后台</span></td></tr>
+      <tr><td class="r">/prompts</td><td>AI 提示词</td><td>系统 /admin/system/prompts</td><td><span class="chip">移入后台</span></td></tr>
+    </tbody>
+  </table>
+  <p class="mapless">下线与合并的旧地址保留 301，旧书签和脚本不会断。后台两页不做设计，沿用现有组件，只换位置。<b>自动下单事件（决策 / 门闸 / 订单 / 成交 / 拒单 / 结算）只在运行台流水与复盘回放出现，不单独建页</b>，避免同一条事实被三处重复叙述。</p>
+
+  <h3 style="margin-top:34px">以后加功能往哪放<span>默认往里收，不往外开</span></h3>
+  <p class="slead" style="margin-bottom:14px">导航一旦允许自然增长，两年后一定回到 29 个页面。所以先把规则定死：一级导航 5+1 封顶，新功能按下面四级往里放，只有「值班方式变了」才允许动总图。</p>
+
+  <table class="tbl">
+    <colgroup><col style="width:24%"><col style="width:25%"><col style="width:31%"><col style="width:20%"></colgroup>
+    <thead><tr><th>新东西是什么</th><th>默认落位</th><th>例子</th><th>代价</th></tr></thead>
+    <tbody>
+      <tr><td>又一种事件或状态</td><td>运行台流水的筛选项</td><td>资金费率告警、清算提醒、拒单原因</td><td class="n">加一个筛选值，0 个新页</td></tr>
+      <tr><td>同一条主列表的另一个切面</td><td>页面内一级 tab</td><td>期权链、逐笔成交、分账户持仓</td><td class="n">加一个 tab，单页 ≤5</td></tr>
+      <tr><td>单个对象的更多细节</td><td>右侧抽屉 / 展开行</td><td>五段链路、原始 JSON、参数历史</td><td class="n">不动导航</td></tr>
+      <tr><td>配置或一次性工具</td><td>设置 / 后台</td><td>密钥管理、税务导出、回测参数</td><td class="n">不进主界面</td></tr>
+      <tr><td>一套新的值班工作流</td><td>先替换一个现有目的地</td><td>多账户轮班、组合管理</td><td class="n">要重画总图，不能加第 6 个</td></tr>
+    </tbody>
+  </table>
+
+  <h3>放进去之前，先过五问<span>答不上来就不做</span></h3>
+  <ul class="rule-list">
+    <li><i>1</i><span><b>它回答五个问题里的哪一个？</b> 运行、交易、复盘、情报、研究。答不上来，说明它是后台工具或纯装饰。</span></li>
+    <li><i>2</i><span><b>它是新答案，还是同一答案的新证据？</b> 新证据 → tab 或抽屉；只有真正的新答案，才允许讨论新页面。</span></li>
+    <li><i>3</i><span><b>不加它，值班会漏掉什么？</b> 说不出具体损失（漏单、延迟、误判），就先不做。</span></li>
+    <li><i>4</i><span><b>能不能做成一个筛选值或一个 tab？</b> 能，就不进导航；多数「新功能」到这一关就结束了。</span></li>
+    <li><i>5</i><span><b>它替代了现有的哪个入口？</b> 没有替代，就先排队，而不是先上线。</span></li>
+  </ul>
+
+  <div class="quote"><b>两条硬约束：</b>一级导航 5+1 封顶，想加第 6 个必须合并或下线一个；新功能默认用 ?t= 参数挂在现有页面，只有外部脚本或书签依赖时才给独立路径，并放进后台。每次加功能，在 CHANGELOG 里同时写清「删了什么」。</div>
+
+  <p class="note">反例：用「更多」下拉装新功能、把调试面板做成首页卡片、每加一个能力就开一条导航——这三件事就是现在 29 个页面的来源。</p>
+</section>
+
+<!-- ================= 03 ================= -->
+<section class="sec" id="s3">
+  <div class="shead"><em>03</em><h2>全局壳骨架</h2></div>
+  <p class="slead">自动下单的系统，壳必须常驻两样东西：运行状态和暂停键。任何页面一眼看到「机器在跑、现在能停」，比任何一页的排版都重要。</p>
+
+  <div class="split">
+    <div class="wf">
+      <div class="bar solid" style="height:56px">
+        <div class="z" style="flex:0 0 146px"><b>品牌</b><small>Trident · 量化</small><div class="m">56px 高</div></div>
+        <div class="z" style="flex:1"><b>全局搜索</b><small>品种 / 订单 / 事件 / 关键词</small><div class="m">placeholder: BTC / 单号 / 拒单</div></div>
+        <div class="z" style="flex:0 0 154px"><b>运行状态</b><small>AUTO ON · 今日 12 单</small><div class="m">● 引擎 6h · 点开=系统</div></div>
+        <div class="z" style="flex:0 0 74px"><b>全局暂停</b><small>一键停单</small><div class="m">二次确认</div></div>
+        <div class="z" style="flex:0 0 44px"><b>主题</b><div class="m">明/暗</div></div>
+      </div>
+      <div class="bar" style="height:30px">
+        <div class="z" style="flex:1;flex-direction:row;align-items:center;gap:8px;justify-content:flex-start">
+          <b style="font-size:10.5px">US 盘前 33m</b><b style="font-size:10.5px;color:#8B908C">GOLD 收盘</b><b style="font-size:10.5px;color:#8B908C">BTC 24×7</b><b style="font-size:10.5px;color:#8B908C">KR 盘前</b>
+          <span class="m" style="margin-left:auto">今日 12 单 · 成交 11 · 拒 1 · 延迟 0.4s · 15:27</span>
+        </div>
+      </div>
+      <div class="bar" style="height:44px">
+        <div class="z" style="flex:0 0 78px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">运行台</b></div>
+        <div class="z" style="flex:0 0 66px"><b>交易</b></div>
+        <div class="z" style="flex:0 0 66px"><b>复盘</b></div>
+        <div class="z" style="flex:0 0 66px"><b>情报</b></div>
+        <div class="z" style="flex:0 0 66px"><b>研究</b></div>
+        <div class="z" style="flex:1"></div>
+        <div class="z" style="flex:0 0 58px"><b>设置</b></div>
+      </div>
+      <div class="z tall" style="border-right:0;justify-content:flex-start;background:#FCFCF8">
+        <span class="label">页面模板区 · 12 栏 / 24px 槽 / 最大 1440 / 背景留 1px 顶线分节</span>
+      </div>
+    </div>
+
+    <ul class="notes">
+      <li><i>1</i><span><b>头部五件事。</b>品牌、搜索、运行状态、全局暂停、主题。自动下单状态与暂停键不能藏进设置页。</span></li>
+      <li><i>2</i><span><b>运行状态常驻。</b>引擎心跳、AUTO 状态、今日单数三合一；点开进系统页，但不离开当前页也能看见。</span></li>
+      <li><i>3</i><span><b>状态条只说能不能交易。</b>四个市场开盘状态 + 今日单量 + 延迟；不放端口、cron、模型名。</span></li>
+      <li><i>4</i><span><b>导航 5 + 1。</b>「系统」不进导航，从设置页底部进入；「更多」下拉取消。</span></li>
+      <li><i>5</i><span><b>1280 以下导航折成两行，</b>不横向滚动；655 只读，但暂停键仍要可见。</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= 04 ================= -->
+<section class="sec" id="s4">
+  <div class="shead"><em>04</em><h2>运行台首屏：一条流水，三块固定区</h2></div>
+  <p class="slead">自动下单后，首屏不是「我今天怎么想」，而是「机器正在做什么」。同屏只允许一条主流水、一块仓位、一条数据带和一行诊断。</p>
+
+  <h3>现状 <span>一张首屏塞十几个主题</span></h3>
+  <div class="wf">
+    <div class="bar solid" style="height:38px">
+      <div class="z" style="flex:1"><b>总权益</b></div>
+      <div class="z" style="flex:1"><b>已实现盈亏</b></div>
+      <div class="z" style="flex:1"><b>胜率</b></div>
+      <div class="z" style="flex:1"><b>活跃信号</b></div>
+    </div>
+    <div class="bar" style="min-height:150px">
+      <div class="z" style="flex:1.55;justify-content:flex-start"><b>实时事件流</b><small>通过 / 筛掉 双列 · 全部 16,043 条 · 每条带 3 个彩色标签</small><div class="m">同一屏出现两遍同样的新闻</div><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+      <div class="z" style="flex:1;justify-content:flex-start"><b>右栏：6 块互不相关的卡</b><small>市场分类 · 纸面账户 · 当前持仓 · LLM 通道（延迟 17s / 401 原文） · 窗口信号 · 市场情绪</small><div class="m">工程遥测与交易结论并排</div><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+    </div>
+    <div class="bar solid" style="height:26px"><div class="z" style="flex:1"><span class="label">三联时间戳 + 市场状态条 + 模型选择器持续占位</span></div></div>
+  </div>
+  <p class="oldcap">问题不在数据多，在于所有东西都平权：四张 KPI、两条流、六张卡抢同一层注意力。自动下单时，最该被看见的是<b>流水走到哪一步</b>和<b>暂停键在哪</b>。截图里 1280 宽右栏还被切掉一半。</p>
+
+  <h3>2.0 首屏 <span>运行条 → 流水 → 数据带 → 诊断</span></h3>
+  <div class="layers">
+    <div class="layer">
+      <div class="lbl"><b>L0 运行条</b><span>≈56px</span><span>任何页面同款</span></div>
+      <div class="stack">
+        <div class="blk em" style="padding:8px 12px">
+          <b>引擎 <span style="color:#1B4FD8">●</span> 运行 6h　AUTO 下单 ON　今日 12 单 · 成交 11 · 拒 1　风控正常　延迟 0.4s　PAPER</b>
+          <small>点 AUTO 或「暂停」进二次确认；这行不随页面滚动，常驻首屏顶部</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="lbl"><b>L1 主区</b><span>≈430px</span><span>流水 + 仓位</span></div>
+      <div class="stack two">
+        <div class="blk" style="min-height:132px">
+          <b>全量动态流水</b>
+          <small>筛选：全部 / 新闻 / 决策 / 门闸 / 订单 / 成交 / 拒单 / 风控 / 系统</small>
+          <small>一条一行：时间 · 类型 · 品种 · 一句话；点开 = 五段链路</small>
+          <div class="tag">跟随中 · 3 条新</div>
+          <span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span>
+        </div>
+        <div class="blk" style="min-height:132px">
+          <b>仓位 · 委托 · 异常</b>
+          <small>持仓 3 行 · 挂单 2 行 · 今日拒单 1 行</small>
+          <small>风控占用 / 可用 / 敞口</small>
+          <small>异常：1 个数据源过期、0 个策略停摆</small>
+          <span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="lbl"><b>L2 数据带</b><span>≈160px</span><span>四块主图入口</span></div>
+      <div class="stack" style="grid-template-columns:repeat(4,1fr)">
+        <div class="blk" style="min-height:118px">
+          <b>归因 K 线</b>
+          <small>BTC · 今日 42 条标注</small>
+          <div style="margin-top:7px;height:38px;border:1px dashed #D5D5CA"></div>
+          <div class="tag">进复盘</div>
+        </div>
+        <div class="blk" style="min-height:118px">
+          <b>资金流向</b>
+          <small>BTC +2.1B · ETH −0.8B</small>
+          <div style="margin-top:7px;height:38px;border:1px dashed #D5D5CA"></div>
+          <div class="tag">进情报</div>
+        </div>
+        <div class="blk" style="min-height:118px">
+          <b>因果结论</b>
+          <small>128 条 · 高置信 23 · 待验证 41</small>
+          <div style="margin-top:7px;height:38px;border:1px dashed #D5D5CA"></div>
+          <div class="tag">进研究</div>
+        </div>
+        <div class="blk" style="min-height:118px">
+          <b>反思健康</b>
+          <small>近 7 次 6 成 1 败 · 2 待修</small>
+          <div style="margin-top:7px;height:38px;border:1px dashed #D5D5CA"></div>
+          <div class="tag">进复盘 · 反思</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="lbl"><b>L3 诊断</b><span>≈44px</span><span>默认收起</span></div>
+      <div class="stack">
+        <div class="blk diag">
+          <b>系统诊断 · 通道 10/10 · 任务 3 · 反思正常 / 2 待修 · 延迟 0.4s　　展开 ▾</b>
+          <small>展开后是通道、任务、窗口、接口耗时；全量数据都在这里，但不占主屏</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pair" style="margin-top:24px">
+    <ul class="notes">
+      <li><i>1</i><span><b>运行条只放五个状态。</b>引擎、AUTO、今日单数、风控、延迟；每个都能点进详情，不在首屏展开解释。</span></li>
+      <li><i>2</i><span><b>流水默认「全部」。</b>九类事件同一条时间轴，筛选器切换不换页；不建「订单页」「风控页」。</span></li>
+      <li><i>3</i><span><b>每笔自动单点开 = 五段。</b>决策 → 门闸 → 下单 → 成交/拒单 → 结算；每段带时间、证据和原始数据入口。</span></li>
+      <li><i>4</i><span><b>流水跟随屏幕。</b>用户向下滚动后自动暂停跟随，右上角提示「N 条新」；不抢滚动位置。</span></li>
+    </ul>
+    <ul class="notes">
+      <li><i>5</i><span><b>右栏只放钱和单。</b>持仓、委托、拒单、敞口；模型名、通道延迟、cron 一律不进右栏。</span></li>
+      <li><i>6</i><span><b>数据带只放四块主图。</b>归因 K 线、资金流向、因果结论、反思健康；点任一块进对应页，不在首屏展开全部。</span></li>
+      <li><i>7</i><span><b>诊断折叠但可展开。</b>所有数据都有入口，没有「必须去后台才看得到」的交易数据。</span></li>
+      <li><i>8</i><span><b>高度预算写死。</b>1680×1050 下 56 / 430 / 160 / 44，首屏正好装完；多出来的内容进抽屉，不挤主屏。</span></li>
+    </ul>
+  </div>
+  <p class="note" style="margin-top:2px">图中权益与盈亏取自当前模拟盘快照；单量与拒单为示意，用来说明层级，不是真实成交记录。</p>
+</section>
+
+<!-- ================= 05 ================= -->
+<section class="sec" id="s5">
+  <div class="shead"><em>05</em><h2>四个页面模板</h2></div>
+  <p class="slead">四个页共用一个骨架：页头给口径与操作，顶部给结论，主区给一条主列表或一张主图，详情永远走右侧抽屉。模板一致，页面就不用各自发明布局。</p>
+
+  <div class="tpl">
+    <!-- 交易 -->
+    <div class="timg">
+      <h4>交易<u>/paper</u></h4>
+      <p>执行和风险。一眼看清「还剩多少钱、在赌什么、刚才那单为什么被拒」。</p>
+      <div class="wf">
+        <div class="bar solid" style="height:34px"><div class="z" style="flex:1"><b>账户条</b><small>权益 · 已实现 · 浮盈 · 占用 · 今日 12 单</small></div></div>
+        <div class="bar" style="min-height:66px">
+          <div class="z" style="flex:1.5"><b>策略卡</b><small>新闻阈值 v2 · 运行中 · AUTO ON</small><div class="m">时效 45m / 门槛 0.1725 / 止损 0.5 ATR</div></div>
+          <div class="z" style="flex:0 0 118px"><b>主操作</b><small>暂停本策略</small><div class="m">次：参数 · 记录</div></div>
+        </div>
+        <div class="bar" style="height:30px">
+          <div class="z" style="flex:0 0 74px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">持仓</b></div>
+          <div class="z" style="flex:0 0 74px"><b>委托</b></div>
+          <div class="z" style="flex:0 0 74px"><b>成交</b></div>
+          <div class="z" style="flex:0 0 74px"><b>拒单</b></div>
+          <div class="z" style="flex:1"></div>
+        </div>
+        <div class="bar" style="min-height:52px"><div class="z" style="flex:1"><b>明细表</b><small>品种 · 方向 · 入场 · 现价 · 浮盈亏 · 占用 · 状态</small><div class="m">8 行上限，超出分页</div></div></div>
+        <div class="bar solid" style="height:30px"><div class="z" style="flex:1"><b>风控条</b><small>敞口 12% · 单品种上限 30% · 今日最大回撤 0.8%</small></div></div>
+      </div>
+      <p class="tt"><b>规则：</b>参数与手工平仓只从右侧抽屉进，且需二次确认；全局暂停在头部，单策略暂停在这张卡上。</p>
+    </div>
+
+    <!-- 复盘 -->
+    <div class="timg">
+      <h4>复盘<u>/review</u></h4>
+      <p>看图复盘。归因 K 线是主体：所有新闻源打在价格上，一眼看出哪条消息推动了哪一段。</p>
+      <div class="wf">
+        <div class="bar solid" style="height:34px">
+          <div class="z" style="flex:1"><b>页头</b><small>日期 · 范围 · 口径</small></div>
+          <div class="z" style="flex:0 0 86px"><b>导出</b><div class="m">CSV / MD</div></div>
+        </div>
+        <div class="bar" style="height:30px">
+          <div class="z" style="flex:0 0 74px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">归因</b></div>
+          <div class="z" style="flex:0 0 74px"><b>漏检</b></div>
+          <div class="z" style="flex:0 0 74px"><b>反思</b></div>
+          <div class="z" style="flex:1"></div>
+        </div>
+        <div class="bar" style="min-height:132px">
+          <div class="z" style="flex:1.8;justify-content:flex-start"><b>归因 K 线</b><small>K 线 + 全部新闻源标注 + 影响带；点标注 = 原文 + 影响 + 置信</small><div style="margin-top:8px;height:44px;border:1px dashed #D5D5CA"></div></div>
+          <div class="z" style="flex:1;justify-content:flex-start"><b>标注列表 5 条</b><small>时间 · 源 · 影响 · 置信</small><div class="m">图上放不下的原文在这里</div><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+        </div>
+        <div class="bar solid" style="height:38px"><div class="z" style="flex:1"><b>底部</b><small>来源覆盖 8/10 · 标注 42 · 高影响 6 · 漏检 7</small></div></div>
+      </div>
+      <p class="tt"><b>规则：</b>归因图是默认视图；表格只补充图上放不下的原文与影响判断。缺源处留缺口，不补假数据；点订单标注可回到五段链路。</p>
+    </div>
+
+    <!-- 情报 -->
+    <div class="timg">
+      <h4>情报<u>/intel</u></h4>
+      <p>钱在哪、外面在发生什么。资金地图是默认视图，新闻退到第二 tab。</p>
+      <div class="wf">
+        <div class="bar solid" style="height:32px"><div class="z" style="flex:1"><b>筛选条</b><small>市场 · 板块 · 时间窗 1h / 4h / 1d</small></div></div>
+        <div class="bar" style="height:30px">
+          <div class="z" style="flex:0 0 84px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">资金地图</b></div>
+          <div class="z" style="flex:0 0 66px"><b>新闻</b></div>
+          <div class="z" style="flex:0 0 66px"><b>主题</b></div>
+          <div class="z" style="flex:1"></div>
+        </div>
+        <div class="bar" style="min-height:136px">
+          <div class="z" style="flex:1.7;justify-content:flex-start"><b>资金地图</b><small>矩形面积 = 净流入；颜色 = 方向；30 块上限，超出按板块聚合</small><div style="margin-top:8px;height:46px;border:1px dashed #D5D5CA"></div></div>
+          <div class="z" style="flex:1;justify-content:flex-start"><b>Top 5 流入 / 流出</b><small>品种 · 净流入 · 占比 · 1h 变化</small><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+        </div>
+        <div class="bar solid" style="height:38px"><div class="z" style="flex:1"><b>底部</b><small>来源覆盖 8/10 · 更新 15:27 · 已触发 2 单</small></div></div>
+      </div>
+      <p class="tt"><b>规则：</b>资金地图优先于新闻列表；30 个抓取源与原文在 /settings/sources；缺源留缺口，不补假数据。</p>
+    </div>
+
+    <!-- 研究 -->
+    <div class="timg">
+      <h4>研究<u>/research</u></h4>
+      <p>大脑现在什么水平、得出了哪些结论。因果图谱是默认视图。</p>
+      <div class="wf">
+        <div class="bar solid" style="height:34px">
+          <div class="z" style="flex:0 0 66px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">图谱</b></div>
+          <div class="z" style="flex:0 0 58px"><b>情景</b></div>
+          <div class="z" style="flex:0 0 58px"><b>研报</b></div>
+          <div class="z" style="flex:0 0 66px"><b>反事实</b></div>
+          <div class="z" style="flex:0 0 58px"><b>问库</b></div>
+          <div class="z" style="flex:0 0 58px"><b>记忆</b></div>
+          <div class="z" style="flex:0 0 58px"><b>回测</b></div>
+          <div class="z" style="flex:1"></div>
+        </div>
+        <div class="bar" style="min-height:136px">
+          <div class="z" style="flex:1.75;justify-content:flex-start"><b>因果图谱</b><small>节点 = 结论；边 = 因果；颜色 = 置信；可缩放、可按主题筛</small><div style="margin-top:8px;height:46px;border:1px dashed #D5D5CA"></div></div>
+          <div class="z" style="flex:1;justify-content:flex-start"><b>认知状态</b><small>结论 128 · 高置信 23</small><small>待验证 41 · 最近推理 12 次</small><span class="rw"></span><span class="rw"></span></div>
+        </div>
+        <div class="bar solid" style="height:30px"><div class="z" style="flex:1"><b>历史记录</b><small>最近 10 次查询，可回放</small></div></div>
+      </div>
+      <p class="tt"><b>规则：</b>每个结论带置信与时间；一屏 ≤40 节点，超出折叠为簇；不能一眼看懂的图退回列表，不硬画。</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:18px">四个模板里的日期、结算笔数、命中率都是示意值，只用来看版位和层级，不是真实战绩。</p>
+</section>
+
+<!-- ================= 06 ================= -->
+<section class="sec" id="s6">
+  <div class="shead"><em>06</em><h2>自动下单的五段链路</h2></div>
+  <p class="slead">自动下单不是「把买入按钮自动化」，而是一条可回溯的流水线。界面要保证每一笔都能从结果倒推到原因，并且在任何一段都能被停住。</p>
+
+  <div class="chain">
+    <div class="step"><em>01</em><b>决策</b><small>信号 + 置信 + 失效条件</small><span>证据：新闻 / 特征 / 模型评分</span></div>
+    <div class="arw">→</div>
+    <div class="step"><em>02</em><b>门闸</b><small>余额 / 敞口 / 冷却 / 新鲜度</small><span>通过或被拒，都留理由</span></div>
+    <div class="arw">→</div>
+    <div class="step"><em>03</em><b>下单</b><small>品种 / 方向 / 数量 / 价格 / TIF</small><span>挂单期可撤</span></div>
+    <div class="arw">→</div>
+    <div class="step"><em>04</em><b>成交 / 拒单</b><small>成交价 / 滑点 / 拒单码</small><span>可平仓 / 可重试</span></div>
+    <div class="arw">→</div>
+    <div class="step"><em>05</em><b>结算</b><small>盈亏 / 持仓变化 / 记账</small><span>只读，写入复盘</span></div>
+  </div>
+  <p class="note">前端只渲染统一的 event 结构（时间、类型、品种、金额、证据链接），不为每一段单独建页；缺段即异常。</p>
+
+  <h3>三级干预<span>停在哪一层，影响多大</span></h3>
+  <div class="stack three">
+    <div class="blk">
+      <b>L1 全局暂停</b>
+      <small>头部常驻，一次点击停掉全部策略与自动下单。</small>
+      <small>影响最大，恢复需二次确认并写明原因。</small>
+      <div class="tag">任何页面都可达</div>
+    </div>
+    <div class="blk">
+      <b>L2 策略暂停</b>
+      <small>只停单个策略，其余继续跑。</small>
+      <small>入口在交易页的策略卡上，不进设置。</small>
+      <div class="tag">不影响其他策略</div>
+    </div>
+    <div class="blk">
+      <b>L3 单笔处理</b>
+      <small>撤单 / 平仓 / 改价，只作用于当前这一笔。</small>
+      <small>二次确认，成功后回写流水。</small>
+      <div class="tag">最小作用范围</div>
+    </div>
+  </div>
+
+  <h3>五条界面规则</h3>
+  <ul class="rule-list">
+    <li><i>1</i><span><b>缺一段就是异常。</b> 五段不完整自动标黄并置顶到流水，不需要用户自己去找。</span></li>
+    <li><i>2</i><span><b>订单状态不用红绿。</b> 挂单=中性、部分成交=蓝、成交=墨、拒单=琥珀、撤销=次要灰；红绿只留给盈亏。</span></li>
+    <li><i>3</i><span><b>拒单给人话和下一步。</b> 「保证金不足，还差 240 USDT，可降仓或补足」，不显示 HTTP 状态与堆栈。</span></li>
+    <li><i>4</i><span><b>PAPER / LIVE 常驻。</b> 当前环境始终可见；切到 LIVE 需独立开关、二次确认并留痕。</span></li>
+    <li><i>5</i><span><b>干预必须回流。</b> 谁在几点停了哪个策略、撤了哪笔单，都写进同一条流水，复盘可回放。</span></li>
+  </ul>
+
+  <div class="quote"><b>验收标准：</b>如果一笔自动单在界面里找不到它的第 2 段（门闸为什么通过），这条链路就不算做完。</div>
+</section>
+
+<!-- ================= 07 ================= -->
+<section class="sec" id="s7">
+  <div class="shead"><em>07</em><h2>四个核心视图</h2></div>
+  <p class="slead">这四张图不是页面的配图，是四个页面的主体。共同要求：一屏扫得完、点得进原文、缺数据时留缺口而不是补一个好看的空图。</p>
+
+  <div class="specgrid">
+    <div class="spec">
+      <h4>01 归因 K 线<u>复盘 · 默认视图</u></h4>
+      <p class="note">回答：哪条消息把价格推了多少，哪些源在说话。</p>
+      <div class="viz"><div class="grid"></div>
+        <svg viewBox="0 0 600 150" preserveAspectRatio="none">
+          <line x1="16.5" y1="112.0" x2="16.5" y2="127.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="12.0" y="116.0" width="9" height="9.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="48.0" y1="89.0" x2="48.0" y2="113.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="43.5" y="92.0" width="9" height="19.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="79.5" y1="99.0" x2="79.5" y2="126.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="75.0" y="103.0" width="9" height="18.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="111.0" y1="92.0" x2="111.0" y2="104.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="106.5" y="94.0" width="9" height="7.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="142.5" y1="77.0" x2="142.5" y2="100.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="138.0" y="80.0" width="9" height="15.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="174.0" y1="91.0" x2="174.0" y2="112.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="169.5" y="96.0" width="9" height="13.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="205.5" y1="85.0" x2="205.5" y2="106.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="201.0" y="90.0" width="9" height="13.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="237.0" y1="86.0" x2="237.0" y2="109.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="232.5" y="88.0" width="9" height="18.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="268.5" y1="83.0" x2="268.5" y2="103.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="264.0" y="86.0" width="9" height="13.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="300.0" y1="82.0" x2="300.0" y2="101.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="295.5" y="85.0" width="9" height="13.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="331.5" y1="69.0" x2="331.5" y2="82.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="327.0" y="73.0" width="9" height="7.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="363.0" y1="69.0" x2="363.0" y2="82.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="358.5" y="72.0" width="9" height="7.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="394.5" y1="71.0" x2="394.5" y2="97.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="390.0" y="75.0" width="9" height="18.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="426.0" y1="64.0" x2="426.0" y2="81.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="421.5" y="66.0" width="9" height="11.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="457.5" y1="62.0" x2="457.5" y2="79.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="453.0" y="66.0" width="9" height="9.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="489.0" y1="50.0" x2="489.0" y2="72.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="484.5" y="54.0" width="9" height="15.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="520.5" y1="56.0" x2="520.5" y2="68.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="516.0" y="59.0" width="9" height="7.0" fill="#FFFFFF" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="552.0" y1="56.0" x2="552.0" y2="83.0" stroke="#3A3D42" stroke-width="0.9"/>
+          <rect x="547.5" y="60.0" width="9" height="18.0" fill="#3A3D42" stroke="#3A3D42" stroke-width="0.9"/>
+          <line x1="142.5" y1="6" x2="142.5" y2="92.0" stroke="#D5D5CA" stroke-dasharray="2 3"/>
+          <circle cx="142.5" cy="92.0" r="3.4" fill="#1B4FD8"/>
+          <line x1="300.0" y1="6" x2="300.0" y2="77.0" stroke="#D5D5CA" stroke-dasharray="2 3"/>
+          <circle cx="300.0" cy="77.0" r="3.4" fill="#A9701A"/>
+          <line x1="426.0" y1="6" x2="426.0" y2="65.0" stroke="#D5D5CA" stroke-dasharray="2 3"/>
+          <circle cx="426.0" cy="65.0" r="3.4" fill="#7C818A"/>
+          <line x1="552.0" y1="6" x2="552.0" y2="53.0" stroke="#D5D5CA" stroke-dasharray="2 3"/>
+          <circle cx="552.0" cy="53.0" r="3.4" fill="#12795A"/>
+        </svg>
+      </div>
+      <div class="legend"><span><i style="background:#1B4FD8"></i>快讯</span><span><i style="background:#A9701A"></i>深度</span><span><i style="background:#7C818A"></i>官方</span><span><i style="background:#12795A"></i>社交</span></div>
+      <ul class="mini">
+        <li>一条新闻一个标记，按事件 ID 去重；点击出原文、影响、置信。</li>
+        <li>缩到日线时标记自动聚合，不把两百个点糊在屏幕上。</li>
+        <li>缺源处留空档，底部写「来源覆盖 8/10」，不补齐。</li>
+      </ul>
+    </div>
+
+    <div class="spec">
+      <h4>02 资金地图<u>情报 · 默认视图</u></h4>
+      <p class="note">回答：钱现在堆在哪、正在往哪挪。</p>
+      <div class="tmap" style="grid-template-rows:repeat(3,33px)">
+        <div style="grid-column:1 / span 2;grid-row:1 / span 2;background:#EAF2EE">BTC +2.1B</div>
+        <div style="grid-column:3 / span 2;grid-row:1 / span 2;background:#F7E9E6">ETH −0.8B</div>
+        <div style="grid-column:5 / span 2;grid-row:1;background:#EAF2EE">GOLD +0.9B</div>
+        <div style="grid-column:5 / span 2;grid-row:2;background:#EAF2EE">NVDA +1.3B</div>
+        <div style="grid-column:1;grid-row:3;background:#F7E9E6">JPY −0.3B</div>
+        <div style="grid-column:2;grid-row:3;background:#EAF2EE">SOL +0.4B</div>
+        <div style="grid-column:3 / span 2;grid-row:3;background:#F2F2EA">现金 +0.6B</div>
+        <div style="grid-column:5 / span 2;grid-row:3;background:#F7E9E6">TSLA −0.9B</div>
+      </div>
+      <div class="legend"><span>面积 = 净流入</span><span><i style="background:#12795A"></i>流入</span><span><i style="background:#B4342A"></i>流出</span><span>时间窗 1h / 4h / 1d</span></div>
+      <ul class="mini">
+        <li>30 块上限，超出按板块聚合；点一块看该板块 Top 5。</li>
+        <li>切换时间窗时，面积和数字一起动，不做假动画。</li>
+        <li>方向用「+/−」加颜色双编码，不只靠红绿。</li>
+      </ul>
+    </div>
+
+    <div class="spec">
+      <h4>03 因果图谱<u>研究 · 默认视图</u></h4>
+      <p class="note">回答：系统得出了哪些结论，彼此怎么连，置信多少。</p>
+      <div class="viz" style="height:168px"><div class="grid"></div>
+        <svg viewBox="0 0 600 160" preserveAspectRatio="none">
+          <line x1="120" y1="58" x2="285" y2="40" stroke="#B9B9AE"/>
+          <line x1="120" y1="58" x2="300" y2="112" stroke="#B9B9AE"/>
+          <line x1="285" y1="40" x2="470" y2="66" stroke="#B9B9AE"/>
+          <line x1="300" y1="112" x2="470" y2="66" stroke="#D5D5CA" stroke-dasharray="3 3"/>
+          <line x1="470" y1="66" x2="545" y2="122" stroke="#D5D5CA" stroke-dasharray="3 3"/>
+          <circle cx="120" cy="58" r="10" fill="#1B4FD8"/>
+          <circle cx="285" cy="40" r="8" fill="#1B4FD8"/>
+          <circle cx="300" cy="112" r="8" fill="#A9701A"/>
+          <circle cx="470" cy="66" r="8" fill="#1B4FD8"/>
+          <circle cx="545" cy="122" r="7" fill="#7C818A"/>
+        </svg>
+        <span class="vlab" style="left:20.0%;top:81px">降息预期</span><span class="vlab" style="left:47.5%;top:62px">成长股走强</span><span class="vlab" style="left:50.0%;top:138px">美元走弱</span><span class="vlab" style="left:78.3%;top:89px">BTC 反弹</span><span class="vlab" style="left:90.8%;top:148px">山寨承压</span>
+      </div>
+      
+      <div class="legend"><span><i style="background:#1B4FD8"></i>高置信结论</span><span><i style="background:#A9701A"></i>待验证</span><span><i style="background:#7C818A"></i>低置信</span><span>实线 = 已确认　虚线 = 待验证</span></div>
+      <ul class="mini">
+        <li>节点 = 结论，边 = 因果；点节点看证据、时间和数据口径。</li>
+        <li>一屏 ≤40 个节点，超出折叠成簇，不做全库大图。</li>
+        <li>右上角常驻：结论 128 · 高置信 23 · 待验证 41 · 最近推理 12 次。</li>
+      </ul>
+    </div>
+
+    <div class="spec">
+      <h4>04 反思状态<u>复盘 · 反思 tab</u></h4>
+      <p class="note">回答：反思在跑吗，最近出了哪些错。</p>
+      <div class="bars7">
+        <div style="height:48px"></div><div style="height:56px"></div><div style="height:42px"></div><div style="height:60px"></div><div style="height:52px"></div><div style="height:30px;background:#A9701A"></div><div style="height:54px"></div>
+      </div>
+      <div class="legend"><span>近 7 次运行</span><span>6 成功 · 1 失败</span><span>最近 15:02</span></div>
+      <ul class="mini">
+        <li>三种状态：成功 / 失败 / 超时；失败点开看错误类型，堆栈进抽屉。</li>
+        <li>错误分「已修 / 待修 / 忽略」，不用红底横幅；连续失败 2 次升级到运行台流水。</li>
+        <li>结论区只写「这轮改了什么规则」，不复述日志。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote"><b>一条底线：</b>如果一张图需要配五百字说明才看得懂，它就不是主视图——退回列表，或者重画。</div>
+  <p class="note" style="margin-top:10px">四张图里的数值都是示意，用来看结构和密度，不是当前市场的真实读数。</p>
+</section>
+
+<!-- ================= 08 ================= -->
+<section class="sec" id="s8">
+  <div class="shead"><em>08</em><h2>设计系统底线</h2></div>
+  <p class="slead">不是完整的组件库，是六条不能再破的底线。现有 token 保留，缺的是「守住」：组件里绕开 token 的硬编码要清掉。</p>
+
+  <div class="specgrid">
+    <div class="spec">
+      <h4>字号：六级，每屏最多三级</h4>
+      <ul class="type">
+        <li><em>28 / 500</em><span style="font-size:28px;line-height:1.3">运行台</span><small>页面标题，每屏一个</small></li>
+        <li><em>22 / 500</em><span style="font-size:22px;line-height:1.4">为什么动</span><small>区块标题</small></li>
+        <li><em>16 / 500</em><span style="font-size:16px">全量动态流水</span><small>卡片与小节标题</small></li>
+        <li><em>14 / 400</em><span style="font-size:14px">12 单 · 成交 11</span><small>正文与结论</small></li>
+        <li><em>12 / 400</em><span style="font-size:12px">拒单 1 笔 · 15:27</span><small>辅助信息，全站最小</small></li>
+        <li><em>mono</em><span style="font-family:var(--mono);font-size:14px">9,784.72 · BTCUSDT</span><small>数字、代码、ID 专用</small></li>
+      </ul>
+      <p class="note" style="margin-top:10px">中文正文不低于 12px。现在的全站 11px 让所有文字一样重，只能靠颜色找层级——这是首屏显得吵的直接原因。</p>
+    </div>
+
+    <div class="spec">
+      <h4>颜色：八个值，红绿只跟钱走</h4>
+      <div class="sw">
+        <div><i style="background:#FBFBF7;border-bottom:1px solid #E3E3DA"></i><b>纸</b><span>#FBFBF7</span></div>
+        <div><i style="background:#16181D"></i><b>墨</b><span>#16181D</span></div>
+        <div><i style="background:#D7D7CD"></i><b>线</b><span>#D7D7CD</span></div>
+        <div><i style="background:#1B4FD8"></i><b>强调</b><span>#1B4FD8</span></div>
+        <div><i style="background:#12795A"></i><b>涨 / 盈</b><span>#12795A</span></div>
+        <div><i style="background:#B4342A"></i><b>跌 / 亏</b><span>#B4342A</span></div>
+        <div><i style="background:#A9701A"></i><b>警示</b><span>#A9701A</span></div>
+        <div><i style="background:#7C818A"></i><b>次要</b><span>#7C818A</span></div>
+      </div>
+      <p class="note" style="margin-top:10px">红色只用于亏损、空头、破坏性操作；绿色只用于盈利与多头。系统错误改用中性文字 + 琥珀点。<b style="font-weight:500;color:var(--ink)">强调色只给可点的东西</b>，不做装饰。</p>
+      <p class="note" style="margin-top:12px;padding-top:10px;border-top:1px solid #E7E7DF">订单状态不占用红绿：挂单=中性、部分成交=蓝、成交=墨、拒单=琥珀、撤销=次要灰，全部带文字。分类靠文字标签，不靠换颜色。</p>
+    </div>
+
+    <div class="spec">
+      <h4>容器：最多两层</h4>
+      <div class="container-demo">
+        <div class="lvl"><b>L0 页面</b>　背景 + 一条顶线分隔，不加边框、不加阴影（不算容器）
+          <div class="in"><b>L1 区块</b>　1px 顶线，无圆角，承载一组数据
+            <div class="in2">L2 行 / 卡　圆角 8，只用于数据块和可交互容器</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:10px">L1 里不再放带边框的卡；同层不加阴影。现在「卡片套卡片 + 彩色描边标签」是盒子噪音的主要来源。</p>
+    </div>
+
+    <div class="spec">
+      <h4>状态：四种，每种都要有下一步</h4>
+      <div class="states">
+        <div class="st"><b>有数据</b>新闻 4,802 条<span class="rowline"></span><span style="color:var(--ink3)">一行摘要 + 数字</span></div>
+        <div class="st"><b>空</b>今天没有结算样本<span class="rowline"></span><span style="color:var(--ink3)">原因 + 「看最近 7 天 →」</span></div>
+        <div class="st"><b>不可用</b><span class="dot"></span>人群数据暂不可用<span class="rowline"></span><span style="color:var(--ink3)">重试 · 原文进 tooltip</span></div>
+        <div class="st"><b>加载</b><span class="sk"></span><span class="sk" style="width:45%"></span><span style="color:var(--ink3)">骨架两行，不转圈</span></div>
+      </div>
+      <p class="note" style="margin-top:10px">原始 500 报文、SQL、cron 名一律不进正文；「数据缺失 —」不算空态，必须给一句人话。</p>
+    </div>
+
+    <div class="spec">
+      <h4>数字：单位、正负、精度、对齐</h4>
+      <div class="num-demo">
+        <b style="color:var(--down)">−215.28<small>USDT</small></b>
+        <b>9,784.72<small>USDT</small></b>
+        <b>58.3<small>%</small></b>
+        <b>0.62<small>置信</small></b>
+      </div>
+      <p class="note">单位永远跟在数字后、降一级字号和颜色；千分位；正负号 + 箭头 + 颜色三重编码，不只靠红绿；精度按品种定（币 2 位、股 2 位、汇率 4 位）；表格数字等宽右对齐。</p>
+    </div>
+
+    <div class="spec">
+      <h4>栅格：12 栏，四个断点</h4>
+      <div class="grid-demo">
+        <i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i class="blue" style="grid-column:span 1"></i><i style="grid-column:span 1"></i><i style="grid-column:span 1"></i><i style="grid-column:span 1"></i><i style="grid-column:span 1"></i>
+      </div>
+      <p class="note" style="margin-top:10px">间距 4pt 基数，常用 8 / 12 / 16 / 24 / 32 / 48。断点：≥1680 内容最大 1440 居中；1440 满宽；1280 折单列，不许横向滚动；655 只读。上图示主图占 8 栏、侧栏 4 栏。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 07 ================= -->
+<section class="sec" id="s9">
+  <div class="shead"><em>09</em><h2>迁移顺序与验收</h2></div>
+  <p class="slead">按「壳 → 运行台 → 两个交易页 → 两个内容页 → 收口」推进，每一步都能独立上线。运行台与暂停键先上，保证自动下单始终有人能踩刹车。</p>
+
+  <div class="timeline">
+    <div class="tl-t">W1–W2</div>
+    <div class="tl-axis"></div>
+    <div class="tl-c">
+      <b>壳 + 运行台 + 全局暂停 + 后台隔离</b>
+      <p>新导航、运行状态条、全局暂停、五段流水；把 LLM 通道、窗口信号、任务、端口挪进 /admin/system。<span>这一步做完，主界面第一次能看见机器在做什么，也能一键停。</span></p>
+    </div>
+    <div class="tl-t">W3–W4</div>
+    <div class="tl-axis"></div>
+    <div class="tl-c">
+      <b>交易 + 复盘</b>
+      <p>账户条、策略卡、持仓/委托/成交/拒单四 tab、风控条；复盘先上归因 K 线与反思状态，再做漏检与五段回放。<span>旧 /replay、/attribution、/missed-signals 301 过来，信息一条不丢。</span></p>
+    </div>
+    <div class="tl-t">W5–W7</div>
+    <div class="tl-axis"></div>
+    <div class="tl-c">
+      <b>情报 + 研究</b>
+      <p>情报先上资金地图，再把新闻与主题收成 tab；研究先上因果图谱与认知状态，其余工具进 tab。<span>30 个抓取源、每源条数从主流里消失，但仍在数据抽屉里可查。</span></p>
+    </div>
+    <div class="tl-t">W8</div>
+    <div class="tl-axis"></div>
+    <div class="tl-c">
+      <b>收口与清理</b>
+      <p>字号、颜色、容器、状态四件事全站收口；数据抽屉接入全部原始字段；旧路由 301；9 个孤儿页并入新页后删除。<span>验收看的是「五段可追溯」和「暂停一次可达」。</span></p>
+    </div>
+  </div>
+
+  <h3>上线前逐条打勾</h3>
+  <ul class="checklist">
+    <li><u>□</u>每笔自动单能在流水里追溯五段</li>
+    <li><u>□</u>全局暂停在每页一次点击可达</li>
+    <li><u>□</u>所有数据一次点击可见，不需要跳页</li>
+    <li><u>□</u>拒单与断线给人话原因和下一步</li>
+    <li><u>□</u>主界面没有端口、cron、原始 JSON（原文在抽屉）</li>
+    <li><u>□</u>29 条旧地址全部可达，旧书签不断</li>
+    <li><u>□</u>1680 / 1440 / 1280 无横向滚动，655 只读</li>
+    <li><u>□</u>红色只出现在亏损与破坏性操作</li>
+    <li><u>□</u>四张核心图都能在 10 秒内读出结论</li>
+    <li><u>□</u>归因图缺源处有缺口标记，不补假数据</li>
+  </ul>
+</section>
+
+<!-- ================= 09 ================= -->
+<section class="sec" id="s10">
+  <div class="shead"><em>10</em><h2>待确认</h2></div>
+  <p class="slead">结构默认按下面七条前提做。第 1 条已确认；其余任何一条不成立，对应部分要改，不是加个开关就能兼容。</p>
+  <div class="assume">
+    <p><b>1　服务对象是单人 / 小团队自用。</b>已确认。因此不做协作、权限、多租户；也不为「别人也能用」牺牲主界面密度。</p>
+    <p><b>2　自动下单目前跑在 PAPER 还是实盘？</b>默认按 PAPER 做：环境常驻可见，切 LIVE 需独立开关和二次确认。若已经实盘，暂停键的确认流程要再收紧一层。</p>
+    <p><b>3　「所有数据」是否包含 LLM 通道与 cron 原文？</b>默认交易数据全部可见，工程原文放诊断层可展开。若你要它进主流，只需在筛选器加一项「系统」，不新增页面。</p>
+    <p><b>4　29 个旧路由可以 301 下线。</b>如果外部书签、脚本或日报链接指向旧地址，需要先给白名单，再决定哪几个保留。</p>
+    <p><b>5　655 只读，不做手机下单。</b>如果要在手机上真正干预，需要另一套操作流，而不是把桌面版堆起来。</p>
+    <p><b>6　结构图只重组前端；三个能力接口只读。</b>已补 /api/nlq 两个口径、/api/capabilities/scenario 与 research，均不写下单链路。五段链路若后端事件字段不全，仍需单独排期补事件模型。</p>
+    <p><b>7　四张核心图的数据从哪来？</b>归因需要后端给每条新闻统一的事件 ID、时间戳与影响判断；没有时间戳的源只能估位，图上必须标缺口。反思需要后端暴露最近 N 次运行、失败类型与待修清单，否则那块只能显示「暂无运行记录」。</p>
+    <p><b>8　三件新能力的边界。</b>研报「待回测」目前只是状态字段，尚未接 /backtest；情景树在无持仓时影响为空，界面要写明「无持仓」而不是留白。两项都要在验收前定。</p>
+  </div>
+</section>
+
+<!-- ================= 11 ================= -->
+<section class="sec" id="s11">
+  <div class="shead"><em>11</em><h2>三件能力扩展：已经落地，界面往哪放</h2></div>
+  <p class="slead">问账本、情景树、研报摄入已经写进后端并跑通。它们不是三个新页面，而是塞进 5+1 的三个工具位：一个进交易抽屉，两个进研究 tab。下面定的是入口、结果形态和降级怎么显示。</p>
+
+  <table class="tbl">
+    <colgroup><col style="width:15%"><col style="width:23%"><col style="width:23%"><col style="width:20%"><col style="width:19%"></colgroup>
+    <thead><tr><th>能力</th><th>入口</th><th>结果形态</th><th>数据来源</th><th>不可用时</th></tr></thead>
+    <tbody>
+      <tr><td>问账本</td><td>交易页账户条右侧「问账本」；复盘页头同款入口</td><td>右侧抽屉：一句结论 → 明细表 → 口径行</td><td class="r" style="white-space:normal;word-break:break-all">/api/nlq 白名单只读</td><td>认不出口径就说「没有这个口径」，并列可用问法，不猜数字</td></tr>
+      <tr><td>情景树</td><td>研究 · 情景 tab</td><td>三张路径卡：概率 / 触发 / 影响 / 动作 + 底部「现在盯什么」</td><td class="r" style="white-space:normal;word-break:break-all">/api/capabilities/scenario</td><td>模型失败降级为结构模板，概率显示「—」，卡头标 source=rule</td></tr>
+      <tr><td>研报摄入</td><td>研究 · 研报 tab</td><td>上传 → 解析中 → 结构化卡（假设 / 信号 / 风险 / 标签）→ 历史列表</td><td class="r" style="white-space:normal;word-break:break-all">/api/capabilities/research</td><td>抽取失败只存档，不生成假设；扫描件先 OCR</td></tr>
+    </tbody>
+  </table>
+  <p class="mapless">三件都不新建一级入口，也不进「更多」下拉。旧 <b>/capabilities</b> 页拆成上面三个入口后 301 过去，页面本身不再保留。</p>
+
+  <h3>问账本<span>交易页右侧抽屉 · 只读</span></h3>
+  <div class="wf">
+    <div class="bar solid" style="height:30px">
+      <div class="z" style="flex:1"><b>抽屉头</b><small>问账本 · 只读 · 不改任何参数</small></div>
+      <div class="z" style="flex:0 0 44px"><b>关闭</b></div>
+    </div>
+    <div class="bar" style="height:42px">
+      <div class="z" style="flex:1"><b>问题</b><small>这周为什么亏</small></div>
+      <div class="z" style="flex:0 0 58px"><b>追问</b><div class="m">回车即发</div></div>
+    </div>
+    <div class="bar" style="height:28px">
+      <div class="z" style="flex:1;flex-direction:row;align-items:center;gap:8px;justify-content:flex-start">
+        <span class="label">为什么亏</span><span class="label">最大回撤多少</span><span class="label">这周表现</span><span class="m" style="margin-left:auto">预设问法，点一下填入</span>
+      </div>
+    </div>
+    <div class="bar" style="min-height:54px">
+      <div class="z" style="flex:1;justify-content:flex-start"><b>结论</b><small>近 7 天已结算 3 笔，胜率 0%，合计 −2.559%；拖累最大的是 WTI BUY（2 笔，合计 −2.426%）。</small></div>
+    </div>
+    <div class="bar" style="min-height:76px">
+      <div class="z" style="flex:1;justify-content:flex-start"><b>明细表</b><small>品种 · 方向 · 笔数 · 胜率 · 合计 · 均 · 最差 · 最好</small><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+    </div>
+    <div class="bar solid" style="height:26px">
+      <div class="z" style="flex:1"><span class="label">口径：近 7 天已结算 · quick_sim_trades / sim_equity_snapshots · 样本 &lt;10 笔时在结论后标「样本不足」</span></div>
+    </div>
+  </div>
+  <p class="note">抽屉只回答「发生了什么、为什么」，不给「该不该加仓」。回答里每个数字都带口径；没有持仓或没有结算单时，直说「最近没有已结算交易」，不返回空表。</p>
+
+  <h3>情景树<span>研究 · 情景 tab</span></h3>
+  <div class="wf">
+    <div class="bar solid" style="height:34px">
+      <div class="z" style="flex:1"><b>事件</b><small>今晚 CPI 公布，预期 3.2%，前值 3.4%</small></div>
+      <div class="z" style="flex:0 0 78px"><b>3 天</b><div class="m">可改 1 / 3 / 7</div></div>
+      <div class="z" style="flex:0 0 92px"><b>生成情景树</b><div class="m">20–40s</div></div>
+    </div>
+    <div class="bar" style="height:26px">
+      <div class="z" style="flex:1;flex-direction:row;align-items:center;gap:8px;justify-content:flex-start">
+        <span class="label">推演中 · 已 12s</span><span class="m">可切走，结果回来再提示；超过 60s 显示「仍在推演」</span>
+      </div>
+    </div>
+    <div class="bar" style="min-height:132px">
+      <div class="z" style="flex:1;justify-content:flex-start"><b>路径 A · 低于预期</b><small>概率 0.45</small><small>触发：实际值低于预期 / 前值下修 / 失业率走高</small><small>影响：无持仓时为空</small><small>动作：暂停新开仓 30 分钟</small></div>
+      <div class="z" style="flex:1;justify-content:flex-start"><b>路径 B · 符合预期</b><small>概率 0.35</small><small>触发：实际值贴近预期 / 分项未恶化</small><small>影响：无持仓时为空</small><small>动作：按原计划执行</small></div>
+      <div class="z" style="flex:1;justify-content:flex-start"><b>路径 C · 高于预期</b><small>概率 0.20</small><small>触发：实际值高于预期 / 薪资增速反弹</small><small>影响：无持仓时为空</small><small>动作：收紧止损，减半仓</small></div>
+    </div>
+    <div class="bar solid" style="height:34px">
+      <div class="z" style="flex:1"><b>底部</b><small>现在盯：CPI 实际值 · 美元指数 · 持仓 0 · 置信 0.6 · source=llm</small></div>
+    </div>
+  </div>
+  <p class="note">三条路径互斥、概率和≈1；没有持仓时「影响」留空并写明原因，不用虚构的仓位数字填满卡片。降级模板在卡头标 <b>source=rule</b>，概率列显示「—」。</p>
+
+  <h3>研报摄入<span>研究 · 研报 tab</span></h3>
+  <div class="wf">
+    <div class="bar solid" style="height:32px">
+      <div class="z" style="flex:1"><b>上传</b><small>PDF / TXT · 取前 80 页 / 30,000 字符 · 扫描件先 OCR</small></div>
+      <div class="z" style="flex:0 0 86px"><b>选择文件</b></div>
+    </div>
+    <div class="bar" style="min-height:74px">
+      <div class="z" style="flex:1.6;justify-content:flex-start"><b>结构化结果</b><small>标题 · 来源 · 日期 · 摘要</small><small>假设 1 · 信号 2 · 风险 1 · 标签 3</small><span class="rw"></span></div>
+      <div class="z" style="flex:1;justify-content:flex-start"><b>状态</b><small>待回测</small><small>只是状态字段，尚未接回测流程</small></div>
+    </div>
+    <div class="bar" style="height:30px">
+      <div class="z" style="flex:0 0 66px;border-bottom:2px solid var(--accent)"><b style="color:var(--accent)">假设</b></div>
+      <div class="z" style="flex:0 0 66px"><b>信号</b></div>
+      <div class="z" style="flex:0 0 58px"><b>风险</b></div>
+      <div class="z" style="flex:1"></div>
+    </div>
+    <div class="bar" style="min-height:84px">
+      <div class="z" style="flex:1;justify-content:flex-start"><b>历史</b><small>文件名 · 标题 · 时间 · 状态</small><small>点一条展开原文与结构化结果</small><span class="rw"></span><span class="rw"></span></div>
+    </div>
+  </div>
+  <p class="note">研报只进「研究」侧，不直接改策略参数；从假设到实盘要经过回测和人工确认两步。列表为空时写明「还没有研报」，不放示例数据。</p>
+
+  <h3>五条界面规则</h3>
+  <ul class="rule-list">
+    <li><i>1</i><span><b>都不进一级导航。</b> 问账本挂交易页，情景与研报进研究 tab；想加第 6 个一级入口，先合并或下线一个。</span></li>
+    <li><i>2</i><span><b>先结论，再证据。</b> 每件的第一行必须是能直接读的一句话；明细、假设、路径细节都排在后面，不给一屏 JSON。</span></li>
+    <li><i>3</i><span><b>降级必须写在结果上。</b> source=rule、仅存档、没有这个口径，都要出现在结果里，不能静默换一套假数据。</span></li>
+    <li><i>4</i><span><b>长任务给预算、可离开。</b> 情景 20–40s、研报 ≈30s；显示已等多久，允许切走，回来能看到结果或失败原因。</span></li>
+    <li><i>5</i><span><b>与下单链路隔离。</b> 三件只读或只写 research_notes，不碰持仓与策略参数；界面上不放「一键执行」。</span></li>
+  </ul>
+
+  <div class="quote"><b>验收标准：</b>三件里任何一件，从入口到结论不超过两次点击；任何一次降级，用户都能在结果上看到原因和下一步，而不是一个转圈或空白。</div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <span>TRIDENT 2.0 · 结构图 v4 · 2026-11-16</span>
+  <span>下一步：运行台与交易两页 1680 / 1280 视觉稿</span>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trident 2.0 · 页面细化设计</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316181D'/%3E%3Cpath d='M16 6 L26 25 H6 Z' fill='%231B4FD8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}
+:root{
+  --paper:#FBFBF7; --ink:#16181D; --ink2:#4A4F58; --ink3:#7C818A;
+  --line:#D7D7CD; --line2:#BEBEB2; --white:#fff;
+  --accent:#1B4FD8; --accent-soft:#E9EEFA;
+  --up:#12795A; --down:#B4342A; --warn:#A9701A;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.8;
+  background-color:#EDEDE7;
+  background-image:linear-gradient(to right,rgba(20,22,26,.032) 1px,transparent 1px),
+                    linear-gradient(to bottom,rgba(20,22,26,.032) 1px,transparent 1px);
+  background-size:24px 24px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:32px auto;background:var(--paper);border:1px solid #D2D2C9}
+.mast{padding:44px 56px 34px;border-bottom:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink3)}
+h1{font-size:40px;line-height:1.2;font-weight:500;margin:14px 0 10px;letter-spacing:-.01em}
+.sub{font-size:14px;color:var(--ink3);margin:0}
+.lede{font-size:15px;line-height:1.9;color:var(--ink2);max-width:66ch;margin:20px 0 0}
+.metrics{display:flex;flex-wrap:wrap;margin-top:26px;border-top:1px solid var(--line)}
+.metric{flex:1 1 150px;min-width:130px;padding:14px 16px 0 0;border-right:1px solid var(--line)}
+.metric:last-child{border-right:0}
+.metric b{display:block;font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.3}
+.metric span{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.metric b small{font-size:11px;color:var(--ink3);font-weight:400;margin-left:3px}
+.body{display:grid;grid-template-columns:190px minmax(0,1fr);gap:52px;padding:38px 56px 60px}
+.toc{position:sticky;top:24px;align-self:start;font-size:12px}
+.toc h4{font-size:10.5px;font-family:var(--mono);color:var(--ink3);letter-spacing:.06em;margin:0 0 12px;font-weight:500}
+.toc a{display:flex;gap:10px;padding:8px 0;border-top:1px solid #E4E4DC;color:var(--ink2);text-decoration:none;line-height:1.5}
+.toc a:hover{color:var(--accent)}
+.toc a em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink3);padding-top:1px}
+.toc .foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink3);font-size:11px;line-height:1.7}
+.toc .foot a{color:var(--ink2);border:0;padding:0;display:inline}
+main{min-width:0}
+.sec{padding-top:6px;margin-bottom:62px;scroll-margin-top:24px}
+.sec+.sec{border-top:1px solid var(--line);padding-top:36px}
+.shead{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.shead em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+h2{font-size:25px;font-weight:500;line-height:1.35;margin:0}
+h3{font-size:16px;font-weight:500;margin:30px 0 10px}
+h3 span{font-family:var(--mono);font-size:11px;color:var(--ink3);font-weight:400;margin-left:8px}
+.slead{font-size:14px;color:var(--ink2);max-width:66ch;margin:8px 0 24px}
+.note{font-size:12px;color:var(--ink3);line-height:1.7}
+.quote{border-left:2px solid var(--accent);padding:2px 0 2px 16px;margin:26px 0 0;font-size:14px;color:var(--ink2)}
+.quote b{color:var(--ink);font-weight:500}
+
+/* ---------- 页面线框 ---------- */
+.mock{border:1px solid var(--line2);background:var(--white);margin:10px 0 6px}
+.mock .chrome{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line2);background:#F4F4EC;padding:8px 11px;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.mock .chrome b{font-family:var(--sans);font-size:11.5px;font-weight:500;color:var(--ink)}
+.mock .chrome .dots{display:flex;gap:4px}
+.mock .chrome .dots i{width:6px;height:6px;border-radius:50%;background:#C9C9BE}
+.mock .chrome .right{margin-left:auto;display:flex;gap:10px}
+.mock .page{padding:10px;display:grid;gap:6px}
+.mock .strip{display:grid;grid-auto-flow:column;gap:6px}
+.mock .kpi{border:1px solid #E2E2D8;background:#FDFDF9;padding:6px 8px;min-width:0}
+.mock .kpi b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;line-height:1.4;color:var(--ink)}
+.mock .kpi span{display:block;font-family:var(--sans);font-size:9px;color:var(--ink3);line-height:1.4}
+.mock .area{border:1px solid #E2E2D8;background:#FDFDF9;padding:7px 8px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.mock .area.hatch{background:repeating-linear-gradient(45deg,#FAFAF4,#FAFAF4 6px,#F1F1E8 6px,#F1F1E8 7px)}
+.mock .area.dark{background:#1B1E24;border-color:#1B1E24}
+.mock .area.dark .lbl,.mock .area.dark small{color:#9AA0AA}
+.mock .area .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.03em;color:var(--ink3);display:flex;gap:8px;align-items:center}
+.mock .area .lbl b{font-family:var(--sans);font-weight:500;font-size:10px;color:var(--ink);letter-spacing:0}
+.mock .area.dark .lbl b{color:#E8EAEE}
+.mock .area small{font-family:var(--sans);font-size:9px;color:#8B908C;line-height:1.45}
+.mock .area .line{height:1px;background:#E7E7DE;margin:2px 0}
+.mock .area .bars{display:flex;align-items:flex-end;gap:2px;height:26px;margin-top:auto}
+.mock .area .bars i{flex:1;background:#B9C6E8;min-width:2px}
+.mock .area .bars i.hi{background:var(--accent)}
+.mock .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:6px}
+#s4 .mock .grid2{grid-template-columns:1.8fr 1fr}
+#s5 .mock .grid2{grid-template-columns:1.6fr 1fr}
+#s6 .mock .grid2{grid-template-columns:2fr 1fr}
+#s7 .mock .grid2{grid-template-columns:1.2fr 1fr}
+.mock .grid2e{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mock .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mock .tall{min-height:118px}
+.mock .mid{min-height:78px}
+.mock .tiny{min-height:44px}
+.mock .footstrip{border:1px dashed #D5D5CA;padding:5px 8px;font-family:var(--mono);font-size:9px;color:var(--ink3);display:flex;gap:14px;flex-wrap:wrap}
+.mock .tag{display:inline-block;border:1px solid #D9D9CF;padding:0 4px;font-family:var(--mono);font-size:8.5px;color:var(--ink3);line-height:1.5}
+.mock .tag.on{border-color:#BECBEA;background:var(--accent-soft);color:var(--accent)}
+.mock .delta{font-family:var(--mono);font-size:9px}
+.mock .delta.up{color:var(--up)}.mock .delta.down{color:var(--down)}
+.mock .px{font-family:var(--mono);font-size:9px;color:var(--ink2)}
+
+/* ---------- 规格表 ---------- */
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px;margin-top:6px}
+.tbl th{text-align:left;font-weight:500;font-size:10.5px;font-family:var(--mono);color:var(--ink3);padding:8px 9px;border-bottom:1px solid var(--line2);letter-spacing:.02em}
+.tbl td{padding:8px 9px;border-bottom:1px solid #E7E7DF;vertical-align:top;line-height:1.55}
+.tbl td.r{font-family:var(--mono);font-size:11px;color:var(--ink2)}
+.tbl td.n{color:var(--ink3)}
+.tbl tr:nth-child(even) td{background:#FCFCF8}
+.tbl b{font-weight:500}
+.chip{display:inline-block;font-size:10px;line-height:1.6;padding:1px 6px;border:1px solid #D9D9CF;color:var(--ink2);white-space:nowrap}
+.chip.core{color:var(--ink);border-color:var(--ink2)}
+.chip.new{color:var(--accent);border-color:#BECBEA;background:var(--accent-soft)}
+.chip.warn{color:var(--warn);border-color:#DCCBA5;background:#FBF4E6}
+
+/* ---------- 交互 / 状态 ---------- */
+.two{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:26px;align-items:start}
+.list{margin:0;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:9px;padding:9px 0;border-top:1px solid #E7E7DF;font-size:13px;color:var(--ink2);line-height:1.7}
+.list li i{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--accent);padding-top:2px}
+.list li b{color:var(--ink);font-weight:500}
+.states{display:grid;gap:0;border-top:1px solid var(--line)}
+.state{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:9px 0;border-bottom:1px solid #E7E7DF;font-size:12px;line-height:1.6}
+.state b{font-family:var(--mono);font-size:10px;color:var(--ink3);font-weight:400;padding-top:2px}
+.state span{color:var(--ink2)}
+.state span em{font-style:normal;color:var(--ink);font-weight:500}
+
+/* ---------- 页面目录卡 ---------- */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.card{border:1px solid var(--line2);background:var(--white);padding:13px 14px;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-height:112px}
+.card:hover{border-color:var(--accent)}
+.card b{font-size:14px;font-weight:500;display:flex;align-items:baseline;gap:7px}
+.card b u{text-decoration:none;font-family:var(--mono);font-size:9px;color:var(--ink3)}
+.card p{margin:6px 0 0;font-size:11.5px;color:var(--ink3);line-height:1.6}
+.card .meta{margin-top:auto;padding-top:10px;font-family:var(--mono);font-size:9.5px;color:var(--ink3)}
+
+/* ---------- 版式 ---------- */
+@media (max-width:1000px){
+  .body{grid-template-columns:1fr;gap:24px;padding:26px 22px 40px}
+  .toc{position:static;display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .toc h4,.toc .foot{grid-column:1/-1}
+  .mast{padding:30px 22px 24px}
+  h1{font-size:28px}
+  .two{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr 1fr}
+  .mock .grid2,.mock .grid3{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff}
+  .wrap{border:0;margin:0;max-width:none}
+  .body{grid-template-columns:1fr;padding:0 24px}
+  .toc{display:none}
+  .sec{break-inside:auto}
+  .mock,.tbl{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="kicker">TRIDENT 2.0 / PAGE-LEVEL DESIGN / 2026-11-17</div>
+    <h1>页面细化设计</h1>
+    <p class="sub">结构图回答「页面放在哪」，这一份回答「每一页长什么样、放什么数据、怎么操作」</p>
+    <p class="lede">面向单人 / 小团队自用：自动下单在跑，页面必须能看到所有动态和数据。以下六个核心页面按同一套骨架展开——顶部状态带、主工作区、右栏上下文、底部证据带；每页给出线框、区块规格、交互、状态与验收口径。</p>
+    <div class="metrics">
+      <div class="metric"><b>6<small>页</small></b><span>核心工作页面</span></div>
+      <div class="metric"><b>1<small>套</small></b><span>全局壳与骨架</span></div>
+      <div class="metric"><b>41<small>块</small></b><span>可独立开发的区块</span></div>
+      <div class="metric"><b>5<small>态</small></b><span>统一状态规范</span></div>
+      <div class="metric"><b>1440<small>px</small></b><span>设计基准宽度</span></div>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="toc">
+      <h4>目录</h4>
+      <a href="#s0"><em>00</em>与结构图的分工</a>
+      <a href="#s1"><em>01</em>全局壳与页面骨架</a>
+      <a href="#s2"><em>02</em>实时信号台</a>
+      <a href="#s3"><em>03</em>背离雷达</a>
+      <a href="#s4"><em>04</em>行情归因</a>
+      <a href="#s5"><em>05</em>资金流向</a>
+      <a href="#s6"><em>06</em>因果图谱</a>
+      <a href="#s7"><em>07</em>反思健康</a>
+      <a href="#s8"><em>08</em>通用状态与验收</a>
+      <div class="foot">
+        配套文档<br>
+        <a href="./Trident-2.0-结构图.html">Trident-2.0 结构图 v4</a><br>
+        设计基准：1440 × 900，最小 1180
+      </div>
+    </aside>
+
+    <main>
+      <section class="sec" id="s0">
+        <div class="shead"><em>00</em><h2>与结构图的分工</h2></div>
+        <p class="slead">结构图定义信息架构、导航和五段链路；本文件定义每页内部的栅格、区块、字段、交互与异常状态。两份文档不重复：结构图决定「去哪」，这里决定「到了之后怎么用」。</p>
+        <div class="cards">
+          <a class="card" href="#s2"><b>实时信号台 <u>/</u></b><p>正在发生什么，账户和持仓现在是什么状态。</p><span class="meta">事件流 · 账户 · 背离条 · 反思条</span></a>
+          <a class="card" href="#s3"><b>背离雷达 <u>/divergence</u></b><p>技术信号是否成立，历史上这类场景准不准。</p><span class="meta">K 线 · 证据 · 样本外 · 台账</span></a>
+          <a class="card" href="#s4"><b>行情归因 <u>/attribution</u></b><p>哪条新闻、哪股资金造成了这根 K 线。</p><span class="meta">标注 K 线 · 归因面板 · 时间轴</span></a>
+          <a class="card" href="#s5"><b>资金流向 <u>/capital-flow</u></b><p>钱现在在哪，正在从哪里流向哪里。</p><span class="meta">流向图 · 排行 · 热力 · 跨资产</span></a>
+          <a class="card" href="#s6"><b>因果图谱 <u>/knowledge-graph</u></b><p>系统得出了哪些结论，依据是什么，可信度多少。</p><span class="meta">图谱 · 结论卡 · 证据链</span></a>
+          <a class="card" href="#s7"><b>反思健康 <u>/review</u></b><p>反思是否在正常运行，错在哪，改没改。</p><span class="meta">心跳 · 错误分类 · 案例 · 回放</span></a>
+        </div>
+        <div class="quote"><b>共同前提：</b>所有页面默认只读展示系统真实数据；写操作（下单、改参数、重跑）必须单独确认，并有明确的进行中 / 成功 / 失败回执。</div>
+      </section>
+
+      <section class="sec" id="s1">
+        <div class="shead"><em>01</em><h2>全局壳与页面骨架</h2></div>
+        <p class="slead">六个页面共用一套壳：顶部导航、页面标题带、主工作区、证据带。差异只发生在主工作区的栅格比例，避免每页重新学习一遍布局。</p>
+
+        <h3>1.1 壳层尺寸 <span>固定值，不再逐页讨论</span></h3>
+        <table class="tbl">
+          <colgroup><col style="width:22%"><col style="width:16%"><col style="width:62%"></colgroup>
+          <thead><tr><th>层</th><th>尺寸</th><th>规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>顶部导航</b></td><td class="r">56px</td><td>主导航 8 项 +「更多」下拉；当前页用 2px 底边高亮，不做整块填充。</td></tr>
+            <tr><td><b>页面标题带</b></td><td class="r">64–72px</td><td>左：页面名 + 一句话说明；右：数据时间、连接状态、刷新、主操作。标题带以下用 1px 线与内容分隔。</td></tr>
+            <tr><td><b>主工作区</b></td><td class="r">min 520px</td><td>12 栅格，间距 12px；内容最大宽 1440，超宽时左右留白而不是拉长行宽。</td></tr>
+            <tr><td><b>证据带</b></td><td class="r">自适应</td><td>事件、成交、反思、日志等可滚动明细，默认折叠到 240px 高，展开后覆盖主区下半屏。</td></tr>
+            <tr><td><b>页面内边距</b></td><td class="r">24px</td><td>窄于 1180 时降到 16px；卡片内边距 12px，表格行高 32px。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>1.2 通用页面骨架 <span>所有核心页按此排</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>页面标题带</b><span class="right"><span>数据时间</span><span>状态</span><span>刷新</span><span>主操作</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>核心指标 1</span><b>—</b></div>
+              <div class="kpi"><span>核心指标 2</span><b>—</b></div>
+              <div class="kpi"><span>核心指标 3</span><b>—</b></div>
+              <div class="kpi"><span>核心指标 4</span><b>—</b></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall"><div class="lbl"><b>主工作区</b><span>图表 / 事件流</span></div><small>占据最大面积，回答这一页的核心问题</small><div class="bars"><i style="height:40%"></i><i style="height:62%"></i><i class="hi" style="height:88%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:64%"></i></div></div>
+              <div class="area tall"><div class="lbl"><b>上下文栏</b><span>详情 / 解释</span></div><small>与主区选中项联动，不独立刷新</small><div class="line"></div><small>选中对象的字段、证据、操作</small><div class="line"></div><small>状态与时间线</small></div>
+            </div>
+            <div class="footstrip"><span>证据带</span><span>可折叠</span><span>默认 240px</span><span>滚动加载</span></div>
+          </div>
+        </div>
+        <p class="note">主区与上下文栏的比例按页面定：实时台 1.55 : 1，归因 1.8 : 1，图谱 2 : 1，反思 1.2 : 1。右栏宽度不低于 320px，否则表格字段会被压成逐字换行。</p>
+
+        <h3>1.3 导航与入口 <span>与现网一致</span></h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:52%"></colgroup>
+          <thead><tr><th>区域</th><th>入口</th><th>放置理由</th></tr></thead>
+          <tbody>
+            <tr><td>主导航</td><td class="r">实时信号台 / 背离雷达 / 行情归因 / 资金流向 / 因果图谱 / 反思健康 / 发现 / 新闻流</td><td>六个核心视图全部在主导航；背离紧跟实时台，因为它是信号确认的第一站。</td></tr>
+            <tr><td>更多 · 交易</td><td class="r">模拟盘 / 策略回测 / 历史回溯</td><td>低频但必须可达，不占主行。</td></tr>
+            <tr><td>更多 · 研究</td><td class="r">漏检信号 / 人群画像 / 分析过程 / 反事实 / 能力扩展 / 问库 / 记忆</td><td>研究类入口，按使用频率排序；漏检信号属低频诊断。</td></tr>
+            <tr><td>更多 · 后台</td><td class="r">交易设置 / 信息源 / 成绩单 / 联通 / AI 提示词</td><td>配置与审计，出错时才进来。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="sec" id="s2">
+        <div class="shead"><em>02</em><h2>实时信号台 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/</span></h2></div>
+        <p class="slead">首页只回答三个问题：现在发生了什么、账户处于什么状态、有没有值得立刻处理的信号。所有动态按时间倒序进入事件流，不按模块切碎；账户、持仓、自动下单结果固定在右栏，滚动时不离开视野。</p>
+
+        <h3>2.1 首屏线框 <span>1440 宽 · 主区 1.55 : 1</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>实时信号台</b><span class="right"><span>2026-11-17 09:42</span><span class="delta up">● 已连接</span><span>时段 · 今日</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>今日信号</span><b>14</b><span class="delta up">+5 vs 昨日</span></div>
+              <div class="kpi"><span>待触发</span><b>6</b><span>A 级 2</span></div>
+              <div class="kpi"><span>持仓浮盈</span><b class="delta up">+2.8%</b><span>3 个仓位</span></div>
+              <div class="kpi"><span>自动下单</span><b>开启</b><span>最近 09:41 成交</span></div>
+              <div class="kpi"><span>反思健康</span><b>正常</b><span>队列 0 · 错误 1</span></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall">
+                <div class="lbl"><b>事件流</b><span>全部动态 · 倒序</span><span class="tag on">全部市场</span><span class="tag">只看信号</span></div>
+                <div class="line"></div>
+                <small><span class="px">09:41</span> BTC 4h 底背离确认 · A 级 · 已触发</small>
+                <small><span class="px">09:38</span> NVDA 突破前高 · 量比 2.3</small>
+                <small><span class="px">09:31</span> 新闻：美联储官员讲话 · 影响 XAU -0.6%</small>
+                <small><span class="px">09:24</span> 自动下单：ETH 限价买入 0.8 · 成交</small>
+                <div class="line"></div>
+                <small>每条事件带：时间 / 标的 / 类型 / 方向 / 强度 / 状态；点击后右栏换成该事件详情。</small>
+              </div>
+              <div class="area">
+                <div class="lbl"><b>行情与账户</b><span>固定</span></div>
+                <div class="area tiny hatch" style="border:0;padding:0"><small>K 线 350px（移动端 280px）</small></div>
+                <div class="line"></div>
+                <small>账户权益 · 可用 · 保证金 · 今日盈亏</small>
+                <div class="line"></div>
+                <small>持仓表：标的 / 方向 / 数量 / 成本 / 现价 / 浮盈 / 止损</small>
+                <div class="line"></div>
+                <small>最近成交 3 条 + 查看全部</small>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="area mid"><div class="lbl"><b>有效背离信号</b><span>仅样本外有效的规则</span></div><small>BTC · 顺势隐藏底背离 · B 82分 · 3 根前确认 · 待触发</small><small>NVDA · 同上 · A 86分 · 1 根前确认 · 已触发</small></div>
+              <div class="area mid"><div class="lbl"><b>信号台账摘要</b><span>最近 20 条</span></div><small>今日 3 条 · 命中 2 · 平均 +1.4%（扣费后）</small><div class="bars"><i style="height:35%"></i><i class="hi" style="height:72%"></i><i style="height:52%"></i><i style="height:64%"></i></div></div>
+            </div>
+            <div class="footstrip"><span>反思概览：三类错误 1 条</span><span>漏检 0</span><span>数据延迟 0.8s</span><span>展开证据带</span></div>
+          </div>
+        </div>
+        <p class="note">首屏不放大段文字解释。任何指标卡都必须带「比较基准」或「变化量」，否则只是一个孤立数字。</p>
+
+        <h3>2.2 区块规格 <span>按开发顺序</span></h3>
+        <table class="tbl">
+          <colgroup><col style="width:17%"><col style="width:31%"><col style="width:30%"><col style="width:22%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据字段</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>顶部 KPI ×5</b><span class="chip core">核心</span></td><td>今日信号、待触发、持仓浮盈、自动下单状态、反思健康</td><td class="r">count / grade / pnl_pct / engine_state / queue_depth</td><td>点击信号卡滚到事件流并高亮；点击持仓跳右栏持仓表。</td></tr>
+            <tr><td><b>时段选择</b></td><td>今日 / 近 7 日 / 自定义</td><td class="r">from_ts / to_ts</td><td>切换后 KPI、事件流、成交同步过滤；自定义日期用双日历，不弹大面板。</td></tr>
+            <tr><td><b>事件流</b><span class="chip core">核心</span></td><td>信号、新闻、成交、反思、系统事件统一倒序</td><td class="r">ts / asset / kind / direction / score / status</td><td>虚拟滚动；顶部吸附「新事件 N 条」；点击右栏联动；支持市场过滤与类型过滤。</td></tr>
+            <tr><td><b>K 线与价格</b></td><td>当前市场主图 + 最新价 + 24h 变化</td><td class="r">ohlcv / price / change_24h</td><td>市场 tab 切换；图上叠加事件标记；断线时保留最后价格并标灰时间。</td></tr>
+            <tr><td><b>账户卡</b></td><td>权益、可用、保证金、今日盈亏、回撤</td><td class="r">equity / available / margin / day_pnl</td><td>只读；点击跳模拟盘/成绩单。数字变化用 200ms 轻微闪烁，不滚动动画。</td></tr>
+            <tr><td><b>持仓表</b></td><td>标的、方向、数量、成本、现价、浮盈、止损、来源信号</td><td class="r">position / entry / mark / stop / signal_id</td><td>行点击展开该仓位来源与止损计划；浮盈按正负着色，不用红绿整行填充。</td></tr>
+            <tr><td><b>有效背离条</b><span class="chip new">新增</span></td><td>只列命中样本外有效规则的信号</td><td class="r">asset / context / grade / score / status</td><td>最多 6 条；点击跳背离雷达并自动选中该标的、该周期。</td></tr>
+            <tr><td><b>反思概览</b></td><td>三类错误计数 + 最近一条</td><td class="r">error_type / count / last_case</td><td>默认折叠；点击跳反思系统对应分类。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2.3 交互与自动刷新</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>事件流是唯一入口。</b>任何卡片上的数字都应能点回它对应的事件或持仓，不做纯展示死数字。</li>
+              <li><i>02</i><b>60 秒统一心跳。</b>KPI、事件流、反思概览同一节奏刷新；行情价格单独走推送，不触发整页重绘。</li>
+              <li><i>03</i><b>滚动位置保护。</b>用户正在看历史事件时，新事件只累计到顶部提示条，不强行跳顶。</li>
+              <li><i>04</i><b>自动下单可见。</b>下单请求发出、成交、拒单都进事件流；成功与失败使用同一行结构，只换状态色。</li>
+              <li><i>05</i><b>跨页联动。</b>背离条 → 背离雷达；持仓行 → 归因；反思错误 → 反思系统；均带 query 参数定位。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>加载中</b><span>骨架屏保留真实行高，不出现整页 spinner。</span></div>
+              <div class="state"><b>空数据</b><span><em>今日暂无事件</em>，并给「查看昨日」入口。</span></div>
+              <div class="state"><b>断线</b><span>价格与事件保留最后值，标题带显示<em>数据延迟 Ns</em>，恢复后自动补拉。</span></div>
+              <div class="state"><b>下单失败</b><span>事件流红标 + 原因（余额/风控/接口），不弹模态框遮挡行情。</span></div>
+              <div class="state"><b>无权限</b><span>只读账号隐藏下单按钮，其余照常。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>2.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>首屏 1440×900 内能同时看到：5 个 KPI、事件流至少 8 条、K 线、账户与持仓摘要。</li>
+          <li><i>02</i>从事件流点进任一事件，右栏详情在 1 次点击内出现，不需要跳页。</li>
+          <li><i>03</i>断线 30 秒内页面不白屏、不丢最后价格，延迟状态可见。</li>
+          <li><i>04</i>自动下单成交与失败都能在事件流中追到，且带时间、标的、数量、价格。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s3">
+        <div class="shead"><em>03</em><h2>背离雷达 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/divergence</span></h2></div>
+        <p class="slead">这一页要把「识别强度」和「历史胜率」分开看。主图回答形态成不成立，左栏回答过去这类场景准不准，右栏回答这笔交易怎么设失效和目标。默认只读，不接下单。</p>
+
+        <h3>3.1 页面线框 <span>主区 1.25 : 1</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>背离雷达</b><span class="right"><span>BTC · 日线</span><span>只读行情</span><span>刷新</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>当前窗口信号</span><b>9</b><span>A 级 2</span></div>
+              <div class="kpi"><span>待触发</span><b>3</b><span>已触发 4</span></div>
+              <div class="kpi"><span>样本外有效规则</span><b>1</b><span>命中 60.8%</span></div>
+              <div class="kpi"><span>台账累计</span><b>71</b><span>已结算 60</span></div>
+            </div>
+            <div class="area mid" style="margin:0">
+              <div class="lbl"><b>控制条</b><span>标的</span><span class="tag on">日线</span><span class="tag">4h</span><span class="tag">1h</span><span class="tag">15m</span><span class="tag">最低等级 C</span></div>
+            </div>
+            <div class="area tall">
+              <div class="lbl"><b>K 线 + pivot 标注</b><span>A / B 两点 · 入场 / 失效 / 目标三条计划线</span></div>
+              <small>蜡烛图占满宽度；A 点虚线、B 点实线；价格轴右侧留 56px 放计划线标签，不与蜡烛重叠。</small>
+              <div class="bars"><i style="height:32%"></i><i style="height:44%"></i><i style="height:38%"></i><i style="height:56%"></i><i style="height:48%"></i><i class="hi" style="height:76%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:54%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:72%"></i></div>
+            </div>
+            <div class="grid2">
+              <div class="area mid">
+                <div class="lbl"><b>左栏 · 四页签</b><span>信号列表 / 历史校准 / 样本外验证 / 信号台账</span></div>
+                <small>信号行：等级 · 方向 · 几根前确认 · 评分 · 腿数 · 盈亏比 · 状态</small>
+                <small>验证页：有效规则卡 + 观察段 vs 检验段 + 按上下文结论</small>
+              </div>
+              <div class="area mid">
+                <div class="lbl"><b>右栏 · 信号详情</b><span>随选中联动</span></div>
+                <small>多腿证据条：6 条指标 A→B 数值与权重</small>
+                <div class="line"></div>
+                <small>交易计划：触发 / 失效 / 目标 / 盈亏比 / ATR</small>
+                <div class="line"></div>
+                <small>状态与上下文：均线位置 / ADX / 间隔根数</small>
+              </div>
+            </div>
+            <div class="footstrip"><span>跨周期共振条</span><span>15m / 1h / 4h / 1d 同向 ≥2 为共振</span><span>不接下单</span></div>
+          </div>
+        </div>
+
+        <h3>3.2 区块规格</h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:28%"><col style="width:24%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>控制条</b></td><td>标的、周期、最低等级、窗口</td><td class="r">asset / interval / min_grade / within</td><td>切换后主图与四页签全量重载；周期无数据时自动选有数据的最近周期并提示。</td></tr>
+            <tr><td><b>K 线主图</b><span class="chip core">核心</span></td><td>蜡烛、A/B pivot、计划线、成交量</td><td class="r">ohlcv / pivots / trigger / invalidation / target</td><td>滚轮缩放、拖拽平移；点 pivot 打开该点证据；计划线可切换显示。</td></tr>
+            <tr><td><b>信号列表</b></td><td>最近窗口内信号，按确认时间倒序</td><td class="r">grade / type / kind / score / legs / rr / status</td><td>选中行高亮并更新右栏；默认选评分最高的一条。</td></tr>
+            <tr><td><b>历史校准</b></td><td>同标的同周期的等级表与上下文表</td><td class="r">by_grade / by_context / baseline</td><td>持有 5 / 10 / 20 根切换；样本 &lt;20 灰显并不给结论。</td></tr>
+            <tr><td><b>样本外验证</b><span class="chip new">新增</span></td><td>观察段 vs 检验段、有效规则、结论标签</td><td class="r">by_rule / by_context / overall / cost_bps</td><td>固定 20 根、扣 8bp；有效 / 观察 / 未通过三色标签。</td></tr>
+            <tr><td><b>信号台账</b><span class="chip new">新增</span></td><td>逐条信号、结算状态、盈亏、MFE/MAE</td><td class="r">divergence_ledger</td><td>同步 / 结算按钮；可执行信号单独标记；最多显示 80 条。</td></tr>
+            <tr><td><b>多腿证据</b></td><td>6 条腿的 A→B 数值、差值、权重</td><td class="r">evidence[]</td><td>用横条长度表达差值方向；不堆雷达图。</td></tr>
+            <tr><td><b>跨周期共振</b></td><td>15m / 1h / 4h / 1d 各自最新偏向</td><td class="r">confluence.items / resonance</td><td>≥2 周期同向标「共振」；缺数据的周期显示「无数据」而非中性。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>3.3 关键规则</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>不重绘。</b>pivot 右 3 根确认后才出信号，界面明确写「滞后 3 根」，不把事后最优的点当成实时信号。</li>
+              <li><i>02</i><b>强度 ≠ 胜率。</b>评分只放在信号行；胜率只放在校准/验证页，两个数字不在同一张卡上混用。</li>
+              <li><i>03</i><b>有效规则单独标记。</b>只有通过样本外检验的规则显示「可执行」；其余仍可见，但不进执行层。</li>
+              <li><i>04</i><b>计划先于观点。</b>任何信号详情必须同时有失效价与目标价，缺一不展示「买入/卖出」措辞。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>无信号</b><span>说明当前窗口与等级下没有成立信号，并给放宽等级按钮。</span></div>
+              <div class="state"><b>数据不足</b><span>少于 150 根时显示「数据不足，无法计算」，不出空图。</span></div>
+              <div class="state"><b>样本不足</b><span>校准表灰显，标注「样本 &lt;20，不作结论」。</span></div>
+              <div class="state"><b>验证失败</b><span>规则卡标红「未通过」，不隐藏。</span></div>
+              <div class="state"><b>台账为空</b><span>给「同步最近 90 根」按钮与说明。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>3.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>切换标的后 2 秒内主图、信号、校准、共振全部更新，且选中信号自动落到最高分。</li>
+          <li><i>02</i>信号列表、右栏详情、图上标注三者指向同一条信号，不出现「列表选中 A、图上高亮 B」。</li>
+          <li><i>03</i>样本外页能直接读出：有效规则名称、检验样本数、命中率、扣费后每笔、结论。</li>
+          <li><i>04</i>台账每条可追到确认时间、入场、结算价、盈亏与是否命中。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s4">
+        <div class="shead"><em>04</em><h2>行情归因 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/attribution</span></h2></div>
+        <p class="slead">把「这根 K 线为什么动」拆成可核对的证据：哪条新闻、哪个来源、什么时间、影响多大、持续多久。主图是带事件标记的 K 线，右栏是选中事件的归因卡，底部是同日全部来源的时间轴。</p>
+
+        <h3>4.1 页面线框 <span>主区 1.8 : 1</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>行情归因 · BTC</b><span class="right"><span>日线</span><span>07-01 → 11-17</span><span>来源 42</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>窗口内事件</span><b>128</b><span>高影响 17</span></div>
+              <div class="kpi"><span>覆盖标的</span><b>12</b><span>跨市场 4</span></div>
+              <div class="kpi"><span>归因覆盖率</span><b>74%</b><span>未解释 26%</span></div>
+              <div class="kpi"><span>平均滞后</span><b>18m</b><span>中位 9m</span></div>
+            </div>
+            <div class="area mid" style="margin:0">
+              <div class="lbl"><b>控制条</b><span>标的</span><span class="tag on">全部来源</span><span class="tag">仅高影响</span><span class="tag">影响 ≥ 3</span><span class="tag">叠加基准</span></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall">
+                <div class="lbl"><b>归因 K 线</b><span>事件标记 · 影响区间 · 异常收益</span></div>
+                <small>每个标记点落在事件生效的首根 K 线；区间阴影表示影响持续窗口；右侧显示该窗口累计涨跌与基准差。</small>
+                <div class="bars"><i style="height:34%"></i><i style="height:42%"></i><i class="hi" style="height:70%"></i><i style="height:50%"></i><i style="height:62%"></i><i style="height:46%"></i><i style="height:72%"></i><i style="height:58%"></i><i style="height:66%"></i><i style="height:44%"></i><i style="height:54%"></i><i style="height:60%"></i></div>
+              </div>
+              <div class="area">
+                <div class="lbl"><b>归因卡</b><span>选中事件</span></div>
+                <small><b>来源</b> Reuters · 09:31</small>
+                <div class="line"></div>
+                <small>标题：美联储官员暗示暂停降息</small>
+                <small>情绪 -0.6 · 影响强度 0.72 · 置信 高</small>
+                <div class="line"></div>
+                <small>生效：09:32 → 11:05（93 分钟）</small>
+                <small>标的：XAU -0.8% / DXY +0.3% / BTC -1.2%</small>
+                <div class="line"></div>
+                <small>同题报道 6 条 · 最早 09:28 · 查看原文 →</small>
+              </div>
+            </div>
+            <div class="area mid">
+              <div class="lbl"><b>来源时间轴</b><span>同日 · 按分钟</span><span class="tag">官方</span><span class="tag">财经媒体</span><span class="tag">社媒</span></div>
+              <small>09:28 路透快讯 → 09:31 财联社转载 → 09:34 社媒扩散 → 09:41 价格首次反应</small>
+              <div class="line"></div>
+              <small>同一事件按「首发 → 转载 → 扩散」合并成一条，避免同题 6 条重复占屏。</small>
+            </div>
+            <div class="footstrip"><span>未解释波动 26%</span><span>来源健康 40/42</span><span>导出归因表</span></div>
+          </div>
+        </div>
+
+        <h3>4.2 区块规格</h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:26%"><col style="width:26%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>归因 K 线</b><span class="chip core">核心</span></td><td>蜡烛、事件标记、影响区间、异常收益线</td><td class="r">ohlcv / event_ts / impact_window / abnormal_ret</td><td>点标记选中事件；区间可拖动对齐；缩放不改变事件密度上限，超出时聚合为「+N」。</td></tr>
+            <tr><td><b>归因卡</b></td><td>来源、标题、情绪、强度、置信、生效窗口、跨标的反应</td><td class="r">source / title / sentiment / impact / confidence / affected_assets</td><td>原文链接新开；同题报道折叠；可标记「误归因」回流反思。</td></tr>
+            <tr><td><b>来源时间轴</b></td><td>首发、转载、扩散、价格反应四个节点</td><td class="r">first_seen / repost / spread / price_react</td><td>按事件合并；点击节点定位到该分钟；不按来源铺平。</td></tr>
+            <tr><td><b>来源健康</b></td><td>每个信息源的延迟、失败率、最近成功</td><td class="r">source_id / lag_sec / fail_rate / last_ok</td><td>失败源标黄；连续失败 3 次在标题带提示。</td></tr>
+            <tr><td><b>跨标的反应表</b></td><td>同一事件对相关标的的影响</td><td class="r">asset / beta / move / window</td><td>按影响绝对值排序；只列有持仓或自选内的标的，避免全市场噪音。</td></tr>
+            <tr><td><b>未解释波动</b></td><td>没有归因的高波动时段</td><td class="r">window / move / explained_ratio</td><td>点开进入「补归因」：手动关联新闻或标记为资金驱动。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>4.3 交互与状态</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>默认看高影响。</b>事件标记按影响强度分三档，弱事件默认折叠，避免图上长满点。</li>
+              <li><i>02</i><b>时间对齐优先。</b>事件时间、K 线时间、价格反应时间三者同屏可比较；时区统一显示本地时间。</li>
+              <li><i>03</i><b>归因可反驳。</b>每张归因卡都有「不准确」按钮，反馈写入反思样本，不直接改历史归因。</li>
+              <li><i>04</i><b>跨页入口。</b>持仓行、事件流都能跳到这里，并带上 asset 与时间窗。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>无事件</b><span>显示「该窗口无归因事件」，不给空白图。</span></div>
+              <div class="state"><b>新闻延迟</b><span>标记显示「待归因」，10 分钟后自动重试。</span></div>
+              <div class="state"><b>同题重复</b><span>合并为一条，展开可看子报道。</span></div>
+              <div class="state"><b>来源故障</b><span>标题带黄条 + 受影响源列表。</span></div>
+              <div class="state"><b>误归因</b><span>标灰并保留，供反思统计，不删除。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>4.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>任选一根异动 K 线，能在 2 次点击内看到对应事件、来源与影响窗口。</li>
+          <li><i>02</i>同题多来源不会重复出现超过 1 条主事件。</li>
+          <li><i>03</i>归因卡上的跨标的反应可在同一屏核对，不需要跳页。</li>
+          <li><i>04</i>未解释波动比例可见，且能进入补归因流程。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s5">
+        <div class="shead"><em>05</em><h2>资金流向 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/capital-flow</span></h2></div>
+        <p class="slead">回答「钱现在在哪、正在往哪走」。不是一张静态饼图，而是按时间滚动的流向：资产大类之间、行业之间、个股/币种之间的净流入流出，以及极端单日异动。</p>
+
+        <h3>5.1 页面线框 <span>上图下表的阅读顺序</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>资金流向</b><span class="right"><span>近 5 日</span><span>全资产</span><span>单位：亿美元</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>股票净流入</span><b class="delta up">+182</b><span>5 日</span></div>
+              <div class="kpi"><span>债券净流入</span><b class="delta up">+64</b><span>避险减弱</span></div>
+              <div class="kpi"><span>黄金净流入</span><b class="delta down">-21</b><span>3 日转负</span></div>
+              <div class="kpi"><span>加密净流入</span><b class="delta down">-35</b><span>BTC 主导</span></div>
+              <div class="kpi"><span>美元指数</span><b>104.2</b><span class="delta up">+0.4%</span></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall">
+                <div class="lbl"><b>大类流向图</b><span>宽度 = 净流量 · 颜色 = 方向</span><span class="tag on">5 日</span><span class="tag">20 日</span></div>
+                <small>股票 / 债券 / 商品 / 加密 / 现金 五个池子；带宽度按净流量，流向箭头表示迁移方向。</small>
+                <div class="bars"><i style="height:78%"></i><i style="height:58%"></i><i class="hi" style="height:92%"></i><i style="height:40%"></i><i style="height:52%"></i><i style="height:66%"></i><i style="height:46%"></i></div>
+              </div>
+              <div class="area">
+                <div class="lbl"><b>行业 / 板块排行</b><span>净流入 Top 5 / Bottom 5</span></div>
+                <small>半导体 +38 · 软件 +22 · 能源 +14</small>
+                <small>医疗 -19 · 公用事业 -12 · 地产 -9</small>
+                <div class="line"></div>
+                <small>点击板块 → 下钻到成分股；再点个股 → 跳到归因。</small>
+              </div>
+            </div>
+            <div class="grid3">
+              <div class="area mid"><div class="lbl"><b>ETF 申赎</b></div><small>SPY +12 / QQQ +8 / GLD -6 / IBIT -3</small></div>
+              <div class="area mid"><div class="lbl"><b>期货持仓</b></div><small>净多头变化 · 持仓集中度 · 挤仓风险</small></div>
+              <div class="area mid"><div class="lbl"><b>稳定币供应</b></div><small>USDT + / USDC - · 场内增量资金</small></div>
+            </div>
+            <div class="area mid">
+              <div class="lbl"><b>时间热力</b><span>近 60 日 · 每日净流量</span></div>
+              <small>横向按日，色阶从流出到流入；极端日单独标点，点击进入当日事件与归因。</small>
+            </div>
+            <div class="footstrip"><span>轮动时钟</span><span>数据延迟 15m</span><span>导出</span><span>设置阈值提醒</span></div>
+          </div>
+        </div>
+
+        <h3>5.2 区块规格</h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:28%"><col style="width:24%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>大类流向</b><span class="chip core">核心</span></td><td>五个资产池的净流量与迁移</td><td class="r">asset_class / net_flow / period</td><td>周期切换 1/5/20 日；流量单位统一为亿美元，不混用百分比。</td></tr>
+            <tr><td><b>板块排行</b></td><td>净流入 / 流出各前 5</td><td class="r">sector / net_flow / change</td><td>点击下钻；排行条长度按绝对值，不按名次等距。</td></tr>
+            <tr><td><b>ETF 申赎</b></td><td>主要 ETF 的净申购赎回</td><td class="r">ticker / creation / redemption</td><td>只列自选与持仓相关；非美股时段显示上一交易日并标日期。</td></tr>
+            <tr><td><b>期货持仓</b></td><td>净多头、持仓集中度、挤仓风险</td><td class="r">net_long / concentration / squeeze</td><td>风险等级用文字，不用火焰图标。</td></tr>
+            <tr><td><b>稳定币</b></td><td>USDT / USDC 供应变化</td><td class="r">supply / mint / burn</td><td>视为场内增量资金；变化超阈值时在标题带提示。</td></tr>
+            <tr><td><b>时间热力</b></td><td>60 日逐日净流量</td><td class="r">date / net_flow</td><td>点击格子跳到当日事件流；空格表示无数据，不涂成 0。</td></tr>
+            <tr><td><b>轮动时钟</b></td><td>股 / 债 / 商品 / 现金的相对强弱</td><td class="r">rotation_score</td><td>仅作为观察，不给买卖建议。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>5.3 交互与状态</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>先看总量再看结构。</b>首屏先给五个池子的净流量，再给板块排行，避免一上来就是几百行表格。</li>
+              <li><i>02</i><b>异常优先。</b>单日净流量超过过去 60 日 2σ 时，在该资产上打标记，并进入事件流。</li>
+              <li><i>03</i><b>下钻路径固定。</b>大类 → 板块 → 个股/币种 → 归因，最多 4 层，不无限跳。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>休市</b><span>显示上一交易日，明确标注日期。</span></div>
+              <div class="state"><b>数据延迟</b><span>标题带显示延迟分钟，图表保留最后值。</span></div>
+              <div class="state"><b>无 ETF 数据</b><span>整块显示「该市场无 ETF 数据」，不显示 0。</span></div>
+              <div class="state"><b>流量异常</b><span>标记「2σ 异常」并提供归因入口。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>5.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>首屏能回答「钱在大类之间怎么挪」，不需要先滚动。</li>
+          <li><i>02</i>任一板块能在 2 次点击内下钻到成分与归因。</li>
+          <li><i>03</i>休市、延迟、缺数据都有明确文案，不把缺失画成 0。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s6">
+        <div class="shead"><em>06</em><h2>因果图谱 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/knowledge-graph</span></h2></div>
+        <p class="slead">这一页不是装饰性的关系图，而是系统「大脑」的可视化审计：它积累了哪些实体、哪些因果关系、每条结论基于什么证据、置信度多少、有没有互相矛盾。要能一眼看出系统现在处于什么水平。</p>
+
+        <h3>6.1 页面线框 <span>图谱 2 : 1</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>因果图谱</b><span class="right"><span>节点 1,284</span><span>边 3,706</span><span>近 90 日</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>实体</span><b>1,284</b><span>+46 本月</span></div>
+              <div class="kpi"><span>因果边</span><b>3,706</b><span>强边 612</span></div>
+              <div class="kpi"><span>结论</span><b>218</b><span>待验证 31</span></div>
+              <div class="kpi"><span>矛盾</span><b class="delta down">7</b><span>需人工复核</span></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall">
+                <div class="lbl"><b>图谱画布</b><span>节点 = 实体 / 边 = 因果关系</span><span class="tag on">置信 ≥ 0.6</span><span class="tag">只看强边</span></div>
+                <small>中心为当前选中实体，一跳邻居外扩；边宽 = 置信度，虚线 = 待验证；矛盾边用红色描边。</small>
+                <div class="bars"><i style="height:70%"></i><i style="height:44%"></i><i class="hi" style="height:88%"></i><i style="height:36%"></i><i style="height:58%"></i><i style="height:48%"></i><i style="height:64%"></i><i style="height:40%"></i></div>
+              </div>
+              <div class="area">
+                <div class="lbl"><b>结论卡</b><span>选中节点 / 边</span></div>
+                <small><b>结论</b> 利率预期下行 → 成长股相对占优</small>
+                <div class="line"></div>
+                <small>置信 0.74 · 样本 46 · 最近验证 11-12</small>
+                <small>证据：3 条新闻 · 2 组历史类比 · 1 次回测</small>
+                <div class="line"></div>
+                <div class="line"></div>
+                <small>反例 2 条 · 查看矛盾 →</small>
+                <small>首次形成 09-18 · 最近更新 11-16</small>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="area mid">
+                <div class="lbl"><b>最近结论</b><span>按时间</span></div>
+                <small>11-16 黄金与实际利率背离扩大 · 置信 0.68</small>
+                <small>11-14 AI 资本开支见顶信号 · 置信 0.55（待验证）</small>
+              </div>
+              <div class="area mid">
+                <div class="lbl"><b>矛盾与空白</b><span>需要人看的地方</span></div>
+                <small>7 条互相矛盾的边 · 31 条缺证据的结论</small>
+                <small>空白实体：有新闻但未入库的 12 个</small>
+              </div>
+            </div>
+            <div class="footstrip"><span>时间滑块 90 日</span><span>导出子图</span><span>点击节点查看证据链</span></div>
+          </div>
+        </div>
+
+        <h3>6.2 区块规格</h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:28%"><col style="width:24%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>图谱画布</b><span class="chip core">核心</span></td><td>实体节点、因果边、置信度、矛盾标记</td><td class="r">node / edge / weight / status</td><td>节点超过 200 时按领域聚合；点击节点展开一跳；滚轮缩放不重排布局。</td></tr>
+            <tr><td><b>结论卡</b></td><td>结论、置信、样本、证据数量、反例</td><td class="r">claim / confidence / n / evidence / counter</td><td>置信 &lt;0.6 标「待验证」；有反例时并列显示，不隐藏。</td></tr>
+            <tr><td><b>最近结论</b></td><td>按时间倒序的结论流</td><td class="r">created_at / claim / confidence</td><td>点击定位到图中节点；支持只看待验证。</td></tr>
+            <tr><td><b>矛盾与空白</b></td><td>矛盾边、缺证据结论、未入库实体</td><td class="r">conflict / missing_evidence / missing_entity</td><td>这是质量入口，不是错误列表；点击进入单条复核。</td></tr>
+            <tr><td><b>时间滑块</b></td><td>图谱随时间增长</td><td class="r">valid_from / valid_to</td><td>拖动时只显示该时点已存在的边，避免用未来知识解释过去。</td></tr>
+            <tr><td><b>证据链</b></td><td>结论 → 新闻 / 类比 / 回测</td><td class="r">evidence_refs</td><td>每条证据可跳原文或回测详情；证据少于 2 条不给高置信。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>6.3 交互与状态</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>先看质量再看规模。</b>节点数不是成绩；矛盾数、待验证数、缺证据数才是「大脑水平」。</li>
+              <li><i>02</i><b>时间一致性。</b>时间滑块必须过滤掉未来才形成的边，避免事后诸葛。</li>
+              <li><i>03</i><b>结论可追溯。</b>任一结论都能展开到具体新闻、类比或回测，不允许只有一句判断。</li>
+              <li><i>04</i><b>不自动改写。</b>复核只能标记「确认 / 存疑 / 驳回」，不直接改图谱历史。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>图过大</b><span>按领域聚合，显示「已聚合 N 个节点」。</span></div>
+              <div class="state"><b>无结论</b><span>显示「该时间窗无新结论」并给最近一条。</span></div>
+              <div class="state"><b>证据缺失</b><span>结论卡标「证据不足」，置信降级。</span></div>
+              <div class="state"><b>矛盾</b><span>红色描边 + 并列反例，不自动裁决。</span></div>
+              <div class="state"><b>加载慢</b><span>先出骨架节点，再渐进补边。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>6.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>任选一条结论，能在 2 次点击内看到至少 2 条证据与置信度。</li>
+          <li><i>02</i>时间滑块拉回过去，未来形成的边不再显示。</li>
+          <li><i>03</i>矛盾结论不会被隐藏，且能进入人工复核。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s7">
+        <div class="shead"><em>07</em><h2>反思健康 <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">/review</span></h2></div>
+        <p class="slead">先回答「反思还在不在跑」，再回答「错在哪、改没改」。健康带固定在最上方，任何异常都要能在 3 秒内被看到；错误按三类分开统计，不混成一个总数。</p>
+
+        <h3>7.1 页面线框 <span>健康带 + 三栏</span></h3>
+        <div class="mock">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><b>反思系统</b><span class="right"><span class="delta up">● 心跳正常</span><span>最近 09:41</span><span>近 24h</span></span></div>
+          <div class="page">
+            <div class="strip">
+              <div class="kpi"><span>心跳</span><b class="delta up">正常</b><span>延迟 42s</span></div>
+              <div class="kpi"><span>队列</span><b>3</b><span>最久 6m</span></div>
+              <div class="kpi"><span>错误 24h</span><b>11</b><span>未解决 4</span></div>
+              <div class="kpi"><span>平均修复</span><b>2.4h</b><span>近 7 日</span></div>
+            </div>
+            <div class="grid2">
+              <div class="area tall">
+                <div class="lbl"><b>错误分类</b><span>A 买卖判断 / B 信息方向 / C 技术故障</span></div>
+                <div class="line"></div>
+                <small><b>A</b> 买卖判断 · 6 条 · 未解决 2 · 最近：止损设得过近</small>
+                <small><b>B</b> 信息方向 · 3 条 · 未解决 1 · 最近：旧闻当新闻</small>
+                <small><b>C</b> 技术故障 · 2 条 · 未解决 1 · 最近：数据源断流 18m</small>
+                <div class="line"></div>
+                <small>每类下方列最近 5 条案例，点击进入右侧详情；分类计数与列表必须一致。</small>
+              </div>
+              <div class="area">
+                <div class="lbl"><b>案例详情</b><span>选中案例</span></div>
+                <small><b>C · 数据源断流</b> · 11-16 14:02</small>
+                <small>影响：BTC 15m 信号延迟 18 分钟</small>
+                <small>根因：WebSocket 重连退避过长</small>
+                <div class="line"></div>
+                <small>状态：已修复 · 修复版本 11-16 16:20</small>
+                <small>验证：重放 3 次，无复现</small>
+                <div class="line"></div>
+                <small>[查看回放] [标记未解决] [加入回归用例]</small>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="area mid"><div class="lbl"><b>错误趋势</b><span>近 14 日</span></div><div class="bars"><i style="height:30%"></i><i style="height:45%"></i><i style="height:38%"></i><i class="hi" style="height:72%"></i><i style="height:50%"></i><i style="height:34%"></i><i style="height:28%"></i><i style="height:40%"></i><i style="height:22%"></i><i style="height:36%"></i><i style="height:18%"></i><i style="height:26%"></i><i style="height:14%"></i><i style="height:20%"></i></div></div>
+              <div class="area mid"><div class="lbl"><b>漏检与误判</b><span>可下钻</span></div><small>漏检 0 · 误判 2 · 待复核 1</small><small>点击进入漏检信号页对应日期</small></div>
+            </div>
+            <div class="footstrip"><span>最近一次全量反思 09:41</span><span>下次 10:41</span><span>手动触发</span></div>
+          </div>
+        </div>
+
+        <h3>7.2 区块规格</h3>
+        <table class="tbl">
+          <colgroup><col style="width:18%"><col style="width:30%"><col style="width:28%"><col style="width:24%"></colgroup>
+          <thead><tr><th>区块</th><th>展示内容</th><th>数据</th><th>交互 / 规则</th></tr></thead>
+          <tbody>
+            <tr><td><b>健康带</b><span class="chip core">核心</span></td><td>心跳、队列、24h 错误、平均修复</td><td class="r">heartbeat / queue / errors / mttr</td><td>异常时整条变黄/红；点击跳对应分类。</td></tr>
+            <tr><td><b>错误分类</b></td><td>A 买卖判断 / B 信息方向 / C 技术故障</td><td class="r">error_type / count / unresolved</td><td>三栏并列；每类最多列 5 条，更多进筛选页。</td></tr>
+            <tr><td><b>案例详情</b></td><td>时间、影响、根因、修复版本、验证结果</td><td class="r">case / root_cause / fix_version / verified</td><td>操作必须留下回执；未验证的修复不能标「已解决」。</td></tr>
+            <tr><td><b>错误趋势</b></td><td>近 14 日每日错误数</td><td class="r">date / count</td><td>柱状图；异常日可点击查看当日案例。</td></tr>
+            <tr><td><b>漏检 / 误判</b></td><td>数量与最近案例</td><td class="r">missed / false_positive</td><td>跳漏检页；不在此页重复完整列表。</td></tr>
+            <tr><td><b>回放</b></td><td>按事件时间重放信号与决策</td><td class="r">replay_trace</td><td>只读；可倍速；到关键节点自动暂停。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>7.3 交互与状态</h3>
+        <div class="two">
+          <div>
+            <ul class="list">
+              <li><i>01</i><b>健康先于内容。</b>心跳异常时，页面顶部直接给原因与影响范围，不让用户自己找。</li>
+              <li><i>02</i><b>分类不合并。</b>A/B/C 三类错误的修复路径不同，统计和筛选都分开。</li>
+              <li><i>03</i><b>修复要验证。</b>「已修复」必须有重放或回归用例结果，否则只能标「已改动」。</li>
+              <li><i>04</i><b>反馈闭环。</b>归因页的「误归因」、台账的「异常结算」都回流到这里成为案例。</li>
+            </ul>
+          </div>
+          <div>
+            <div class="states">
+              <div class="state"><b>心跳停止</b><span>顶部红条：<em>反思已停止 N 分钟</em> + 重启入口。</span></div>
+              <div class="state"><b>队列积压</b><span>显示最久等待时长与卡住的案例。</span></div>
+              <div class="state"><b>重复故障</b><span>同一根因 3 次以上标「回归」。</span></div>
+              <div class="state"><b>无案例</b><span>显示「近 24h 无错误」而非空白列表。</span></div>
+              <div class="state"><b>回放缺失</b><span>标明「该案例无回放数据」，不伪造。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>7.4 验收口径</h3>
+        <ul class="list">
+          <li><i>01</i>心跳停止 60 秒内，页面顶部必须出现可见告警。</li>
+          <li><i>02</i>三类错误的计数与各自列表条数一致，不出现总数对不上。</li>
+          <li><i>03</i>任一「已修复」案例都能看到修复版本与验证结果。</li>
+          <li><i>04</i>从归因 / 台账反馈的案例能在这里被检索到。</li>
+        </ul>
+      </section>
+
+      <section class="sec" id="s8">
+        <div class="shead"><em>08</em><h2>通用状态、数据契约与落地顺序</h2></div>
+        <p class="slead">所有页面共用同一套状态语言和刷新规则，避免每个页面对「加载中 / 没数据 / 出错」有不同解释。最后给出按优先级的落地顺序。</p>
+
+        <h3>8.1 五种状态 <span>每块都要定义</span></h3>
+        <table class="tbl">
+          <colgroup><col style="width:14%"><col style="width:38%"><col style="width:48%"></colgroup>
+          <thead><tr><th>状态</th><th>视觉</th><th>文案与行为</th></tr></thead>
+          <tbody>
+            <tr><td><b>加载中</b></td><td>骨架屏，保持真实行高</td><td>不显示「0」；超过 3 秒显示「仍在加载」而不是转圈。</td></tr>
+            <tr><td><b>空</b></td><td>一句话 + 一个下一步</td><td>「该窗口没有信号」+「放宽等级 / 查看昨日」，不放大空白插画。</td></tr>
+            <tr><td><b>出错</b></td><td>局部红条，保留旧数据</td><td>说明哪一块失败、影响什么；提供重试，不整页弹窗。</td></tr>
+            <tr><td><b>过期</b></td><td>标题带黄点 + 最后更新时间</td><td>数据超过阈值仍展示，但明确标「延迟 N 分钟」。</td></tr>
+            <tr><td><b>部分缺失</b></td><td>缺失字段显示「—」</td><td>不用 0 或空白代替；图例注明缺失原因。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>8.2 数据与刷新契约</h3>
+        <table class="tbl">
+          <colgroup><col style="width:15%"><col style="width:30%"><col style="width:33%"><col style="width:22%"></colgroup>
+          <thead><tr><th>页面</th><th>主要数据</th><th>刷新</th><th>写操作</th></tr></thead>
+          <tbody>
+            <tr><td class="r">/</td><td>事件流、行情、账户、持仓、成交、背离条</td><td>60s 心跳 + 行情推送</td><td>下单（确认后）</td></tr>
+            <tr><td class="r">/divergence</td><td>OHLCV、信号、校准、样本外、台账</td><td>切换即拉；台账 10 分钟同步</td><td>台账同步 / 结算</td></tr>
+            <tr><td class="r">/attribution</td><td>OHLCV、事件、来源、影响窗口</td><td>60s；新闻到达即插</td><td>误归因反馈</td></tr>
+            <tr><td class="r">/capital-flow</td><td>大类 / 板块 / ETF / 期货 / 稳定币</td><td>15 分钟</td><td>阈值提醒设置</td></tr>
+            <tr><td class="r">/knowledge-graph</td><td>节点、边、结论、证据</td><td>5 分钟</td><td>复核标记</td></tr>
+            <tr><td class="r">/review</td><td>心跳、队列、错误、案例、回放</td><td>60s</td><td>标记 / 重跑 / 回归用例</td></tr>
+          </tbody>
+        </table>
+
+        <h3>8.3 落地顺序 <span>先能看，再能查，最后能改</span></h3>
+        <ul class="list">
+          <li><i>P0</i><b>实时台 + 背离雷达。</b>补齐首屏信息密度、有效背离条、样本外与台账；这两页决定每天的使用体验。</li>
+          <li><i>P1</i><b>归因 + 反思。</b>归因 K 线与错误分类是「看得懂」和「信得过」的基础；先做只读与下钻。</li>
+          <li><i>P2</i><b>资金流 + 因果图谱。</b>数据面更宽，先把大类流向与结论审计做出来，再补下钻与时间滑块。</li>
+          <li><i>P3</i><b>写操作。</b>下单、重跑、复核统一走确认与回执，不在首版开放批量操作。</li>
+        </ul>
+
+        <h3>8.4 一页纸检查清单</h3>
+        <ul class="list">
+          <li><i>01</i>首屏是否能在 5 秒内回答这一页的核心问题？</li>
+          <li><i>02</i>每个数字是否带时间、基准或变化量？</li>
+          <li><i>03</i>选中态是否在三处（列表、图、详情）保持一致？</li>
+          <li><i>04</i>空、错、过期、部分缺失是否都有明确文案？</li>
+          <li><i>05</i>任一卡片能否点回它对应的原始事件或数据？</li>
+          <li><i>06</i>表格在 1180 宽下是否仍可读，不被压成逐字换行？</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

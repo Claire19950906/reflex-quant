@@ -1,0 +1,1646 @@
+diff --git a/backend/scripts/oneoff/backfill_intraday_from_ticks.py b/backend/scripts/oneoff/backfill_intraday_from_ticks.py
+index d416576..506c32c 100644
+--- a/backend/scripts/oneoff/backfill_intraday_from_ticks.py
++++ b/backend/scripts/oneoff/backfill_intraday_from_ticks.py
+@@ -38,8 +38,10 @@ DB_PATH = os.path.join(
+ )
+ 
+ ASSETS = ("BTC", "ETH", "SOL", "XAU", "WTI", "XAG")
+-MIN_TICKS_PER_BAR = {"1m": 3, "1h": 20}
+-BUCKET_SEC = {"1m": 60, "1h": 3600}
++# v453: 补 5m —— 此前只做 1m/1h，BTC 5m 从 11-18 00:05 起就没人写，
++# 图表切到 5m 只能拿旧 bar 兜底。5m 由 60 个 1 分钟桶合成，样本门槛 15 个 tick。
++MIN_TICKS_PER_BAR = {"1m": 3, "5m": 15, "1h": 20}
++BUCKET_SEC = {"1m": 60, "5m": 300, "1h": 3600}
+ 
+ 
+ def _conn() -> sqlite3.Connection:
+@@ -109,6 +111,24 @@ def run(assets, intervals, commit: bool, backfill_days: int = 0) -> Dict[str, in
+                     " closed, source) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                     bars,
+                 )
++                # v453: 同步镜像到 kline_bars（图表与回测读的是这张表）。
++                # 此前只写 ohlcv_intraday，于是 ohlcv_intraday 里 5m 是新的、
++                # kline_bars 里 5m 停在 11-18 00:05 —— 图表切 5m 只能拿旧 bar。
++                # ts 单位不同：ohlcv_intraday 用秒，kline_bars 用毫秒。
++                _mirror = [
++                    (b[0], b[1], int(b[2]) * 1000, b[3], b[4], b[5], b[6], b[7],
++                     int(time.time()))
++                    for b in bars
++                ]
++                conn.executemany(
++                    "INSERT INTO kline_bars "
++                    "(symbol, timeframe, ts, open, high, low, close, volume, fetched_at) "
++                    "VALUES (?,?,?,?,?,?,?,?,?) "
++                    "ON CONFLICT(symbol, timeframe, ts) DO UPDATE SET "
++                    "open=excluded.open, high=excluded.high, low=excluded.low, "
++                    "close=excluded.close, volume=excluded.volume, fetched_at=excluded.fetched_at",
++                    _mirror,
++                )
+                 written[f"{asset}/{interval}"] = len(bars)
+         if commit:
+             conn.commit()
+@@ -122,7 +142,7 @@ def run(assets, intervals, commit: bool, backfill_days: int = 0) -> Dict[str, in
+ def main() -> int:
+     ap = argparse.ArgumentParser()
+     ap.add_argument("--commit", action="store_true", help="真正写库（默认 dry-run）")
+-    ap.add_argument("--intervals", default="1m,1h")
++    ap.add_argument("--intervals", default="1m,5m,1h")
+     ap.add_argument("--assets", default=",".join(ASSETS))
+     ap.add_argument("--days", type=int, default=0, help="补齐最近 N 天（0=只补增量）")
+     args = ap.parse_args()
+diff --git a/backend/scripts/system_health_report.py b/backend/scripts/system_health_report.py
+index 0c112da..3c078ba 100644
+--- a/backend/scripts/system_health_report.py
++++ b/backend/scripts/system_health_report.py
+@@ -71,10 +71,14 @@ def check_decisions(conn: sqlite3.Connection) -> Dict[str, Any]:
+     total = total[0] if total else 0
+     last = _safe(conn, "SELECT MAX(created_at) FROM ai_decisions")
+     last = last[0] if last else None
+-    h6 = (_now() - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
+-    d1 = (_now() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
+-    c6 = _safe(conn, "SELECT COUNT(*) FROM ai_decisions WHERE created_at >= ?", (h6,))
+-    c24 = _safe(conn, "SELECT COUNT(*) FROM ai_decisions WHERE created_at >= ?", (d1,))
++    # v453: created_at 是**混格式**——老行是带时区的 ISO（...+08:00），
++    # 新行是 SQLite datetime('now') 的 UTC 裸时间。用本地时间字符串去比，
++    # 会把刚写的决策判成"8 小时前"，于是「决策活跃度」长期假 FAIL。
++    # 改用 julianday() 让 SQLite 自己解析两种格式，再和 UTC 现在比。
++    c6 = _safe(conn, "SELECT COUNT(*) FROM ai_decisions "
++                     "WHERE julianday(created_at) >= julianday('now','-6 hours')")
++    c24 = _safe(conn, "SELECT COUNT(*) FROM ai_decisions "
++                      "WHERE julianday(created_at) >= julianday('now','-1 day')")
+     c6 = c6[0] if c6 else 0
+     c24 = c24[0] if c24 else 0
+     if c6 == 0:
+@@ -219,6 +223,44 @@ def check_db(conn: sqlite3.Connection, path: str) -> Dict[str, Any]:
+             "projected_30d_growth_mb": projected_30d_mb, "level": level}
+ 
+ 
++def check_klines(conn: sqlite3.Connection) -> Dict[str, Any]:
++    """v453: 行情 K 线新鲜度。
++
++    为什么单开一项：11-18 实测 WTI/XAG 的 1m 停在 32 小时前、BTC 5m 停在 23 小时前，
++    而系统照常出信号 —— 也就是说「用旧 K 线算出来的价格」被当成了现价。
++    这一项只查「最近 7 天还在写」的序列（早已停用的 3m/10m 历史序列不算故障），
++    再按时框给容忍度：1m 15 分钟 / 5m 25 分钟 / 15m 45 分钟 / 1h 2 小时 /
++    4h 8 小时 / 1d 4 天（含周末与假日）。
++    """
++    limits = {"1m": 15, "3m": 45, "5m": 25, "10m": 50, "15m": 45, "30m": 90,
++              "1h": 120, "4h": 480, "1d": 5760}
++    now_ms = int(_now().timestamp() * 1000)
++    cutoff_ms = now_ms - 7 * 86400 * 1000
++    rows = []
++    try:
++        rows = conn.execute(
++            "SELECT symbol, timeframe, MAX(ts) AS last_ts, COUNT(*) FROM kline_bars "
++            "WHERE ts >= ? GROUP BY symbol, timeframe", (cutoff_ms,)
++        ).fetchall()
++    except sqlite3.Error:
++        return {"level": "SKIP", "reason": "kline_bars 不可读", "stale": [], "checked": 0}
++    stale = []
++    for symbol, tf, last_ts, n in rows:
++        lim = limits.get(tf)
++        if not lim or not last_ts:
++            continue
++        lag_min = (now_ms - last_ts) / 60000.0
++        if lag_min > lim:
++            stale.append({
++                "symbol": symbol, "timeframe": tf, "lag_hours": round(lag_min / 60, 1),
++                "limit_min": lim, "rows": n,
++                "last_bar": datetime.fromtimestamp(last_ts / 1000).strftime("%Y-%m-%d %H:%M"),
++            })
++    stale.sort(key=lambda r: -r["lag_hours"])
++    level = "WARN" if stale else "OK"
++    return {"level": level, "checked": len(rows), "stale": stale[:12], "stale_count": len(stale)}
++
++
+ def check_baseline() -> Dict[str, Any]:
+     p = os.path.join(BASELINE, "summary.json")
+     if not os.path.exists(p):
+@@ -273,7 +315,7 @@ def check_eval() -> Dict[str, Any]:
+     每天跑一次 60 条，就能回答"昨天到今天，输出有没有悄悄变"。
+     跑不动或库不可读时返回 level=SKIP，不让体检因此变红。
+     """
+-    script = os.path.join(REPO_ROOT, "backend", "scripts", "eval_frozen.py")
++    script = os.path.join(REPO_ROOT, "backend", "scripts", "oneoff", "eval_frozen.py")
+     if not os.path.exists(os.path.join(REPO_ROOT, "backend", "tests", "eval", "frozen_set.json")):
+         return {"level": "SKIP", "reason": "无基准（先跑 eval_frozen.py --freeze）"}
+     try:
+@@ -283,16 +325,20 @@ def check_eval() -> Dict[str, Any]:
+         return {"level": "SKIP", "reason": f"{type(exc).__name__}: {exc}"}
+     tail = (proc.stdout or "").strip().splitlines()
+     result_line = next((x for x in reversed(tail) if x.startswith("[RESULT]")), "")
+-    drift = 0
+-    if "漂移" in result_line:
+-        try:
+-            drift = int(result_line.split("漂移")[1].split("/")[0].strip())
+-        except Exception:
+-            drift = -1
++    def _count(label: str) -> int:
++        if label not in result_line:
++            return 0
++        import re
++        m = re.search(label + r"\s*(\d+)", result_line)
++        return int(m.group(1)) if m else -1
++
++    drift = _count("漂移")
++    missing = _count("消失")
+     return {
+         "level": "WARN" if proc.returncode != 0 else "OK",
+         "exit_code": proc.returncode,
+         "drift": drift,
++        "missing": missing,
+         "result": result_line or "（无输出）",
+         "detail": "\n".join([x for x in tail if x.startswith("[DRIFT]") or x.startswith("[MISSING]")])[:2000],
+     }
+@@ -323,6 +369,12 @@ def render(report: Dict[str, Any]) -> str:
+     lines.append(f"| 冻结评测集 | {ev.get('level', 'SKIP')} | {ev.get('result', ev.get('reason', '-'))} |")
+     dc = report.get("discards") or {}
+     lines.append(f"| 丢弃（超龄归档） | {dc.get('level', 'OK')} | 今日累计 {dc.get('discarded', 0)} 条（{dc.get('batches', 0)} 批） |")
++    k = report.get("klines") or {}
++    if k.get("stale_count"):
++        first = k["stale"][0]
++        lines.append(f"| 行情新鲜度 | {k.get('level', 'OK')} | {k['stale_count']} 条序列过期，最老 {first['symbol']} {first['timeframe']} 落后 {first['lag_hours']}h |")
++    else:
++        lines.append(f"| 行情新鲜度 | {k.get('level', 'SKIP')} | {k.get('checked', 0)} 条活跃序列全部新鲜 |")
+ 
+     if q.get("items"):
+         lines += ["", "## 未处理的 DLQ 事件", "", "| id | kind | 时间 | 摘要 |", "|---|---|---|---|"]
+@@ -371,6 +423,7 @@ def main() -> int:
+         heartbeat = check_heartbeat(conn)
+         dlq = check_dlq(conn)
+         db = check_db(conn, args.db)
++        klines = check_klines(conn)
+     finally:
+         conn.close()
+ 
+@@ -380,7 +433,7 @@ def main() -> int:
+     discards = check_discards()
+ 
+     levels = [decisions["level"], llm["level"], heartbeat["level"], dlq["level"], db["level"],
+-              eval_res.get("level", "OK")]
++              eval_res.get("level", "OK"), klines.get("level", "OK")]
+     verdict = "FAIL" if "FAIL" in levels else ("WARN" if "WARN" in levels else "OK")
+ 
+     actions: List[str] = []
+@@ -394,12 +447,19 @@ def main() -> int:
+         actions.append(f"DLQ 有 {dlq['unresolved']} 条未解决事件，需人工 disposition（加 resolved 标记或修根因）")
+     if db["level"] == "WARN":
+         actions.append("库增长偏快：跑 retention_prune.py 看保留窗口，并挂成每日任务")
++    if klines.get("stale_count"):
++        names = ", ".join(f"{r['symbol']}/{r['timeframe']}({r['lag_hours']}h)" for r in klines["stale"][:4])
++        actions.append(f"K 线过期：{names} —— 先查对应采集班次是否卡死（日线看 daily_bars.err.log 的 database is locked）")
+     if (discards.get("discarded") or 0) >= 100:
+         actions.append(f"今日已丢弃 {discards['discarded']} 条超龄新闻（超过分析时效门槛）："
+                        f"要么提产能，要么下调时效门槛的等待策略，别默认损失")
+     if eval_res.get("level") == "WARN":
+-        actions.append(f"冻结评测集出现输出漂移（{eval_res.get('result')}）：先确认是有意改动，"
+-                       f"再决定更新基准 eval_frozen.py --freeze")
++        if (eval_res.get("drift") or 0) > 0:
++            actions.append(f"冻结评测集出现输出漂移（{eval_res.get('result')}）：先确认是有意改动，"
++                           f"再决定更新基准 eval_frozen.py --freeze")
++        elif (eval_res.get("missing") or 0) > 0:
++            actions.append(f"冻结评测基准样本已不在库（{eval_res.get('result')}，数据被清/重置，非输出回归）："
++                           f"待带决策的新闻重新积累到 60 条后跑 eval_frozen.py --freeze 重建基准")
+     if not actions:
+         actions.append("各项正常，无需动作")
+ 
+@@ -408,7 +468,7 @@ def main() -> int:
+         "verdict": verdict,
+         "decisions": decisions, "llm": llm, "heartbeat": heartbeat,
+         "dlq": dlq, "db": db, "ports": ports, "baseline": baseline, "eval": eval_res,
+-        "discards": discards,
++        "discards": discards, "klines": klines,
+         "actions": actions,
+     }
+ 
+diff --git a/backend/src_python/config.py b/backend/src_python/config.py
+index a84af1d..bf44e7f 100644
+--- a/backend/src_python/config.py
++++ b/backend/src_python/config.py
+@@ -14,6 +14,7 @@ from __future__ import annotations
+ 
+ import json
+ import os
++import re
+ import tempfile
+ from datetime import datetime, timezone, timedelta
+ from typing import Any, Dict, List, Optional
+@@ -30,6 +31,37 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
+ 
+ DB_PATH = os.getenv("TRIDENT_DB_PATH") or os.path.join(BASE_DIR, "trident_event_bus.db")
+ PROJECT_DIR = os.path.dirname(BASE_DIR)
++
++# ── v452：版本号的单一真值源 ─────────────────────────────────────────────
++# 事故：CHANGELOG 已写到 v451，而 `/api/health` 写死 `v398`、8100 bridge 写死
++# `v308-p1` —— 探针看到的"版本"和实际代码差 50 多版，出问题时没人能靠它对账。
++# 现在两个 server 都读这里；发版时只改这一行 + CHANGELOG 首行，
++# `tests/test_v452_version_single_source.py` 会比对两者，漂了就红。
++# 现在两个 server 都读这里；发版时只改 CHANGELOG 首行，
++# `tests/test_v452_version_single_source.py` 会比对两者，漂了就红。
++def _read_changelog_version() -> str:
++    """从 CHANGELOG 首行取 `vNNN`，作为版本号的唯一真值源。
++
++    v452 二次：原来这里是手写常量，并发开发时每天要追着 CHANGELOG 改
++    （v451 → v460 → v461 已连漂两次）。改成直接读首行，发版只写 CHANGELOG 一处。
++    """
++    try:
++        path = os.path.join(PROJECT_DIR, "CHANGELOG.md")
++        with open(path, "r", encoding="utf-8") as fh:
++            for line in fh:
++                line = line.strip()
++                if not line:
++                    continue
++                m = re.search(r"(v\d+(?:\.\d+)?)", line)
++                if m:
++                    return m.group(1)
++                break
++    except Exception:
++        pass
++    return "unknown"
++
++
++CODE_VERSION = _read_changelog_version()
+ TZ_SHANGHAI = timezone(timedelta(hours=8))
+ # v309 P1: time_utils.BJ 是全项目唯一时区口径常量, 与上面等价。
+ # 这里保持 TZ_SHANGHAI 的名字/行为不变 (大量代码在用), 但显式说明二者同源,
+@@ -210,6 +242,9 @@ MINIMAX_MAIN_MODEL   = os.getenv("MINIMAX_MAIN_MODEL", "MiniMax-M3").strip()
+ # 门卫筛选 — verdict 64 tokens,高频
+ MINIMAX_GATE_KEY     = _pick_key("MINIMAX_GATE_KEY") or MINIMAX_API_KEY
+ MINIMAX_GATE_MODEL   = os.getenv("MINIMAX_GATE_MODEL", "MiniMax-M2.7-highspeed").strip()
++# 门卫是高频短 verdict（max_tokens=200），不该吃主分析 60s 默认超时；
++# 实测 Flash 通道慢请求 12~24s 才超时，长时间占并发。独立超时默认 25s，env 可调。
++MINIMAX_GATE_TIMEOUT = float(os.getenv("MINIMAX_GATE_TIMEOUT_S", "25"))
+ # v342：门卫的"真·独立配额"预留位。
+ # 事故背景：MINIMAX_GATE_KEY / MINIMAX_MAIN_KEY / MINIMAX_API_KEY 实测是同一个 key
+ # → config 里写的"gate 专用 + gate 备用"两条通道只建成 1 条，和主分析抢同一份配额；
+@@ -648,6 +683,7 @@ if MINIMAX_GATE_KEY and not MINIMAX_FAMILY_DISABLED:
+         "api_base": MINIMAX_BASE_URL,
+         "api_key": MINIMAX_GATE_KEY,
+         "use_proxy": False, "weight": 3, "extra_body": _gate_extra,
++        "timeout": MINIMAX_GATE_TIMEOUT,
+         "purpose": ["gate"], "key_alias": "minimax-gate",
+     })
+     # v321: 门卫备用通道 —— 消除"门卫与主分析共用一个 key"的单点故障。
+@@ -685,6 +721,7 @@ if MINIMAX_GATE_KEY and not MINIMAX_FAMILY_DISABLED:
+             "api_base": MINIMAX_BASE_URL,
+             "api_key": _gate2_key,
+             "use_proxy": False, "weight": 2, "extra_body": _gate2_extra,
++            "timeout": MINIMAX_GATE_TIMEOUT,
+             "purpose": ["gate"], "key_alias": "minimax-gate2",
+         })
+ # 7.4) v342：主分析独立端点通道（权重高于原 main，等效"换供应商"）
+@@ -922,6 +959,43 @@ QUOTE_MAX_AGE_MINUTES = max(1, int(os.getenv("QUOTE_MAX_AGE_MINUTES", "15")))
+ #       改这里只影响之后新开的仓；已建仓的仍按各自记录里的时长结算。
+ QUICK_SIM_ENABLED = os.getenv("QUICK_SIM_ENABLED", "1").strip() not in ("0", "false", "False")
+ QUICK_SIM_HORIZON_MINUTES = max(1, int(os.getenv("QUICK_SIM_HORIZON_MINUTES", "20")))
++
++
++# ── v453 持有期分档 + 成本覆盖闸 ─────────────────────────────────────────
++# 实测（2026-11-18，16 笔成交全部 20 分钟）：平均最大有利位移 0.183%，
++# 平均往返成本 0.182% —— 位移刚够付手续费，结构性负期望（净 -0.33%/笔）。
++# 所以：① 强事件/早期事件给更长窗口；② 窗口内的中位位移盖不住成本就不开仓。
++#
++# 分档表达式 "high:60,medium:40,low:20"，env 可改成任意 "强度:分钟" 列表。
++def _parse_horizon_tiers(raw: str) -> dict:
++    out = {}
++    for part in str(raw or "").split(","):
++        part = part.strip()
++        if not part or ":" not in part:
++            continue
++        k, v = part.split(":", 1)
++        try:
++            out[k.strip().lower()] = max(1, int(float(v.strip())))
++        except (TypeError, ValueError):
++            continue
++    return out
++
++
++QUICK_SIM_HORIZON_TIERS = _parse_horizon_tiers(
++    os.getenv("QUICK_SIM_HORIZON_TIERS", "high:60,medium:40,low:20")
++)
++QUICK_SIM_HORIZON_EARLY_MULT = float(os.getenv("QUICK_SIM_HORIZON_EARLY_MULT", "2.0"))
++QUICK_SIM_HORIZON_LATE_MULT = float(os.getenv("QUICK_SIM_HORIZON_LATE_MULT", "0.5"))
++QUICK_SIM_HORIZON_MIN_BOUND = max(1, int(os.getenv("QUICK_SIM_HORIZON_MIN_BOUND", "20")))
++QUICK_SIM_HORIZON_MAX_BOUND = max(1, int(os.getenv("QUICK_SIM_HORIZON_MAX_BOUND", "240")))
++
++# 成本覆盖闸：同资产同持有期的中位 MFE 必须 ≥ 倍数 × 往返成本（bps）。
++# 样本不足 → 放行并标 edge_unverified（不猜、不拦）。
++QUICK_SIM_COST_EDGE_ENFORCE = os.getenv(
++    "QUICK_SIM_COST_EDGE_ENFORCE", "1").strip().lower() not in ("0", "false", "no")
++QUICK_SIM_COST_EDGE_MULT = float(os.getenv("QUICK_SIM_COST_EDGE_MULT", "1.5"))
++QUICK_SIM_COST_EDGE_LOOKBACK_DAYS = max(1, int(os.getenv("QUICK_SIM_COST_EDGE_LOOKBACK_DAYS", "90")))
++QUICK_SIM_COST_EDGE_MIN_SAMPLES = max(1, int(os.getenv("QUICK_SIM_COST_EDGE_MIN_SAMPLES", "6")))
+ QUICK_SIM_NOTIONAL_USDT = max(1.0, float(os.getenv("QUICK_SIM_NOTIONAL_USDT", "100")))
+ # v314 P0: 结算宽限期(分钟) —— 仓位到期后超过这个窗口仍未结算, 说明结算链停摆。
+ #   · 宽限期内: 到期价取不到时允许用现价兜底 (此时 now ≈ due_ts, 误差可接受)
+diff --git a/backend/src_python/daily_bars.py b/backend/src_python/daily_bars.py
+index ae8c874..69dc6e0 100644
+--- a/backend/src_python/daily_bars.py
++++ b/backend/src_python/daily_bars.py
+@@ -46,10 +46,14 @@ CRYPTO = {"BTC": "BTCUSDT", "ETH": "ETHUSDT", "SOL": "SOLUSDT",
+ #   MU / NVDA / TSLA / AMD 用普通代码；指数要带点号（.INX 标普、.IXIC 纳指、.DJI 道指、.NDX 纳指100）。
+ # 东财 push2his 也能返回 400 根，但连发十几次后开始直接掐断连接（RemoteDisconnected），
+ # 只留作兜底；腾讯对美股只回「最早一根 + 今天」，基本无用。
+-STOCKS = {"MU": "MU", "NVDA": "NVDA", "TSLA": "TSLA", "AMD": "AMD", "AAPL": "AAPL", "MSFT": "MSFT"}
++# v453: AMZN/GOOGL/META 已在库里（1d 卡在 11-14），但 STOCKS 名单没有它们 →
++# 每天补数永远补不到，面板上一直是「过期」。补齐名单。
++STOCKS = {"MU": "MU", "NVDA": "NVDA", "TSLA": "TSLA", "AMD": "AMD", "AAPL": "AAPL",
++          "MSFT": "MSFT", "AMZN": "AMZN", "GOOGL": "GOOGL", "META": "META"}
+ INDICES = {"SPX": ".INX", "IXIC": ".IXIC", "DJI": ".DJI", "NDX": ".NDX"}
+ EM_SECIDS = {"MU": "105.MU", "NVDA": "105.NVDA", "TSLA": "105.TSLA", "AMD": "105.AMD",
+              "AAPL": "105.AAPL", "MSFT": "105.MSFT",
++             "AMZN": "105.AMZN", "GOOGL": "105.GOOGL", "META": "105.META",
+              "SPX": "100.SPX", "IXIC": "100.NDX", "DJI": "100.DJIA", "NDX": "100.NDX"}
+ 
+ 
+@@ -61,7 +65,7 @@ class _RetryCursor:
+     execute 包 try/except，不如把退避放在游标这一层，调用点保持原样。
+     """
+ 
+-    def __init__(self, cur, tries: int = 8, base: float = 0.2, cap: float = 5.0):
++    def __init__(self, cur, tries: int = 14, base: float = 0.3, cap: float = 8.0):
+         self._cur = cur
+         self._tries = tries
+         self._base = base
+@@ -221,7 +225,10 @@ def main(argv: Optional[List[str]] = None) -> int:
+     HIST_BARS = HIST_BARS_FULL if args.full else HIST_BARS_DEFAULT
+ 
+     conn = sqlite3.connect(db.get_db_path(), timeout=30, isolation_level=None)
+-    conn.execute("PRAGMA busy_timeout=30000")
++    # v453: 引擎批量落库时会把写锁按住十几秒；此前 30s + 8 次退避仍会抛
++    # database is locked，导致整轮日线补数半途中断（美股/指数 1d 卡在 11-14）。
++    # 退避总预算拉到约 60s，并把 sqlite 自身的 busy_timeout 提高。
++    conn.execute("PRAGMA busy_timeout=60000")
+     cur = _RetryCursor(conn.cursor())
+     written = 0
+ 
+diff --git a/backend/src_python/db.py b/backend/src_python/db.py
+index 4a601bf..b0762c1 100644
+--- a/backend/src_python/db.py
++++ b/backend/src_python/db.py
+@@ -20,6 +20,7 @@ from __future__ import annotations
+ import hashlib
+ import json
+ import os
++import sys
+ import queue
+ import re
+ import sqlite3
+@@ -42,8 +43,39 @@ except Exception:  # pragma: no cover
+         return int(time.time())
+ 
+ 
++# v453: pytest 硬护栏 —— 测试进程**永远不许**写生产库。
++# 事故：2026-11-19 10:28，另一个会话直接用 `python -m pytest tests` 跑全量，
++# 它把 TRIDENT_DB_PATH 显式指到了生产 trident_event_bus.db（conftest 的
++# "没指定才隔离"逻辑因此失效），结果写进来 4 条 source='test' 新闻、
++# 4 条 reasoning='test' 的决策、1 条 entry_price=100 的假成交，
++# 这些垃圾随后又触发体检告警。只靠 conftest 不够，连接层必须自己兜底。
++_PYTEST_PROD_GUARD_DONE = False
++
++
++def _pytest_prod_guard() -> None:
++    global _PYTEST_PROD_GUARD_DONE
++    if _PYTEST_PROD_GUARD_DONE:
++        return
++    _PYTEST_PROD_GUARD_DONE = True
++    if "pytest" not in sys.modules:
++        return
++    try:
++        path = str(config.DB_PATH)
++        if not path.endswith("trident_event_bus.db"):
++            return
++        import tempfile
++        tmp = os.path.join(tempfile.mkdtemp(prefix="trident_pytest_prod_guard_"),
++                           "trident_event_bus.db")
++        print(f"[db] pytest 试图连生产库 {path} → 已强制改到临时库 {tmp}", flush=True)
++        config.DB_PATH = tmp
++        os.environ["TRIDENT_DB_PATH"] = tmp
++    except Exception:
++        pass
++
++
+ def get_db_path() -> str:
+     """Return the event-bus DB path (TRIDENT_DB_PATH override aware)."""
++    _pytest_prod_guard()
+     return config.DB_PATH
+ 
+ 
+diff --git a/backend/src_python/engine/event_kline_impact_worker.py b/backend/src_python/engine/event_kline_impact_worker.py
+index c6e2aba..69509fb 100644
+--- a/backend/src_python/engine/event_kline_impact_worker.py
++++ b/backend/src_python/engine/event_kline_impact_worker.py
+@@ -157,17 +157,87 @@ def _classify_direction(pre: float, close_after: float,
+     return "neutral"
+ 
+ 
++# ── v453b: 类别名 → 具体标的的解析 ───────────────────────────────────────────
++# 台账里最大的一坨"算不出影响"不是没行情，而是事件本身只标了类别：
++# 个股 507 / CN_STOCK 21 / US_STOCK 17 / 加密主流 14 / 美股 14 / INDIVIDUAL_STOCK 6。
++# 这些事件的标题里往往已经写明了公司或币种（"英伟达财报超预期"），
++# 只是抽取层给的是类别名。这里做最小限度回填：标题命中的规范标的**唯一**时才绑定，
++# 命中多个就放弃 —— 宁可不算，也不瞎猜（铁律：不造数据）。
++_CATEGORY_ASSETS = {
++    "个股", "INDIVIDUAL_STOCK", "US_STOCK", "CN_STOCK", "美股", "A股", "港股",
++    "加密主流", "山寨", "加密货币", "CRYPTO", "STOCK", "EQUITY", "其他",
++}
++
++_ASSET_CUES = {
++    "NVDA": ("nvidia", "英伟达", "nvda"),
++    "AMD": ("amd", "超威", "advanced micro"),
++    "TSLA": ("tesla", "特斯拉", "tsla"),
++    "AAPL": ("apple", "苹果公司", "aapl"),
++    "MSFT": ("microsoft", "微软", "msft"),
++    "AMZN": ("amazon", "亚马逊", "amzn"),
++    "GOOGL": ("alphabet", "google", "谷歌", "googl"),
++    "META": ("meta platforms", "facebook", "脸书"),
++    "MU": ("micron", "美光"),
++    "BTC": ("bitcoin", "比特币", "btc"),
++    "ETH": ("ethereum", "以太坊"),
++    "SOL": ("solana",),
++    "XAU": ("gold", "黄金", "金价"),
++    "XAG": ("silver", "白银", "银价"),
++    "WTI": ("crude", "原油", "wti"),
++}
++
++
++def _resolve_category_asset(asset: str, title: str, tradable: set) -> str:
++    """类别名 → 有行情的规范标的；解析不出来就原样返回（不猜）。"""
++    up = str(asset or "").upper()
++    if up in tradable or up not in _CATEGORY_ASSETS:
++        return up
++    text = str(title or "").lower()
++    if not text:
++        return up
++    hits = [sym for sym, cues in _ASSET_CUES.items()
++            if sym in tradable and any(c in text for c in cues)]
++    # 唯一命中才绑定；多标的并列说明这条是"板块级"事件，交给人工，不硬塞
++    return hits[0] if len(hits) == 1 else up
++
++
+ def _tradable_symbols(conn: sqlite3.Connection) -> set:
+-    """v323-4: 只处理**有行情源**的品种。
++    """v323-4 / v453: 只处理**有行情源**的品种。
+ 
+     实测 500 条待处理事件里 443 条挂在 `INDIVIDUAL_STOCK` / `个股` / `加密主流`
+     / `US_STOCK` / `山寨` 这类**类别名**上，行情表只有 BTC/ETH/SOL/WTI/XAU 五个 symbol
+-    → 它们永远算不出结果，却按 ts DESC 排在队首，把真正可算的事件一直挤在 500 条窗口外。
++    → 它们永远算不出结果，却按 ts DESC 排在队首，把真正可算的事件挤在 500 条窗口外。
++
++    v453: 可算集合不再只看 market_ticks —— 股票类没有 tick 但有 1m K 线，
++    走 _fetch_window_bars 兜底同样能算影响，所以并入"近 3 天有 1m K 线的标的"。
+     """
++    syms: set = set()
+     try:
+-        return {str(r[0]).upper() for r in conn.execute("SELECT DISTINCT symbol FROM market_ticks")}
++        syms |= {str(r[0]).upper() for r in conn.execute(
++            "SELECT DISTINCT symbol FROM market_ticks")}
+     except sqlite3.OperationalError:
+-        return set()
++        pass
++    try:
++        cutoff_ms = (int(time.time()) - 3 * 86400) * 1000
++        syms |= {str(r[0]).upper() for r in conn.execute(
++            "SELECT DISTINCT symbol FROM kline_bars WHERE timeframe = '1m' AND ts >= ?",
++            (cutoff_ms,))}
++    except sqlite3.OperationalError:
++        pass
++    return syms
++
++_TRADABLE_CACHE = {"at": 0.0, "syms": set()}
++
++
++def _tradable_cached(conn: sqlite3.Connection) -> set:
++    """v453b: 逐事件调 _tradable_symbols 会每行一次全表 DISTINCT（228 行就 228 次），
++    这里按 5 分钟 TTL 缓存一份，够用且不会拖慢每轮。"""
++    if time.time() - _TRADABLE_CACHE["at"] < 300 and _TRADABLE_CACHE["syms"]:
++        return _TRADABLE_CACHE["syms"]
++    syms = _tradable_symbols(conn)
++    _TRADABLE_CACHE["at"] = time.time()
++    _TRADABLE_CACHE["syms"] = syms
++    return syms
+ 
+ 
+ def _fetch_pending_events(conn: sqlite3.Connection,
+@@ -205,6 +275,42 @@ def _fetch_pending_events(conn: sqlite3.Connection,
+     ).fetchall()
+ 
+ 
++def _fetch_window_bars(conn: sqlite3.Connection,
++                       symbol: str,
++                       t_start: int,
++                       t_end: int) -> Tuple[List[Tuple[int, float]], float, int]:
++    """v453: tick 缺失时的兜底 —— 用 kline_bars 的 1m 收盘价当窗口价序列。
++
++    为什么需要：
++      股票/指数（NVDA/AAPL/MU/NDX…）没有 tick 源（tick 只覆盖 BTC/ETH/SOL/
++      WTI/XAU），事件挂在这些标的上时 process_one_event 一律返回 None，
++      台账里堆成"无行情源的事件"（实测 个股=507、NVDA=139）。
++      但它们有 1m K 线（本轮已把 intraday 双写进 kline_bars），
++      足够算 4 小时窗口的极值/收盘/方向。
++
++    口径：返回结构与 _fetch_window_ticks 一致，调用方无需分叉；
++    落库时用 basis='kline_1m' 标记来源，tick 与 bar 可区分、可回溯。
++    """
++    pre = conn.execute(
++        """SELECT ts, close FROM kline_bars
++            WHERE symbol = ? AND timeframe = '1m' AND ts < ? AND close > 0
++            ORDER BY ts DESC LIMIT 1""",
++        (symbol, t_start * 1000),
++    ).fetchone()
++    if not pre:
++        return [], 0.0, 0
++    pre_close = float(pre[1])
++    pre_ts = int(int(pre[0]) // 1000)
++    rows = conn.execute(
++        """SELECT ts, close FROM kline_bars
++            WHERE symbol = ? AND timeframe = '1m'
++              AND ts >= ? AND ts <= ? AND close > 0
++            ORDER BY ts ASC""",
++        (symbol, (t_start - _PRE_MAX_GAP_SEC) * 1000, t_end * 1000),
++    ).fetchall()
++    return [(int(int(r[0]) // 1000), float(r[1])) for r in rows], pre_close, pre_ts
++
++
+ def _fetch_window_ticks(conn: sqlite3.Connection,
+                          symbol: str,
+                          t_start: int,
+@@ -238,6 +344,10 @@ def _ensure_quality_columns(conn: sqlite3.Connection) -> None:
+     for name, ddl in (
+         ("coverage_sec", "ALTER TABLE event_kline_impact ADD COLUMN coverage_sec INTEGER DEFAULT NULL"),
+         ("pre_gap_sec", "ALTER TABLE event_kline_impact ADD COLUMN pre_gap_sec INTEGER DEFAULT NULL"),
++        # v453: 价格来源（tick / kline_1m），让"这条影响是用什么算的"可回溯
++        ("basis", "ALTER TABLE event_kline_impact ADD COLUMN basis TEXT DEFAULT 'tick'"),
++        # v453b: 原始类别名（个股/US_STOCK…），区分"原生标的"与"由标题回填"
++        ("asset_raw", "ALTER TABLE event_kline_impact ADD COLUMN asset_raw TEXT DEFAULT ''"),
+     ):
+         if name not in cols:
+             try:
+@@ -251,7 +361,9 @@ def _ensure_quality_columns(conn: sqlite3.Connection) -> None:
+ def process_one_event(conn: sqlite3.Connection,
+                       row: sqlite3.Row) -> Optional[int]:
+     """处理单个事件 -> 写 event_kline_impact。返回新插入 id；无足够 ticks 返回 None。"""
+-    symbol = (row["asset"] or "").upper()
++    asset_raw = str(row["asset"] or "").upper()
++    tradable = _tradable_cached(conn)
++    symbol = _resolve_category_asset(asset_raw, row["title"], tradable)
+     if not symbol:
+         return None
+     event_time = int(row["event_time"] or 0)
+@@ -260,7 +372,13 @@ def process_one_event(conn: sqlite3.Connection,
+     t_start = event_time - _WINDOW_BEFORE_SEC
+     t_end = event_time + _WINDOW_AFTER_SEC
+ 
++    basis = "tick"
+     ticks, pre_close, pre_ts = _fetch_window_ticks(conn, symbol, t_start, t_end)
++    if not ticks or pre_close <= 0 or pre_ts <= 0:
++        # v453: 没有 tick 的标的（股票/指数）用 1m K 线兜底，别让事件白挂着
++        bars, b_pre, b_pre_ts = _fetch_window_bars(conn, symbol, t_start, t_end)
++        if bars and b_pre > 0 and b_pre_ts > 0:
++            ticks, pre_close, pre_ts, basis = bars, b_pre, b_pre_ts, "kline_1m"
+     if not ticks or pre_close <= 0 or pre_ts <= 0:
+         return None
+ 
+@@ -276,6 +394,14 @@ def process_one_event(conn: sqlite3.Connection,
+     if len(ticks) < _MIN_TICKS:
+         return None
+ 
++    # v453: 单笔坏 tick 消毒 —— 实测 BTC 窗口里混进一笔 price=100 的 tick
++    #       （source='test'，真实价 62,414），算出 impact=99.8%，
++    #       直接把"事件影响"变成假数据。规则：偏离窗口中位数 5 倍以上的一律当坏点剔除。
++    raw_prices = [p for _, p in ticks]
++    if len(raw_prices) >= 5:
++        med = sorted(raw_prices)[len(raw_prices) // 2]
++        if med > 0:
++            ticks = [(t, p) for t, p in ticks if 0.2 * med <= p <= 5.0 * med]
+     prices = [p for _, p in ticks]
+     # v323-6: 窗口里价格一笔没变 → 不是"事件没影响"，是**行情源在重复最后一价**。
+     #         这类行会算出 amplitude=0，方向却靠扣基准变成 up/down（实测 249 行），
+@@ -315,8 +441,8 @@ def process_one_event(conn: sqlite3.Connection,
+            (event_source, event_id, event_title, event_time, importance,
+             asset, pre_event_close, max_high, min_low, impact_pct,
+             impact_window_start, impact_window_end,
+-            impact_severity, direction, coverage_sec, pre_gap_sec)
+-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
++            impact_severity, direction, coverage_sec, pre_gap_sec, basis, asset_raw)
++           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         (
+             str(row["event_source"] or "")[:32],
+             str(int(row["event_id"])),
+@@ -334,6 +460,8 @@ def process_one_event(conn: sqlite3.Connection,
+             direction,
+             coverage_sec,
+             pre_gap,
++            basis,
++            asset_raw,
+         ),
+     )
+     # v323: 不再逐行 commit（旧实现每行一次提交，500 行/轮会反复撞写锁），
+@@ -405,28 +533,36 @@ def _drop_misattributed(conn: sqlite3.Connection, log: bool = True) -> int:
+ 
+ 
+ def _unmeasurable_backlog(conn: sqlite3.Connection, lookback_days: int) -> dict:
+-    """v323: 把"永远算不了"的事件按标签计数，让它可见，而不是静默堆在队列里。"""
++    """v323 / v453b: 把"永远算不了"的事件按标签计数，让它可见。
++
++    v453b 修正口径：原来只按 ne.asset 判断，于是"个股=507"里混着大量
++    **标题已写明英伟达/比特币**、只是抽取层给了类别名的事件 —— 现在这些
++    会被 _resolve_category_asset 绑到具体标的上并正常测量，不该再算进"无源"。
++    所以这里逐条试解析，只统计解析后仍然落不到可交易标的上的那些。
++    """
+     cutoff = int(time.time()) - lookback_days * 86400
+-    tradable = _tradable_symbols(conn)
++    tradable = _tradable_cached(conn)
+     rows = conn.execute(
+-        """SELECT ne.asset, COUNT(*) FROM news_events ne
++        """SELECT ne.asset,
++                  COALESCE(NULLIF(ne.headline, ''), rn.content) AS title
++            FROM news_events ne
++            LEFT JOIN raw_news rn ON rn.id = ne.news_id
+             LEFT JOIN event_kline_impact eki
+                    ON eki.event_source = ne.source
+                   AND eki.event_id = CAST(ne.id AS TEXT)
+-                  AND eki.asset = ne.asset
++                  AND (eki.asset = ne.asset OR eki.asset_raw = ne.asset)
+            WHERE ne.status IN ('PENDING','DONE') AND ne.ts >= ?
+-             AND ne.asset != 'NONE' AND eki.id IS NULL
+-           GROUP BY ne.asset""",
++             AND ne.asset != 'NONE' AND eki.id IS NULL""",
+         (cutoff,),
+     ).fetchall()
+-    out = {}
+-    for asset, n in rows:
+-        if str(asset).upper() in tradable:
+-            continue
+-        out[str(asset)] = int(n)
++    out: dict = {}
++    for asset, title in rows:
++        sym = _resolve_category_asset(str(asset or ""), title, tradable)
++        if str(sym).upper() in tradable:
++            continue          # 能绑到有行情的标的 → 不算"无源"
++        out[str(asset)] = out.get(str(asset), 0) + 1
+     return out
+ 
+-
+ def run_once(lookback_days: int = _LOOKBACK_DAYS,
+              log: bool = True,
+              repair: bool = True) -> dict:
+@@ -444,7 +580,13 @@ def run_once(lookback_days: int = _LOOKBACK_DAYS,
+         written = 0
+         skipped = 0
+         for i, row in enumerate(rows, 1):
+-            # v323-5: 写入撞锁重试 —— 引擎/打分 worker 同时在写，单行撞锁不该拖垮整轮
++            # v453: 撞锁时要**立刻 rollback 释放写锁**，否则这条连接嘴里一直衔着
++            # 一个未提交事务（WAL 里同一时刻只允许一个写者），全系统其它写者
++            # （api 启动迁移、source_status、行情落库）都会被它拖到 busy_timeout 超时。
++            # 实测这条 worker 是 engine.err.log 里 3846 条 database is locked 的主要来源，
++            # 且它重试 6 次仍在失败 —— 不是等得不够久，是它自己就是占锁的人。
++            # 改法：每条事件处理完立刻 commit（synchronous=NORMAL，代价可忽略），
++            # 失败立刻 rollback 再退避重试，把写锁持有窗口压到单条事件的毫秒级。
+             for attempt in range(6):
+                 try:
+                     rid = process_one_event(conn, row)
+@@ -452,12 +594,21 @@ def run_once(lookback_days: int = _LOOKBACK_DAYS,
+                         written += 1
+                     else:
+                         skipped += 1
++                    conn.commit()
+                     break
+                 except sqlite3.OperationalError as exc:
++                    try:
++                        conn.rollback()
++                    except Exception:
++                        pass
+                     if "locked" in str(exc).lower() and attempt < 5:
+-                        time.sleep(1.5 * (attempt + 1))
++                        time.sleep(0.4 * (attempt + 1))
+                         continue
+                     skipped += 1
++                    try:
++                        conn.rollback()
++                    except Exception:
++                        pass
+                     if log:
+                         print(
+                             f"[KLINE-IMPACT] event_id={row['event_id']} "
+@@ -467,6 +618,10 @@ def run_once(lookback_days: int = _LOOKBACK_DAYS,
+                     break
+                 except Exception as exc:
+                     skipped += 1
++                    try:
++                        conn.rollback()
++                    except Exception:
++                        pass
+                     if log:
+                         print(
+                             f"[KLINE-IMPACT] event_id={row['event_id']} "
+diff --git a/backend/src_python/fake_data.py b/backend/src_python/fake_data.py
+index aab804b..4ca8897 100644
+--- a/backend/src_python/fake_data.py
++++ b/backend/src_python/fake_data.py
+@@ -39,7 +39,10 @@ from pathlib import Path
+ DB_PATH = Path(__file__).resolve().parents[1] / "trident_event_bus.db"
+ 
+ # 造数据的源标记。真实源（sina / median / jin10 / reuters…）不在此列。
+-SYNTHETIC_SOURCE_RE = re.compile(r"(demo|mock|synth|fake|placeholder)", re.I)
++# v453: 补 test / probe —— 实测 market_ticks 里进过一条 source='test' price=100 的
++# BTC tick（真价 62,414），既让事件影响算出 99.8%，又和一条假成交的入场价 100 对得上。
++# 用 \btest\b 而不是裸 test，避免误伤 "latest" 这类正常词。
++SYNTHETIC_SOURCE_RE = re.compile(r"(demo|mock|synth|fake|placeholder|\btest\b|probe)", re.I)
+ 
+ 
+ def _connect(readonly: bool) -> sqlite3.Connection:
+@@ -159,6 +162,18 @@ def scan(conn: sqlite3.Connection) -> list[dict]:
+                          LEFT JOIN raw_news r ON r.id = d.news_id
+                          WHERE d.news_id IS NOT NULL AND r.id IS NULL""") if f7 else []})
+ 
++    # F10 孤儿成交：quick_sim_trades 的 decision_id 在 ai_decisions 里不存在
++    #   典型来源：重置删了决策但没删成交、或手工/脚本塞进来的探针行。
++    #   这类行没有任何决策依据可复核，按 "不许假数据" 直接清。
++    f10 = _count(conn, """SELECT COUNT(*) FROM quick_sim_trades t
++                          LEFT JOIN ai_decisions d ON d.id = t.decision_id
++                          WHERE d.id IS NULL""")
++    out.append({"code": "F10", "name": "成交引用了不存在的决策（孤儿成交）", "count": f10,
++                "action": "删行",
++                "samples": _sample_ids(conn, """SELECT t.id FROM quick_sim_trades t
++                          LEFT JOIN ai_decisions d ON d.id = t.decision_id
++                          WHERE d.id IS NULL""") if f10 else []})
++
+     # F8 回放泄漏进真实绩效表
+     f8 = 0
+     if _has_table(conn, "quick_sim_trades"):
+@@ -317,6 +332,11 @@ def purge(conn: sqlite3.Connection, rows: list[dict] | None = None) -> dict:
+                                        COALESCE(paper_trading_run_id, '')) LIKE '%replay%'""")
+         done["F8"] = _bulk_by_ids(conn, "quick_sim_trades", "DELETE FROM quick_sim_trades", f8)
+ 
++    f10 = _ids(conn, """SELECT t.id FROM quick_sim_trades t
++                        LEFT JOIN ai_decisions d ON d.id = t.decision_id
++                        WHERE d.id IS NULL""")
++    done["F10"] = _bulk_by_ids(conn, "quick_sim_trades", "DELETE FROM quick_sim_trades", f10)
++
+     done["F9"] = 0   # 来源标签缺失需人工判断，不自动改
+ 
+     f7 = _ids(conn, """SELECT d.id FROM ai_decisions d
+diff --git a/backend/src_python/feeds/quote_sources.py b/backend/src_python/feeds/quote_sources.py
+index f1ac052..9ab789b 100644
+--- a/backend/src_python/feeds/quote_sources.py
++++ b/backend/src_python/feeds/quote_sources.py
+@@ -238,6 +238,35 @@ def _yahoo_throttle() -> None:
+         _yahoo_last_call_ts = time.time()
+ 
+ 
++# ── v453: Yahoo 源级熔断 ────────────────────────────────────────────────
++# 实测（11-18 24h）：yahoo GC=F:60m 511 次 0% 成功、CL=F:60m 488 次 0%。
++# Yahoo 在本机是长期 429/SNI 阻断，每次调用都白跑一次网络超时，还把
++# 源面板刷成红色。连续失败 3 次后开闸 15 分钟，期间直接返回 None 并
++# 如实上报 `circuit_open`（不伪装成功，也不静默）。
++_YAHOO_LOCK = threading.Lock()
++_YAHOO_FAIL_STREAK = 0
++_YAHOO_OPEN_UNTIL = 0.0
++_YAHOO_FAIL_THRESHOLD = 3
++_YAHOO_OPEN_S = 900.0
++
++
++def _yahoo_circuit_open() -> bool:
++    with _YAHOO_LOCK:
++        return time.time() < _YAHOO_OPEN_UNTIL
++
++
++def _yahoo_note_result(ok: bool) -> None:
++    global _YAHOO_FAIL_STREAK, _YAHOO_OPEN_UNTIL
++    with _YAHOO_LOCK:
++        if ok:
++            _YAHOO_FAIL_STREAK = 0
++            _YAHOO_OPEN_UNTIL = 0.0
++            return
++        _YAHOO_FAIL_STREAK += 1
++        if _YAHOO_FAIL_STREAK >= _YAHOO_FAIL_THRESHOLD:
++            _YAHOO_OPEN_UNTIL = time.time() + _YAHOO_OPEN_S
++
++
+ def _yahoo_get_json(params: Dict[str, str]) -> Optional[Any]:
+     """Yahoo chart GET：熔断检查 + 限速 + 重试 + 报告 source_status。"""
+     global _yahoo_fail_streak, _yahoo_cooldown_until
+@@ -402,8 +431,19 @@ def fetch_yahoo_candles(yahoo_symbol: str, interval: str = "60m",
+         params["period2"] = str(int(period2))
+     else:
+         params["range"] = range_or_period
+-    j = _yahoo_get_json(params)
+     sid = f"yahoo:{yahoo_symbol}:{interval}"
++    if _yahoo_circuit_open():
++        source_status.report(sid, False,
++                             error=f"circuit_open: yahoo 连续失败 {_YAHOO_FAIL_THRESHOLD} 次，暂停 {int(_YAHOO_OPEN_S)}s")
++        if interval in ("1d", "1wk") and (period1 is None or period2 is None):
++            fb = _tencent_us_daily(yahoo_symbol, limit)
++            if fb:
++                source_status.report(f"tencent_us:{yahoo_symbol}:1d", True,
++                                     detail=f"yahoo circuit_open, fallback bars={len(fb)}")
++                return fb
++        return None
++    j = _yahoo_get_json(params)
++    _yahoo_note_result(j is not None)
+     if j is None:
+         # Yahoo 对本机长期 429 / SNI 阻断 —— 日线改走 Stooq（真实收盘价，不造假）
+         if interval in ("1d", "1wk") and (period1 is None or period2 is None):
+diff --git a/backend/src_python/quick_sim.py b/backend/src_python/quick_sim.py
+index 586db0d..747b350 100644
+--- a/backend/src_python/quick_sim.py
++++ b/backend/src_python/quick_sim.py
+@@ -112,6 +112,8 @@ def pending_signals(
+     import os
+     filter_on = (os.environ.get('QUICK_SIM_QUALITY_FILTER', 'on') or 'on').strip().lower() \
+         not in ('0', 'off', 'false', 'no')
++    # 回滚路径（质量门关闭）不启用"已尝试"去重，保持旧行为
++    skip_attempted_sql = ""
+ 
+     if filter_on:
+         # v231+ (C3): 阈值/白名单统一读 config.py, 不再硬编码
+@@ -123,6 +125,28 @@ def pending_signals(
+                 "改 env SIM_ALLOWED_ASSETS= 重启 backend 即可"
+             )
+         in_placeholders = ",".join("?" for _ in allowed)
++        # v453 P0-5：已经"尝试过"的决策不再重复入选。
++        # 事故：一个 ai_decision_id 在 22:32–22:34 写出 59 行 trade_decisions
++        # （全部 REJECTED / R8 兄弟决策>3）—— 因为原查询只排除"已建 quick_sim_trades"
++        # 的决策，拒单不建仓 → 下一轮（约 30 秒后）又被选中，同一信号反复打点。
++        # 这里连同"已打点但没成交"的决策一起排除：一次信号只尝试一次。
++        # 关闭：env QUICK_SIM_SKIP_ATTEMPTED=0（回滚到旧行为）。
++        _skip_attempted = (os.environ.get('QUICK_SIM_SKIP_ATTEMPTED', '1') or '1').strip().lower() \
++            not in ('0', 'off', 'false', 'no')
++        skip_attempted_sql = ""
++        if _skip_attempted:
++            try:
++                _tabs = {r[0] for r in conn.execute(
++                    "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
++            except Exception:
++                _tabs = set()
++            if "trade_decisions" in _tabs:
++                skip_attempted_sql = (
++                    "\n                   AND NOT EXISTS ("
++                    "\n                       SELECT 1 FROM trade_decisions td"
++                    "\n                       WHERE td.ai_decision_id = ad.id"
++                    "\n                   )"
++                )
+         # v231+ (H1): R9 改白名单. 现状 db schema CHECK 允许 5 个 status
+         # ('UNREAD','APPROVED','REJECTED','REVIEWED','AUTO_APPROVED'), 其中
+         # REVIEWED = 用户已查 dashboard (api_server.mark-decisions-read),
+@@ -140,7 +164,7 @@ def pending_signals(
+                         UPPER(ad.suggested_action) AS action, ad.sentiment_score AS score,
+                         ad.evidence_confidence, ad.trade_gate_reason, ad.evidence_action,
+                         ad.strategy_id, ad.strategy_version_id, ad.paper_trading_run_id,
+-                        ad.event_strength, ad.status,
++                        ad.event_strength, ad.event_phase, ad.status,
+                         COALESCE(ad.analysis_degraded, 0) AS analysis_degraded,
+                         ad.analysis_degraded_reason,
+                         rn.source AS news_source,
+@@ -148,7 +172,7 @@ def pending_signals(
+                  FROM ai_decisions ad
+                  LEFT JOIN raw_news rn ON rn.id = ad.news_id
+                  LEFT JOIN quick_sim_trades qs ON qs.decision_id = ad.id
+-                 WHERE qs.id IS NULL
++                 WHERE qs.id IS NULL{skip_attempted_sql}
+                    AND UPPER(ad.suggested_action) IN ('BUY', 'SELL')
+                    AND UPPER(ad.target_asset) NOT IN ('', 'NONE')
+                    AND datetime(ad.created_at, 'localtime') > datetime('now', 'localtime', '-120 minutes')
+@@ -166,17 +190,17 @@ def pending_signals(
+                   *tradable_statuses, limit)
+     else:
+         # 紧急回滚路径: 旧 SQL, 无质量门
+-        sql = """SELECT ad.id, ad.news_id, UPPER(ad.target_asset) AS asset,
++        sql = f"""SELECT ad.id, ad.news_id, UPPER(ad.target_asset) AS asset,
+                         UPPER(ad.suggested_action) AS action, ad.sentiment_score AS score,
+                         ad.evidence_confidence, ad.trade_gate_reason, ad.strategy_id,
+                         ad.strategy_version_id, ad.paper_trading_run_id,
+-                        ad.event_strength,
++                        ad.event_strength, ad.event_phase,
+                         rn.source AS news_source,
+                         rn.ts AS news_ts, rn.published_at AS published_at
+                  FROM ai_decisions ad
+                  LEFT JOIN raw_news rn ON rn.id = ad.news_id
+                  LEFT JOIN quick_sim_trades qs ON qs.decision_id = ad.id
+-                 WHERE qs.id IS NULL
++                 WHERE qs.id IS NULL{skip_attempted_sql}
+                    AND UPPER(ad.suggested_action) IN ('BUY', 'SELL')
+                    AND UPPER(ad.target_asset) NOT IN ('', 'NONE')
+                    AND datetime(ad.created_at, 'localtime') > datetime('now', 'localtime', '-120 minutes')
+@@ -215,6 +239,116 @@ def gate_sell_signal(signal: Dict[str, Any]) -> Tuple[bool, str]:
+     return True, "passed"
+ 
+ 
++def _pick_horizon(signal: Dict[str, Any]) -> int:
++    """v453：按事件强度 / 事件阶段给持有期分档（不再一律 20 分钟）。
++
++    依据（实测 2026-11-18，16 笔全 20 分钟）：
++      平均最大有利位移 0.183%，平均往返成本 0.182% —— 20 分钟窗口里
++      位移刚够付手续费，等于结构性负期望。强事件/早期事件需要更长的
++      发酵窗口才能覆盖成本。
++
++    规则（可用 env 覆盖，不写死）：
++      - 基础档：high→60 / medium→40 / low→20（`QUICK_SIM_HORIZON_TIERS`）
++      - event_phase=early → ×2（趋势刚起）；late → ×0.5（已走完）
++      - 最终夹在 [20, 240] 分钟
++    """
++    base = int(getattr(config, "QUICK_SIM_HORIZON_MINUTES", 20) or 20)
++    tiers = getattr(config, "QUICK_SIM_HORIZON_TIERS", None) or {}
++    strength = str(signal.get("event_strength") or "").strip().lower()
++    try:
++        h = int(tiers.get(strength, base))
++    except (TypeError, ValueError):
++        h = base
++    if h <= 0:
++        h = base
++
++    phase = str(signal.get("event_phase") or "").strip().lower()
++    try:
++        if phase == "early":
++            h = int(h * float(getattr(config, "QUICK_SIM_HORIZON_EARLY_MULT", 2.0)))
++        elif phase == "late":
++            h = int(h * float(getattr(config, "QUICK_SIM_HORIZON_LATE_MULT", 0.5)))
++    except Exception:
++        pass
++
++    lo = int(getattr(config, "QUICK_SIM_HORIZON_MIN_BOUND", 20) or 20)
++    hi = int(getattr(config, "QUICK_SIM_HORIZON_MAX_BOUND", 240) or 240)
++    return max(lo, min(hi, int(h)))
++
++
++def _median_mfe_pct(
++    conn: sqlite3.Connection,
++    asset: str,
++    horizon_minutes: int,
++    lookback_days: int,
++    min_samples: int,
++) -> tuple[Optional[float], int]:
++    """同资产、同持有期的历史「最大有利位移」中位数（真实成交样本）。
++
++    只用已结算且有 mfe_pct 的行；样本不足返回 (None, n) —— 由调用方 abstain，
++    **绝不拿估计值/默认值顶上**（0 号铁律）。
++    """
++    try:
++        rows = conn.execute(
++            """SELECT mfe_pct FROM quick_sim_trades
++               WHERE UPPER(asset) = UPPER(?)
++                 AND horizon_minutes = ?
++                 AND mfe_pct IS NOT NULL
++                 AND settled = 1
++                 AND created_at >= datetime('now', ?)
++            """,
++            (asset, int(horizon_minutes), f"-{int(lookback_days)} days"),
++        ).fetchall()
++    except Exception:
++        return None, 0
++    vals = sorted(float(r[0]) for r in rows if r and r[0] is not None)
++    if len(vals) < max(1, int(min_samples)):
++        return None, len(vals)
++    mid = len(vals) // 2
++    med = vals[mid] if len(vals) % 2 else (vals[mid - 1] + vals[mid]) / 2.0
++    return float(med), len(vals)
++
++
++def _cost_edge_allows(
++    conn: sqlite3.Connection,
++    asset: str,
++    horizon_minutes: int,
++) -> tuple[bool, str, Dict[str, Any]]:
++    """v453：成本覆盖闸 —— 该资产在该持有期的中位位移必须 ≥ 倍数 × 往返成本。
++
++    返回 (allowed, reason, meta)。
++      - allowed=False 只在「样本够 + 位移确实不够」时发生；
++      - 样本不足 → 放行并标 `edge_unverified`（不猜、不拦）。
++    """
++    if not bool(getattr(config, "QUICK_SIM_COST_EDGE_ENFORCE", True)):
++        return True, "disabled", {}
++    try:
++        from cost_model import round_trip_cost_bps
++        cost_bps = float(round_trip_cost_bps(asset) or 0.0)
++    except Exception:
++        return True, "cost_model_unavailable", {}
++    if cost_bps <= 0:
++        return True, "zero_cost", {}
++
++    mult = float(getattr(config, "QUICK_SIM_COST_EDGE_MULT", 1.5) or 1.5)
++    lookback = int(getattr(config, "QUICK_SIM_COST_EDGE_LOOKBACK_DAYS", 90) or 90)
++    min_samples = int(getattr(config, "QUICK_SIM_COST_EDGE_MIN_SAMPLES", 6) or 6)
++    need_pct = mult * cost_bps / 100.0  # bps → %
++    med, n = _median_mfe_pct(conn, asset, horizon_minutes, lookback, min_samples)
++    meta = {
++        "horizon_minutes": int(horizon_minutes),
++        "cost_bps": round(cost_bps, 2),
++        "need_mfe_pct": round(need_pct, 4),
++        "median_mfe_pct": None if med is None else round(med, 4),
++        "samples": n,
++    }
++    if med is None:
++        return True, "edge_unverified", meta
++    if med < need_pct:
++        return False, f"cost_edge_insufficient({med:.3f}%<{need_pct:.3f}%)", meta
++    return True, "edge_ok", meta
++
++
+ def open_trades(
+     conn: sqlite3.Connection,
+     price_fn: Callable[[str], Optional[float]],
+@@ -225,11 +359,15 @@ def open_trades(
+     v230+：cycle 级安全护栏（P0.3 日亏熔断 + P0.4 事件窗口）检查，
+     任一拒绝时整批信号跳过、不建仓。失败时降级放行，不阻断正常流程。
+     """
+-    horizon = config.QUICK_SIM_HORIZON_MINUTES
++    horizon = config.QUICK_SIM_HORIZON_MINUTES  # 兼容旧口径：信号没给强度时的兜底
+     notional = config.QUICK_SIM_NOTIONAL_USDT
++    # v409.5: 单笔仓位上限（占权益比例）—— `sizing.max_position_pct` 的真实消费点。
++    # 抽成模块级函数才能单测（内联 try/except 测不到，且异常必须静默放行）。
++    notional = _apply_position_cap(conn, notional)
+     sized_meta: List[Dict[str, Any]] = []
+     created: List[Dict[str, Any]] = []
+     sell_gated: List[Dict[str, Any]] = []
++    cost_edge_rejected: List[Dict[str, Any]] = []  # v453: 成本覆盖闸拒绝
+     _pe_skip_reasons: List[Dict[str, Any]] = []  # v208: policy_engine 拒绝
+     _quality_rejected: List[Dict[str, Any]] = []  # v231+: sample_quality_filter 拒绝
+     risk_rejected: List[Dict[str, Any]] = []      # v343: risk_guard 拒绝
+@@ -394,6 +532,34 @@ def open_trades(
+         price = price_cache[signal["asset"]]
+         if not isinstance(price, (int, float)) or price <= 0:
+             continue
++        # ── v453: 持有期分档 + 成本覆盖闸 ──────────────────────────────
++        # 先按事件强度/阶段定 horizon（强事件/早期事件给更长窗口），
++        # 再问一句：这个资产在这个窗口里的历史中位位移，盖得住往返成本吗？
++        # 盖不住就不开仓（留痕），盖得住或没样本才继续。
++        _h = _pick_horizon(signal)
++        _edge_ok, _edge_reason, _edge_meta = _cost_edge_allows(conn, signal["asset"], _h)
++        if not _edge_ok:
++            cost_edge_rejected.append({
++                "decision_id": signal["id"], "asset": signal["asset"],
++                "action": signal["action"], "reason": _edge_reason,
++                "meta": _edge_meta,
++            })
++            try:
++                import trade_decisions as _td_ce
++                _td_ce.log_decision(
++                    conn, asset=signal["asset"], intended_action=signal["action"],
++                    final_action="REJECTED", decision_type="REJECT",
++                    news_id=signal.get("news_id"),
++                    deny_reason=_edge_reason[:200], guard="COST_EDGE",
++                    ai_decision_id=signal.get("id"),
++                    context={"cost_edge": _edge_meta, "score": signal.get("score"),
++                             "evidence_confidence": signal.get("evidence_confidence")},
++                )
++            except Exception as _exc_ce:
++                print(f"[trade_decisions] COST_EDGE 打点失败: {_exc_ce}", flush=True)
++            print(f"[COST_EDGE] 拒绝 {signal['asset']} {signal['action']} "
++                  f"h={_h}m: {_edge_reason} meta={_edge_meta}", flush=True)
++            continue
+         # P0.1: 按 evidence_confidence 分层调整名义金额（默认开启；env 关掉）
+         signal_notional, sizing_meta = compute_notional(signal, notional, conn)
+         # v230.1: policy_engine ADJUST_SIZE_PCT 软调整 — 在 evidence 分层之后再乘
+@@ -441,6 +607,14 @@ def open_trades(
+         })
+         reason = signal["trade_gate_reason"] or ""
+         entry_ts = int(time.time())
++        # v453: 建仓前先确认决策行真实存在 —— 实测生产库出现过 decision_id=10009
++        # 的成交，而 ai_decisions 里根本没有 10009（入场价还是 100.0 这种探针价），
++        # 这种行无法复核、会污染绩效，属于铁律禁止的假数据。宁可不建仓。
++        if not conn.execute("SELECT 1 FROM ai_decisions WHERE id = ?",
++                            (signal["id"],)).fetchone():
++            print(f"[quick_sim] 跳过孤儿信号 decision_id={signal['id']} "
++                  f"{signal['asset']} {signal['action']}（ai_decisions 无此行）", flush=True)
++            continue
+         cur = conn.execute(
+             """INSERT OR IGNORE INTO quick_sim_trades
+                (decision_id, news_id, asset, action, score, evidence_confidence,
+@@ -454,7 +628,7 @@ def open_trades(
+                 int(reason == _PASSED_REASON), reason,
+                 signal["strategy_id"], signal["strategy_version_id"],
+                 signal["paper_trading_run_id"], signal_notional,
+-                float(price), entry_ts, horizon,
++                float(price), entry_ts, _h,
+                 float(price), float(price),
+             ),
+         )
+@@ -470,7 +644,7 @@ def open_trades(
+                        entry_time              = COALESCE(NULLIF(entry_time, ''), ?),
+                        holding_horizon_minutes = COALESCE(holding_horizon_minutes, ?)
+                    WHERE id = ?""",
+-                (float(price), entry_iso, horizon, signal["id"]),
++                (float(price), entry_iso, _h, signal["id"]),
+             )
+             # ── v208: 决策打点 — ENTRY 成功 ──
+             try:
+@@ -485,7 +659,7 @@ def open_trades(
+                     size_usdt=signal_notional,
+                     ai_decision_id=signal.get("id"),
+                     guard="NONE",
+-                    context={"horizon_minutes": horizon,
++                    context={"horizon_minutes": _h,
+                              "evidence_confidence": signal.get("evidence_confidence"),
+                              "strategy_id": signal.get("strategy_id"),
+                              "strategy_version_id": signal.get("strategy_version_id")},
+@@ -520,10 +694,15 @@ def open_trades(
+         quality_rejected_count=len(_quality_rejected),
+         risk_rejected=risk_rejected,
+         risk_rejected_count=len(risk_rejected),
++        cost_edge_rejected=cost_edge_rejected,
++        cost_edge_rejected_count=len(cost_edge_rejected),
+     )
+     if risk_rejected:
+         print(f"[RISK] {len(risk_rejected)} signal(s) blocked by risk_guard "
+               f"sample={risk_rejected[:3]}", flush=True)
++    if cost_edge_rejected:
++        print(f"[COST_EDGE] {len(cost_edge_rejected)} signal(s) blocked by "
++              f"cost-edge gate sample={cost_edge_rejected[:3]}", flush=True)
+     if sized_meta:
+         # 只打样本前 5 条 + 聚合计数，避免日志洪水
+         sample = sized_meta[:5]
+@@ -1508,3 +1687,33 @@ def snapshot(
+         return evaluation(conn, hours=hours, from_ts=from_ts, to_ts=to_ts)
+     finally:
+         conn.close()
++
++def _apply_position_cap(conn, notional: float) -> float:
++    """v409.5: 按 paper_trading_settings.max_position_pct 给单笔名义封顶。
++
++    · 列值 NULL / 0 → 原样返回（不设限，保持既有行为）；
++    · 有值 → 上限 = 最新 sim_equity_snapshots.equity × 该比例；
++    · 老库没列 / 没有权益快照 / 任何异常 → 原样返回，绝不搞挂建仓。
++    """
++    try:
++        row = conn.execute(
++            "SELECT max_position_pct FROM paper_trading_settings WHERE id=1"
++        ).fetchone()
++        pct = float(row[0]) if row and row[0] else 0.0
++        if pct <= 0:
++            return notional
++        eq = conn.execute(
++            "SELECT equity FROM sim_equity_snapshots WHERE equity IS NOT NULL "
++            "AND equity > 0 ORDER BY ts DESC LIMIT 1"
++        ).fetchone()
++        if not eq or not eq[0]:
++            return notional
++        cap = round(float(eq[0]) * pct, 2)
++        if cap < notional:
++            print(f"  [POSITION-CAP] 单笔名义 {notional} > 权益上限 {cap}"
++                  f"（{pct:.2%} × 权益）→ 按上限下单", flush=True)
++            return cap
++    except Exception:
++        return notional
++    return notional
++
+diff --git a/backend/src_python/realtime_filter.py b/backend/src_python/realtime_filter.py
+index 788756c..203df39 100644
+--- a/backend/src_python/realtime_filter.py
++++ b/backend/src_python/realtime_filter.py
+@@ -630,9 +630,11 @@ def _post_openai_compat(
+         pass
+     # 国内直连：空 ProxyHandler 强制直连，避免被 env HTTP_PROXY 劫持
+     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+-    # 间歇 SSL 握手失败/连接瞬断：秒级重试 3 次，全失败才返回 None（上层 L2/L3 自行降级）
++    # 间歇 SSL 握手失败/连接瞬断：秒级重试，全失败才返回 None（上层 L2/L3 自行降级）
++    # v443：3 次 → 2 次。配合 25s 超时，最坏 50s；原来 3×20s ≈ 64s 且大概率全失败。
++    _HTTP_RETRIES = max(1, int(os.getenv("REALTIME_GATE_HTTP_RETRIES", "2") or 2))
+     last_exc: Optional[Exception] = None
+-    for attempt in range(3):
++    for attempt in range(_HTTP_RETRIES):
+         if attempt:
+             time.sleep(1.0 * attempt)
+         try:
+@@ -1267,7 +1269,16 @@ def _call_pool_sync(
+                         purpose=purpose, key_alias=key_alias, model_id=str(tag or "?")[:80],
+                         tokens_in=int((max_tokens + len(system) + len(user)) // 4) if out else 0,  # 粗估
+                         tokens_out=len(out) // 4 if out else 0,
+-                        latency_ms=int(dt), status="ok" if out else "http_error",
++                        latency_ms=int(dt),
++                        # v453: 失败必须带 error_code —— 此前只写 status="http_error"，
++                        # error_code 留空，24h 有 1,069+622 条失败无法归因
++                        # （分不清 超时/限流/鉴权/网络），通道治理只能靠猜。
++                        status="ok" if out else (
++                            "timeout" if str(err_kind or "").lower() == "timeout" else "http_error"
++                        ),
++                        error_code="" if out else (
++                            str(err_code) if err_code is not None else str(err_kind or "unknown")
++                        ),
+                         call_site=call_site,
+                     )
+                 except Exception:
+@@ -1502,13 +1513,21 @@ _GATE_BUDGET_LOCK = threading.Lock()
+ 
+ 
+ def _gate_budget_used_today() -> int:
+-    """当日已发起多少次门卫调用（跨重启一致）。读不到就当 0，不阻塞门卫。"""
++    """当日已发起多少次门卫调用（跨重启一致）。读不到就当 0，不阻塞门卫。
++
++    v444：修掉一个**把预算闸门废掉**的口径 bug。
++    旧写法 `strftime('%s','now','start of day','localtime')` 里的 'start of day' 是先在
++    UTC 上取零点、再转本地时间 → 实际边界是**本地 08:00**（甚至跨天后落在昨天 16:00），
++    导致"当日已用"严重低估：实测 1,535 vs 真实 5,968（少算 4,400 次）。
++    预算闸门按 1,535 判断"还有额度" → 门卫一路打到把全站预算烧干。
++    正确写法：先转本地时间，再取本地零点，最后转回 UTC epoch。
++    """
+     try:
+         conn = sqlite3.connect(f"file:{_db_path()}?mode=ro", uri=True, timeout=2.0)
+         try:
+             row = conn.execute(
+                 "SELECT COUNT(*) FROM ai_call_stats WHERE purpose='gate' "
+-                "AND ts>=strftime('%s','now','start of day','localtime')"
++                "AND ts>=strftime('%s','now','localtime','start of day','utc')"
+             ).fetchone()
+             return int(row[0] or 0)
+         finally:
+@@ -1541,7 +1560,11 @@ def _gate_budget_allow() -> bool:
+             return False
+         _GATE_BUDGET_STATE["used"] += 1
+         return True
+-_GATE_TIMEOUT_S = float(os.getenv("REALTIME_GATE_TIMEOUT_S", "10.0"))
++# v443：10s → 25s。实测 gate 专用通道（MiniMax-M2.7-highspeed）单次耗时
++# 5.2s / 7.2s / 12.0s / 12.2s / 31.7s 都有，原文 10s 超时 + 3 次重试 = 三连超时，
++# 结果 23:26 那批新闻全部降级放行（无门卫判定），一小时 116 条里 96 条未判定。
++# 25s 覆盖到 95 分位，配合 2 次重试，最坏 50s（比原来 64s 还短）。
++_GATE_TIMEOUT_S = float(os.getenv("REALTIME_GATE_TIMEOUT_S", "25.0"))
+ 
+ # ── v434 P0-1：通道故障期**别硬重试** ──────────────────────────────────
+ # 实测（2026-11-17 20:00–20:20）：门卫主通道 + 备用通道全部 net 失败时，
+@@ -2000,6 +2023,64 @@ def rule_gate_fallback(title: str, content: str = "") -> Dict[str, Any]:
+             "hits": {"authority": hits_auth[:3], "topic": hits_topic[:3], "asset": hits_asset[:3]}}
+ 
+ 
++_RULE_ASSET_MAP = (
++    ("WTI", ("原油", "炼油厂", "OPEC", "油价", "汽油", "柴油", "页岩油", "能源部", "输油")),
++    ("XAU", ("黄金", "美联储", "降息", "加息", "CPI", "通胀", "非农", "欧洲央行",
++             "国债", "美元指数", "鲍威尔", "沃勒", "关税", "地缘")),
++    ("BTC", ("比特币", "BTC", "加密", "现货ETF", "交易所", "稳定币", "代币")),
++    ("ETH", ("以太坊", "ETH", "DeFi", "质押")),
++    ("SOL", ("SOL", "Solana")),
++)
++
++
++def _rule_asset_hint(text: str):
++    """v449：规则门卫也要给"池内主资产"，否则主分析把宏观/地缘新闻判成非核心→routing_miss。
++
++    事故：20:39 时 20 条 `可交易` 待分析里全是"美联储沃勒/欧洲央行人事/乌克兰袭击炼油厂"，
++    主分析按池内清单（BTC/XAU/WTI/ETH/SOL）找不到标的 → 全部 routing_miss，零决策。
++    """
++    hits, assets = None, []
++    for asset, words in _RULE_ASSET_MAP:
++        if any(w in text for w in words):
++            assets.append(asset)
++            if hits is None:
++                hits = asset
++    return hits, assets
++
++
++def rule_verdict(title: str, content: str = "") -> Dict[str, Any]:
++    """v449（2026-11-18）：门卫 LLM 不可用时的**规则判决**（不再一律"未判定"）。
++
++    用户定策：门卫降级为"规则为主 + LLM 抽样复核"。理由很硬：实测门卫
++    `http_error/net` 占 50%，116/132 条待分析卡在"未判定"→ 之后按 gate_down
++    归档 → 一天几乎不出决策。
++
++    规则只用确定性判据（零成本）：
++      · 高权重主体 + 市场主题/资产词  → 可交易
++      · ≥2 资产词 + ≥2 主题词          → 可交易
++      · 其余                            → 无信号（按噪音归档，留痕可回捞）
++
++    LLM 门卫仍然优先：能调通就用 LLM 判定，这条只在失败/配额耗尽时兜底。
++    """
++    text = f"{title or ''} {content or ''}"
++    _rg = rule_gate_fallback(title, content)
++    if _rg.get("pass"):
++        _asset, _assets = _rule_asset_hint(text)
++        return {"verdict": "可交易", "reason": "rule:" + str(_rg.get("reason")),
++                "hits": _rg.get("hits"), "rule": True,
++                "main_asset": _asset, "assets": _assets}
++    # L1 CORE 关键词命中（池内资产 + 强事件）也算可用信号
++    try:
++        _l1 = _l1_classify(f"{title or ''} {content or ''}")
++    except Exception:
++        _l1 = None
++    if _l1 and _l1.get("verdict") == "CORE":
++        _asset, _assets = _rule_asset_hint(text)
++        return {"verdict": "可交易", "reason": "rule:l1-core", "hits": None,
++                "rule": True, "main_asset": _asset, "assets": _assets}
++    return {"verdict": "无信号", "reason": "rule:no-signal", "hits": None, "rule": True}
++
++
+ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str, Any]:
+     """把门卫标签挂到 filter 结果上；门卫判"排除" → 置 is_noise=1（引擎不认领分析）。
+ 
+@@ -2060,10 +2141,14 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+             # ai_worker 见到 2 会照常写 ai_decisions（决策上没有门卫标签，下游可识别）。
+             result["gate_unavailable"] = 2
+             result["gate_miss"] = True
+-            # v324：门卫没给判定 ≠ 判了"无信号"。原来写"无信号"，导致统计里
+-            # 1,725 条"门卫不可用"被算成"系统判断这条没信号"，评估标准 1/2 时口径全废。
+-            result["gate_verdict"] = "未判定"
+-            result["gate"] = {"verdict": "未判定", "reason": "gate-auth-failed"}
++            # v449：不再一律"未判定"（那会让 90% 新闻卡在门卫上）。改走规则判决。
++            _rv = rule_verdict(title, content)
++            result["gate_verdict"] = _rv["verdict"]
++            result["gate_rule_only"] = 1
++            result["gate"] = dict(_rv, reason="gate-auth-failed/" + str(_rv.get("reason")))
++            if _rv["verdict"] == "无信号":
++                result["is_noise"] = 1
++                result["status"] = "FILTERED"
+             print(
+                 f"[GATE] {_ts()} MISS  | 门卫鉴权失效(status={sorted(_LAST_POOL_FAIL_CODES)})"
+                 f" → 降级放行(不冻结,否则数据永久积压) | '{title[:60]}'",
+@@ -2078,8 +2163,10 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+                 result["gate_unavailable"] = 2
+                 result["gate_miss"] = True
+                 result["gate_rule_approved"] = 1
+-                result["gate_verdict"] = "未判定"
+-                result["gate"] = {"verdict": "未判定", "reason": "gate-rule-fallback",
++                # v449：规则放行就真给"可交易"，否则主分析拿不到可交易信号。
++                result["gate_verdict"] = "可交易"
++                result["gate_rule_only"] = 1
++                result["gate"] = {"verdict": "可交易", "reason": "gate-rule-fallback",
+                                   "rule_hits": _rg.get("hits")}
+                 print(
+                     f"[GATE] {_ts()} MISS  | gate LLM 不可用 → 规则兜底放行"
+@@ -2098,8 +2185,13 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+         if str(os.getenv("TRIDENT_GATE_FREEZE_ON_TIMEOUT", "0")).strip() != "1":
+             result["gate_unavailable"] = 2
+             result["gate_miss"] = True
+-            result["gate_verdict"] = "未判定"
+-            result["gate"] = {"verdict": "未判定", "reason": "gate-llm-timeout-pass"}
++            _rv = rule_verdict(title, content)
++            result["gate_verdict"] = _rv["verdict"]
++            result["gate_rule_only"] = 1
++            result["gate"] = dict(_rv, reason="gate-llm-timeout-pass/" + str(_rv.get("reason")))
++            if _rv["verdict"] == "无信号":
++                result["is_noise"] = 1
++                result["status"] = "FILTERED"
+             print(
+                 f"[GATE] {_ts()} MISS  | 门卫 LLM 不可用(status={sorted(_LAST_POOL_FAIL_CODES) or 'net'})"
+                 f" → 降级放行(不冻结，避免错过建仓窗口) | '{title[:60]}'",
+@@ -2108,6 +2200,8 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+             return result
+ 
+         # 门卫 LLM 不可用（限流/网络/熔断）—— 标记"未判定"，保留待回放
++        # v452 修：这里原来写 `gate_unavailable = 2`，与本分支的语义（FREEZE_ON_TIMEOUT=1
++        # 显式要求冻结待回放）矛盾 —— 开关形同虚设，且把"未判定"行当成了"降级放行"。
+         result["gate_unavailable"] = 1
+         result["gate_miss"] = True
+         result["gate_verdict"] = "未判定"
+@@ -2123,6 +2217,20 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+ 
+     result["gate_unavailable"] = 0
+     verdict = gate["verdict"]
++    # ── v449 收口：门卫 LLM 内部降级（通道熔断窗口 "直接降级放行"）会返回
++    # verdict='未判定'，从这里漏出去 → 27/30 条又变回未判定，白改一遍。
++    # 凡是 LLM 没给真结论（未判定/空/不可用），一律用规则判决补位。
++    if str(verdict or "").strip() not in ("可交易", "排除", "无信号"):
++        _rv = rule_verdict(title, content)
++        verdict = _rv["verdict"]
++        result["gate_unavailable"] = 2
++        result["gate_miss"] = True
++        result["gate_rule_only"] = 1
++        result["gate"] = dict(_rv, reason="gate-llm-undetermined/" + str(_rv.get("reason")))
++        gate = result["gate"]
++        if verdict == "无信号":
++            result["is_noise"] = 1
++            result["status"] = "FILTERED"
+     result["gate_verdict"] = verdict
+     if verdict == "排除":
+         result["is_noise"] = 1
+@@ -2137,6 +2245,90 @@ def _attach_gate(result: Dict[str, Any], title: str, content: str) -> Dict[str,
+     return result
+ 
+ 
++_POOL_TARGETS = frozenset({"BTC", "ETH", "SOL", "XAU", "XAG", "WTI"})
++
++# 门卫写「类」而不是品种时的池内代理（只在正文也找不到具体代码时用）。
++# 加密主流：池里 BTC/ETH/SOL 都在，但一条没点名币种的加密新闻，用 BTC 做市场 beta
++# 比留空（下游 v451 没得填 → NONE）更有信息量；山寨不映射（不在池内，照旧排除）。
++_CLASS_TO_POOL = {
++    "加密主流": "BTC", "加密货币": "BTC", "数字货币": "BTC", "虚拟货币": "BTC",
++    "CRYPTO": "BTC",
++    "贵金属": "XAU",
++}
++
++
++def _finalize_gate_assets(result: Dict[str, Any], title: str, content: str) -> Dict[str, Any]:
++    """v453 P0-3：门卫主品种归一 + 股票桶降级。
++
++    实测（2026-11-18）门卫判「可交易」的 921 条里，`gate_main_asset` 写的是
++    `个股`243 / `原油`58 / `黄金`51 / `美股`35 / `加密主流`17 —— 只有 190 条是
++    XAU/BTC/WTI/ETH/SOL 这类代码。下游 v451「按 main_asset 填池」只认代码，
++    于是 297 条个股/桶标签照常走完整主分析，最后产出 NONE + 模板观望。
++
++    这里做两件事（不改门卫判定本身，只收回口径）：
++      1) 用 `analysis.route.route_news` 把 `黄金/GOLD/OIL/原油/比特币` 归一成池内代码，
++         写回 gate["main_asset"]，入库后下游才认得出；
++      2) 路由判 `out_of_scope`（个股/桶标签且正文无核心别名、无宏观传导）
++         的「可交易」直接降级成「排除」—— 这类票本地无行情源、池里也不交易，
++         走完门卫+主分析只会得到一条假 HOLD。
++    保守原则沿用 route 模块：判不准就保留「可交易」进分析，绝不误杀核心新闻。
++    """
++    gate = result.get("gate")
++    if not isinstance(gate, dict):
++        return result
++    verdict = str(result.get("gate_verdict") or gate.get("verdict") or "").strip()
++    if verdict != "可交易":
++        return result
++    try:
++        from analysis.route import route_news as _route
++    except Exception as _imp_exc:
++        print(f"[GATE] {_ts()} v453 route import 失败(保持原判定): "
++              f"{type(_imp_exc).__name__}", flush=True)
++        return result
++    try:
++        rr = _route(
++            gate_main_asset=str(gate.get("main_asset") or ""),
++            gate_assets=gate.get("assets") or "",
++            news_text=f"{title} {content}",
++        )
++    except Exception as _rt_exc:
++        print(f"[GATE] {_ts()} v453 route 失败(保持原判定): "
++              f"{type(_rt_exc).__name__}: {str(_rt_exc)[:80]}", flush=True)
++        return result
++
++    if rr.scope == "out_of_scope":
++        gate["verdict"] = "排除"
++        gate["main_asset"] = ""
++        gate["reason"] = f"v453-out-of-scope/{rr.reason}"
++        result["gate"] = gate
++        result["gate_verdict"] = "排除"
++        result["is_noise"] = 1
++        result["relevance_score"] = 0.0
++        result["status"] = "FILTERED"
++        print(f"[GATE] {_ts()} DOWN  | v453 越界降级({rr.reason}) | '{str(title)[:60]}'",
++              flush=True)
++        return result
++
++    if rr.target and rr.target in _POOL_TARGETS and \
++            str(gate.get("main_asset") or "").strip().upper() != rr.target:
++        old = gate.get("main_asset")
++        gate["main_asset"] = rr.target
++        result["gate"] = gate
++        print(f"[GATE] {_ts()} NORM  | {old or '-'} → {rr.target} ({rr.reason}) "
++              f"| '{str(title)[:50]}'", flush=True)
++        return result
++
++    # 路由没给出具体代码（如门卫只写「加密主流」）→ 用类代理兜一层。
++    _raw_ma = str(gate.get("main_asset") or "").strip().upper()
++    _proxy = _CLASS_TO_POOL.get(_raw_ma)
++    if _proxy:
++        gate["main_asset"] = _proxy
++        result["gate"] = gate
++        print(f"[GATE] {_ts()} NORM  | {_raw_ma} → {_proxy} (class-proxy) "
++              f"| '{str(title)[:50]}'", flush=True)
++    return result
++
++
+ def _gate_scope_should_skip(text: str) -> bool:
+     """GATE_CALL_SCOPE=pool 时：没有池内资产/宏观驱动锚点 → 跳过门卫（省配额）。
+ 
+@@ -2366,6 +2558,8 @@ def evaluate_news(title: str, content: str = "", published_at: str = "", ingeste
+ 
+     result["elapsed_ms"] = round((time.perf_counter() - t0) * 1000, 2)
+     result.setdefault("gate_unavailable", 0)
++    # v453 P0-3：门卫主品种归一 + 股票桶降级（只对 verdict='可交易' 生效）
++    result = _finalize_gate_assets(result, title, content)
+     return result
+ 
+ 
+diff --git a/backend/src_python/routers/admin.py b/backend/src_python/routers/admin.py
+index 6b36b6e..937641f 100644
+--- a/backend/src_python/routers/admin.py
++++ b/backend/src_python/routers/admin.py
+@@ -9,14 +9,18 @@ from __future__ import annotations
+ 
+ from typing import Optional
+ 
+-from fastapi import APIRouter
++from fastapi import APIRouter, Depends
++
++import license_auth
+ 
+ from pydantic import BaseModel
+ 
+ import db
+ import id_reconcile
+ 
+-router = APIRouter()
++# v453 安全：这些路由全是「写」操作（重置/归档/备份/策略/凭证），
++# full 模式默认要求 API Key；仅回环地址在 TRIDENT_LOCAL_TRUST=1 时免鉴权。
++router = APIRouter(dependencies=[Depends(license_auth.require_api_key)])
+ 
+ 
+ def _api():
+diff --git a/backend/src_python/routers/backups.py b/backend/src_python/routers/backups.py
+index 7afe18b..badd56b 100644
+--- a/backend/src_python/routers/backups.py
++++ b/backend/src_python/routers/backups.py
+@@ -10,10 +10,14 @@ from __future__ import annotations
+ import os
+ from typing import Any, Dict, List
+ 
+-from fastapi import APIRouter, HTTPException
++from fastapi import APIRouter, Depends, HTTPException
++
++import license_auth
+ from fastapi.responses import FileResponse
+ 
+-router = APIRouter()
++# v453 安全：这些路由全是「写」操作（重置/归档/备份/策略/凭证），
++# full 模式默认要求 API Key；仅回环地址在 TRIDENT_LOCAL_TRUST=1 时免鉴权。
++router = APIRouter(dependencies=[Depends(license_auth.require_api_key)])
+ 
+ 
+ def _api():
+diff --git a/backend/src_python/routers/exchange.py b/backend/src_python/routers/exchange.py
+index 73a25f0..c691c86 100644
+--- a/backend/src_python/routers/exchange.py
++++ b/backend/src_python/routers/exchange.py
+@@ -13,7 +13,9 @@ import json
+ import os
+ from typing import Any, Dict, List, Optional
+ 
+-from fastapi import APIRouter, Body, HTTPException
++from fastapi import APIRouter, Body, Depends, HTTPException
++
++import license_auth
+ 
+ import config
+ import db
+@@ -21,7 +23,9 @@ import db
+ # 与 api_server 同一口径（api_server 的 DB_PATH 就是 config.DB_PATH）
+ DB_PATH = config.DB_PATH
+ 
+-router = APIRouter()
++# v453 安全：这些路由全是「写」操作（重置/归档/备份/策略/凭证），
++# full 模式默认要求 API Key；仅回环地址在 TRIDENT_LOCAL_TRUST=1 时免鉴权。
++router = APIRouter(dependencies=[Depends(license_auth.require_api_key)])
+ 
+ 
+ # v190: 实盘交易通道管理 endpoints
+@@ -34,6 +38,25 @@ router = APIRouter()
+ # 进程内仅一个 TradeExecutor singleton；切换 mode 必须先 stop 再 start，
+ # 避免两个 worker 同时抢同一行 ai_decisions。
+ # ──────────────────────────────────────────────────────────────────────────────
++# v433（2026-11-18）：api 重启后自动恢复纸面执行器。
++# 事故：launchd kickstart / memory-guard 重启 api 后，mode 仍是 paper 但 task 为 None，
++# status 显示 running=false，只能靠 keep_executor.sh 每 5 分钟兜底 —— 中间这几分钟
++# 正好错过建仓窗口，用户看到的就是"有决策不下单"。
++# 这里挂在 router 的 startup 事件上（比 lifespan 尾部更早执行，且不依赖托管方式）。
++@router.on_event("startup")
++async def _autostart_trade_executor() -> None:
++    try:
++        mode = (os.getenv("TRIDENT_EXCHANGE_MODE") or "paper").strip().lower()
++        if mode not in ("paper", "live_dry"):
++            return
++        if _TRADE_EXECUTOR_STATE.get("task") is not None:
++            return
++        await _start_trade_executor(mode)
++        print(f"[EXCHANGE] trade_executor 自启 mode={mode}", flush=True)
++    except Exception as exc:
++        print(f"[EXCHANGE] trade_executor 自启失败: {type(exc).__name__}: {str(exc)[:80]}", flush=True)
++
++
+ _TRADE_EXECUTOR_STATE = {
+     "task": None,             # asyncio.Task | None
+     "executor": None,         # TradeExecutor 实例
+diff --git a/backend/src_python/routers/ops.py b/backend/src_python/routers/ops.py
+index df4dc61..8a34187 100644
+--- a/backend/src_python/routers/ops.py
++++ b/backend/src_python/routers/ops.py
+@@ -11,11 +11,15 @@ from __future__ import annotations
+ import sqlite3
+ from typing import Any, Dict, Optional
+ 
+-from fastapi import APIRouter
++from fastapi import APIRouter, Depends
++
++import license_auth
+ 
+ import db
+ 
+-router = APIRouter()
++# v453 安全：这些路由全是「写」操作（重置/归档/备份/策略/凭证），
++# full 模式默认要求 API Key；仅回环地址在 TRIDENT_LOCAL_TRUST=1 时免鉴权。
++router = APIRouter(dependencies=[Depends(license_auth.require_api_key)])
+ 
+ 
+ @router.post("/api/v188/admin/daily-archive")
+diff --git a/backend/src_python/routers/policy.py b/backend/src_python/routers/policy.py
+index 5c7a876..1d2acf6 100644
+--- a/backend/src_python/routers/policy.py
++++ b/backend/src_python/routers/policy.py
+@@ -15,12 +15,16 @@ import sqlite3
+ import time
+ from typing import Any, Dict, List, Optional
+ 
+-from fastapi import APIRouter, HTTPException
++from fastapi import APIRouter, Depends, HTTPException
++
++import license_auth
+ from pydantic import BaseModel
+ 
+ import db
+ 
+-router = APIRouter()
++# v453 安全：这些路由全是「写」操作（重置/归档/备份/策略/凭证），
++# full 模式默认要求 API Key；仅回环地址在 TRIDENT_LOCAL_TRUST=1 时免鉴权。
++router = APIRouter(dependencies=[Depends(license_auth.require_api_key)])
+ 
+ 
+ class _PolicyPatchReviewBody(BaseModel):

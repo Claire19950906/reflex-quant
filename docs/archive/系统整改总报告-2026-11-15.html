@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统整改总报告 · 2026-11-15 · v340</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#11161c; --sub:#5b6773; --line:#e3e7ec;
+  --ok:#1f9d6b; --warn:#d98324; --bad:#c94f45; --accent:#1b6f9e; --soft:#eef4f8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.7}
+.wrap{max-width:1020px;margin:0 auto;padding:32px 20px 64px}
+header{padding:8px 0 22px;border-bottom:2px solid var(--line)}
+.tag{display:inline-block;font-size:12px;letter-spacing:.08em;color:var(--accent);
+  background:var(--soft);padding:4px 10px;border-radius:999px;font-weight:600}
+h1{font-size:30px;margin:14px 0 6px;letter-spacing:-.01em}
+.lead{color:var(--sub);font-size:15px;margin:0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0 8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kpi .n{font-size:30px;font-weight:700;line-height:1.1}
+.kpi .l{font-size:12px;color:var(--sub);margin-top:6px}
+.kpi.good .n{color:var(--ok)} .kpi.warn .n{color:var(--warn)} .kpi.bad .n{color:var(--bad)}
+section{margin-top:34px}
+h2{font-size:19px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+h2 .idx{font-size:12px;color:#fff;background:var(--accent);border-radius:6px;
+  padding:2px 7px;font-weight:600}
+.sec-sub{color:var(--sub);font-size:13px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--sub);font-weight:600;letter-spacing:.02em}
+td.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px}
+.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;font-weight:600}
+.p-ok{background:#e6f5ee;color:#13764f}
+.p-bad{background:#fbecea;color:#a83c34}
+.p-warn{background:#fdf1e2;color:#a9661a}
+.p-info{background:#e9f2f8;color:#17597f}
+.note{background:var(--soft);border-left:3px solid var(--accent);padding:12px 14px;
+  border-radius:0 10px 10px 0;font-size:13.5px;color:#28414f}
+.code{background:#0f151b;color:#dfe7ee;padding:14px 16px;border-radius:10px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px;
+  overflow-x:auto;line-height:1.65;white-space:pre}
+.big-num{font-size:26px;font-weight:700}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--sub);font-size:12.5px}
+.commits{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;line-height:2}
+@media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="tag">REFLEX QUANT · v340 · 2026-11-15</span>
+  <h1>系统整改总报告：把"清不干净"的根因修掉</h1>
+  <p class="lead">数据纪元生效 · 六处回填闸门 · 决策停摆可见 · 通道容量定案</p>
+</header>
+
+<div class="kpis">
+  <div class="kpi good"><div class="n">0</div><div class="l">epoch 之前残留行</div></div>
+  <div class="kpi good"><div class="n">13 / 0</div><div class="l">验收 PASS / FAIL</div></div>
+  <div class="kpi"><div class="n">11</div><div class="l">今日提交（工作区干净）</div></div>
+  <div class="kpi bad"><div class="n">0</div><div class="l">纪元以来决策条数</div></div>
+</div>
+
+<section>
+  <h2><span class="idx">01</span>为什么"清了好几次都清不干净"</h2>
+  <p class="sec-sub">清空本身是一次性的；难的是让清空**守得住**。</p>
+
+  <div class="card">
+    <p style="margin:0 0 14px">
+      <b>第一件事：真的一次清空了。</b>73 张表、<b>455,954 行</b>判断/评分/账本归零，
+      原始事实全部保留 —— 新闻 16,335 条、事件 31,949 条、盘口 tick 878,142 条、
+      K 线 297,032 条、739 条因果链定义。weights 从 101 个不同值统一重置为 1.0。
+      备份 <span class="mono">reset_20261115_0910.db</span>（1,426 MB，integrity ok）。
+    </p>
+
+    <p style="margin:16px 0 6px"><b>第二件事：清空 4 小时后，脏数据自己长回来了。</b></p>
+    <svg viewBox="0 0 920 190" width="100%" height="190" role="img" aria-label="污染残留随时间变化">
+      <line x1="60" y1="140" x2="890" y2="140" stroke="#e3e7ec"/>
+      <line x1="60" y1="40" x2="60" y2="140" stroke="#e3e7ec"/>
+      <text x="20" y="45" font-size="11" fill="#5b6773">12,281</text>
+      <text x="34" y="144" font-size="11" fill="#5b6773">0</text>
+
+      <polyline points="110,140 250,44 330,140 420,138 510,133 600,140 780,140"
+                fill="none" stroke="#c94f45" stroke-width="2.5"/>
+      <g fill="#c94f45">
+        <circle cx="110" cy="140" r="5"/><circle cx="250" cy="44" r="5"/>
+        <circle cx="330" cy="140" r="5"/><circle cx="420" cy="138" r="5"/>
+        <circle cx="510" cy="133" r="5"/><circle cx="600" cy="140" r="5"/>
+        <circle cx="780" cy="140" r="5"/>
+      </g>
+      <g font-size="11" fill="#5b6773" text-anchor="middle">
+        <text x="110" y="160">09:10 清空</text>
+        <text x="250" y="30">12,281 行被回填</text>
+        <text x="330" y="160">清掉</text>
+        <text x="420" y="160">+4</text>
+        <text x="510" y="160">+33</text>
+        <text x="600" y="160">清掉</text>
+        <text x="780" y="160">现在 0</text>
+      </g>
+    </svg>
+
+    <div class="note" style="margin-top:10px">
+      <b>根因不是"没清干净"，而是闸门一直没生效。</b>
+      闸门里写的是 <span class="mono">datetime.strptime(...)</span>，而该文件顶部是
+      <span class="mono">import datetime</span>（模块没有这个方法）→ 抛
+      <span class="mono">AttributeError</span> → 被
+      <span class="mono">except Exception: return 0</span> 吞掉 →
+      纪元永远读成 0 → <span class="mono">if _ep and ...</span> 直接短路 →
+      <b>闸门形同不存在</b>。这个坑一天内踩了三次，最后一次是我自己的批量替换叠成了
+      <span class="mono">datetime.datetime.datetime.strptime</span>。
+    </div>
+
+    <p style="margin:16px 0 6px"><b>第三件事：把闸门收敛成一处，并且能被测出来。</b></p>
+    <table>
+      <tr><th style="width:26%">改法</th><th>说明</th></tr>
+      <tr><td><span class="mono">epoch_gate.py</span></td><td>只有它解析 data_epoch；用 time.strptime + mktime，不依赖 datetime 的导入风格</td></tr>
+      <tr><td>读不到返回 <span class="mono">None</span></td><td>不是 0 —— "读不到"和"没有纪元"必须区分，这正是上次翻车的点</td></tr>
+      <tr><td><span class="mono">is_pre_epoch / clamp_since</span></td><td>统一"留 1 天余量"口径：日频信号锚在当天 00:00，比纪元早几小时，属正常</td></tr>
+      <tr><td>五处闸门全部改调它</td><td>异动 / 波段 / 归因 cutoff / 慢涨回填 / 快涨检测</td></tr>
+      <tr><td>12 条回归测试</td><td>含端到端"写入口拿纪元前 ts 必须一行都写不进"和全库静态扫描</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="idx">02</span>体检挖出来的真 bug（都已修）</h2>
+  <p class="sec-sub">不是"建议优化"，是会直接让系统算错或静默死掉的东西。</p>
+  <div class="card">
+    <table>
+      <tr><th style="width:30%">问题</th><th>后果</th><th style="width:16%">状态</th></tr>
+      <tr>
+        <td>慢涨检测对"名下有几十个指标"的品种直接 <span class="mono">return []</span></td>
+        <td>BTC/ETH/XAU/WTI 等核心品种的慢涨历史上**一行都没入库**，只覆盖了 ADA/BNB/DOGE</td>
+        <td><span class="pill p-ok">已修 · 回落 ohlcv_daily</span></td>
+      </tr>
+      <tr>
+        <td>归因表每 5 分钟重建、每行换新 id</td>
+        <td>AI 队列按 id 认领 → 重建一次就全变 gone、重新入队、重试次数归零 → 死循环</td>
+        <td><span class="pill p-ok">已修 · 两次重建 id 完全一致</span></td>
+      </tr>
+      <tr>
+        <td>异动表同样每次重建换 id</td>
+        <td>队列 168 条里 <b>135 条 gone</b>，归因表只剩 11 行</td>
+        <td><span class="pill p-ok">已修 · 20 行中 18 行 id 不变</span></td>
+      </tr>
+      <tr>
+        <td><span class="mono">news_score_worker</span> 整轮 200 条只 commit 一次</td>
+        <td>写锁按住十几分钟 → 归因重建连续两轮放弃落库（<span class="mono">database is locked</span>）</td>
+        <td><span class="pill p-ok">已修 · 逐条提交</span></td>
+      </tr>
+      <tr>
+        <td>决策链停摆在"空表"时不判</td>
+        <td>清空后 <span class="mono">ai_decisions=0</span>，判活逻辑 <span class="mono">idle_hours=None</span> → 永不告警；且巡检写在通道体检之后，通道全挂时根本跑不到</td>
+        <td><span class="pill p-ok">已修 · 实测 16:14 触发</span></td>
+      </tr>
+      <tr>
+        <td>验收把"没样本"读成"链路坏了"</td>
+        <td>清空后 23 PASS/1 FAIL → 口径修正为多表探针</td>
+        <td><span class="pill p-ok">已修 · 13 PASS/0 FAIL</span></td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="idx">03</span>AI 通道：三个硬约束，全是钱和机器</h2>
+  <p class="sec-sub">代码侧能做的已经做完，剩下的卡在账号额度与本机内存。</p>
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <div class="big-num" style="color:var(--bad)">2056</div>
+        <div style="font-size:12.5px;color:var(--sub);margin-bottom:8px">MiniMax 返回码 = 额度用尽</div>
+        <div class="code">"已达到 Token Plan 用量上限：
+请升级套餐或购买积分"</div>
+        <p style="font-size:13px;margin:10px 0 0">
+          两个账号（<span class="mono">MINIMAX_API_KEY</span> /
+          <span class="mono">MINIMAX2_API_KEY</span>）都返回同一个码。
+          不是限流 —— 单线程 6 条实测 0 成功。
+        </p>
+      </div>
+      <div>
+        <div class="big-num" style="color:var(--warn)">8 GB</div>
+        <div style="font-size:12.5px;color:var(--sub);margin-bottom:8px">本机内存，swap 已用 3.77 GB</div>
+        <svg viewBox="0 0 300 26" width="100%" height="26">
+          <rect x="0" y="6" width="300" height="14" rx="7" fill="#eef1f5"/>
+          <rect x="0" y="6" width="47" height="14" rx="7" fill="#d98324"/>
+          <rect x="0" y="6" width="28" height="14" rx="7" fill="#c94f45"/>
+        </svg>
+        <p style="font-size:13px;margin:10px 0 0">
+          本地 qwen2.5:3b 只回 8 个 token 也要 &gt;120 秒（llama-server 独占 2.4 GB）。
+          <b>熔断之后没有任何可用兜底</b>，引擎只能空转。
+        </p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:16px">
+      <b>连锁后果：</b>AI 不可用 → <span class="mono">main_pool_ready=False</span> →
+      引擎跳过认领 → <span class="mono">ai_decisions</span> 自纪元起 <b>0 行</b>，
+      期间已积压 <b>246 条</b>新闻未处理。引擎进程活着、日志照打、
+      <span class="mono">/api/health</span> 照常 ok —— 这正是"看起来在跑、其实没算"。
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="idx">04</span>现在的状态</h2>
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <p style="margin:0 0 8px"><b>验收</b>（26 项）</p>
+        <svg viewBox="0 0 320 34" width="100%" height="34">
+          <rect x="0" y="8" width="160" height="18" rx="9" fill="#1f9d6b"/>
+          <rect x="162" y="8" width="158" height="18" rx="9" fill="#d8dde4"/>
+          <text x="80" y="21" font-size="11" fill="#fff" text-anchor="middle">PASS 13</text>
+          <text x="241" y="21" font-size="11" fill="#5b6773" text-anchor="middle">SKIP 13</text>
+        </svg>
+        <p style="font-size:13px;color:var(--sub);margin:6px 0 0">
+          FAIL 0 · 退出码 0。SKIP = 样本还没攒够（纪元仅 0.3 天，宽限 7 天）。
+        </p>
+      </div>
+      <div>
+        <p style="margin:0 0 8px"><b>AI 复核覆盖率</b>（归因表 11 行）</p>
+        <svg viewBox="0 0 320 34" width="100%" height="34">
+          <rect x="0" y="8" width="87" height="18" rx="9" fill="#1b6f9e"/>
+          <rect x="89" y="8" width="231" height="18" rx="9" fill="#d8dde4"/>
+          <text x="43" y="21" font-size="11" fill="#fff" text-anchor="middle">3</text>
+          <text x="204" y="21" font-size="11" fill="#5b6773" text-anchor="middle">未复核 8</text>
+        </svg>
+        <p style="font-size:13px;color:var(--sub);margin:6px 0 0">
+          27.3%。队列机制已就绪，卡在通道容量。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="idx">05</span>只剩两件事，都得你拍板</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:24%">选项</th><th>代价</th><th>换来的</th></tr>
+      <tr>
+        <td><b>A. 补 MiniMax 额度</b></td>
+        <td>升级 Token Plan 或买积分</td>
+        <td>立刻恢复：引擎出决策、AI 复核全量跑、错过的 246 条新闻补分析</td>
+      </tr>
+      <tr>
+        <td><b>B. 换台内存大点的机器跑本地模型</b></td>
+        <td>硬件；或把推理挪到有 GPU 的机器</td>
+        <td>零边际成本，但要重新调模型与超时</td>
+      </tr>
+      <tr>
+        <td><b>C. 先跑 ATR 归一（可选）</b></td>
+        <td>两天代码，不花钱</td>
+        <td>阈值不只按 |1d| 定，改按波动率自适应 —— 慢涨命中率能上一档</td>
+      </tr>
+    </table>
+    <p style="font-size:13px;color:var(--sub);margin:14px 0 0">
+      我的建议：<b>A</b>（最省事、立刻见效）。C 可以并行做，它不依赖额度。
+      我**没有**做"AI 挂了就用规则造决策"那版兜底 —— 那会再造一批你刚清掉的那种数据，
+      只改成"明确标出降级 + 零产出必告警"。
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div style="margin-bottom:10px"><b>今日提交</b>（工作区 0 改动）</div>
+  <div class="commits">
+0555415 纪元闸门收敛到 epoch_gate.py + 12 条回归测试（含静态扫描）<br>
+c030001 修掉纪元闸门的致命 bug —— strptime 调在模块上，异常被吞后纪元=0<br>
+a11ca8d 决策链停摆告警修两处真漏洞（零产出不再静默）<br>
+227321d 异动 id 跨重建稳定 + 清空后失败的存量断言改为 skip + 归一撞槽留痕<br>
+bab4138 纪元闸门留 1 天余量（日频信号以 00:00 为锚）<br>
+4dad7cb 剩余两个回填源加纪元闸门（abnormal_signals / event_swing_ledger）<br>
+1c53e70 堵住 3 处回填 + 验收宽限支持多表样本 + 一键复核脚本<br>
+4aa67a1 备份瘦身 + 废弃 clean_epoch + 队列通道熔断保护<br>
+2e496de 按品种标定临界点阈值 + 归因重建保持行 id + 修 news_score 长事务锁<br>
+b9250d4 归因 AI 复核改为全量异步队列（不再抽样 8.5%）<br>
+e1fac22 checkpoint v340: 数据纪元闸门 + 慢涨回补修复 + 历史未提交改动存档
+  </div>
+  <div style="margin-top:14px">
+    <b>全量回归</b>：3,217 passed / 6 skipped / 1 failed ——
+    失败项 <span class="mono">test_bridge_and_api_share_the_same_implementation</span>
+    单独跑通过、只在全量序列里挂（疑似用例间状态污染），已单独开一条线和它死磕，不当成"已知失败"放过去。<br>
+    复核命令：<span class="mono">bash scripts/recheck_acceptance.sh</span>（验收 → epoch 残留应为 0 → 纪元年龄）<br>
+    引擎健康：<span class="mono">GET /api/health/internal</span> 的 <span class="mono">decision_engine</span> 字段
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

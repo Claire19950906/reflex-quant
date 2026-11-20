@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflex Quant · 能力验证 2026-11-15</title>
+<style>
+:root{
+  --bg:#0b0e14; --panel:#121722; --line:#1f2735; --txt:#e6ebf5; --sub:#8b97ad;
+  --ok:#2fbf8f; --warn:#e0a13a; --bad:#e05a5a; --mid:#5b8def; --dim:#6b778c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px 80px}
+h1{font-size:26px;letter-spacing:.5px;margin:0 0 6px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:28px}
+.hero{background:linear-gradient(135deg,#141a26,#0f141d);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:34px}
+.hero .k{font-size:13px;color:var(--sub);letter-spacing:1px}
+.hero .v{font-size:19px;font-weight:600;margin-top:6px;line-height:1.5}
+.tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12px;font-weight:600;vertical-align:middle}
+.ok{background:rgba(47,191,143,.14);color:var(--ok);border:1px solid rgba(47,191,143,.35)}
+.warn{background:rgba(224,161,58,.14);color:var(--warn);border:1px solid rgba(224,161,58,.35)}
+.bad{background:rgba(224,90,90,.14);color:var(--bad);border:1px solid rgba(224,90,90,.35)}
+.dim{background:rgba(107,119,140,.16);color:#9aa6bb;border:1px solid rgba(107,119,140,.35)}
+h2{font-size:17px;margin:40px 0 14px;padding-left:10px;border-left:3px solid var(--mid)}
+h3{font-size:15px;margin:26px 0 10px;color:#cfd8e8}
+/* 顶部总表 */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:500;font-size:12.5px;letter-spacing:.5px}
+tr:hover td{background:rgba(91,141,239,.045)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 卡片 */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.card .hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.card .hd b{font-size:15px}
+.card .hd span{font-size:12px;color:var(--sub)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;font-size:13.5px}
+.k4{color:var(--sub);font-size:12.5px;letter-spacing:.3px}
+.line{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13.5px}
+.line em{font-style:normal;color:var(--sub)}
+/* 条形图 */
+.bars{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 96px;align-items:center;gap:12px;margin:9px 0;font-size:13px}
+.bar-track{position:relative;height:16px;background:#0c1018;border-radius:8px;overflow:hidden;border:1px solid #1a2230}
+.bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px}
+.base{position:absolute;top:-4px;bottom:-4px;width:2px;background:#8b97ad;opacity:.75}
+.bar-val{font-variant-numeric:tabular-nums;color:var(--sub);text-align:right}
+.legend{font-size:12px;color:var(--sub);margin-top:12px}
+.note{background:#0f1621;border-left:3px solid var(--warn);padding:12px 16px;border-radius:6px;font-size:13.5px;color:#d5dced;margin:14px 0}
+.badnote{border-left-color:var(--bad)}
+.oknote{border-left-color:var(--ok)}
+ul{margin:8px 0 0 18px}
+li{margin:5px 0}
+code{background:#0c1018;border:1px solid #1a2230;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#a8b6cf}
+footer{color:var(--dim);font-size:12px;margin-top:48px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Reflex Quant · 能力验证</h1>
+<div class="meta">2026-11-15 08:23–08:30 · 只读巡检 · 三把尺：结构层 26 项 / 统计层 15 项 / 冻结尺 8 项（基准实测 49.98%，n=70,848）</div>
+
+<div class="hero">
+  <div class="k">一句话结论</div>
+  <div class="v">
+    系统的<strong>工程结构</strong>已经基本闭合（23/26 PASS、19/19 调度、148 张共享表），
+    但<strong>方向判断</strong>目前没有任何统计优势：事件 K 线 46.4%、新闻 46.6%、因果链次日 49.6%，
+    全部低于 49.98% 的实测基准；唯一达标的只有<strong>权重排序</strong>（ρ=0.319）。
+  </div>
+  <div style="margin-top:12px;font-size:13.5px;color:#aab6ca">
+    换句话说：<strong>能跑通、能留痕、能自我批评，但还不会赚钱。</strong>
+    真正的增量在 <strong>5 日波段</strong>（因果链 77.1%），不在日内。
+  </div>
+</div>
+
+<h2>总表：14 条需求逐条判定</h2>
+<table>
+<thead><tr><th style="width:34px">#</th><th style="width:190px">能力</th><th style="width:88px">判定</th><th>实测证据（本次跑出来的数）</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>准确评估有影响的交易信号</td><td><span class="tag bad">未达标</span></td><td class="num">E1 46.37% [44.7,48.1] n=3,250；E2 46.64% n=4,548；E4 53.98% [50.5,57.4] n=817；S11 去重独立信号 40.0% n=75；真实开仓 41/78=52.6%（95% 下界 41.6%）</td></tr>
+<tr><td>2</td><td>评估信号权重 / 对市场影响</td><td><span class="tag warn">排序可用</span></td><td class="num">E5 ρ=+0.319 n=6,013（达标 ✅）；S4 桶内 ρ=+0.254；但 S14 权重分辨率仅 46.7%（4,524 条只有 2,114 个不同值）→ 只能排序，不能测幅度</td></tr>
+<tr><td>3</td><td>把握共识 / 涨跌逻辑 / 心理预期</td><td><span class="tag warn">结构有·信号空</span></td><td class="num">共识乘子 4 个取值、反应乘子 5 个、belief 12/14 有证据；但多模型共识填充率仅 14.3%，心理侧几乎无独立输入</td></tr>
+<tr><td>4</td><td>K 线能否识别更有价值的信号</td><td><span class="tag warn">部分</span></td><td class="num">异动 1,019 条（fast 431 / slow 588）；延续性 E4 53.98%（+4.0pp，未达 55% 毕业线）；反转后 46.02%</td></tr>
+<tr><td>5</td><td>串联、计算、数据互通</td><td><span class="tag warn">基本通·一处假红</span></td><td class="num">结构层 23 PASS / 1 FAIL / 1 WARN；数据契约 C1–C8、C10 全绿；共享表 148；19/19 作业有调度；FAIL 项为前端字符串匹配假阴性</td></tr>
+<tr><td>6</td><td>识别事件 / 快涨慢涨临界点 / 多维判断</td><td><span class="tag warn">能识别·归因偏科</span></td><td class="num">快速 431 / 慢速 588；归因 282 条（快 254、慢 28）；规则双验证 confirm 169 / partial 109 / reject 4；AI 第二层只覆盖 24/282=8.5%</td></tr>
+<tr><td>7</td><td>信号台接反思 + 错过信号界面 + 三维细分 + 后台</td><td><span class="tag ok">已实现</span></td><td class="num">漏检 295 条：A 83 / B 72 / C 140；7 个小类；分析页三件套 + 折叠 + 60s 同步 + 独立页 /missed-signals；验收 FAIL 属判据写错</td></tr>
+<tr><td>8</td><td>因果图谱第一性原理 + 越算越准</td><td><span class="tag warn">对·但未证</span></td><td class="num">734 条链，632 条（86%）填了机制/前提/证伪；权重 101 个不同值、734 条 7 天内全更新；但权重↔命中率的关系是<strong>样本内</strong>，无样本外</td></tr>
+<tr><td>12</td><td>评估一条信息的影响力（幅度）</td><td><span class="tag ok">幅度可用</span></td><td class="num">impact_forecast 3,872 条有预测，区间覆盖 2,024 = 52.3%（≈50% 即校准合理）；但方向仍见 #1</td></tr>
+<tr><td>13</td><td>知道利好谁 + 方向</td><td><span class="tag bad">方向未达标</span></td><td class="num">品种映射 67.2%（21,461/31,920）；E2 方向 46.64%，LLM 子集 44.51%，关键词子集 47.65%；映射覆盖率 65.6% 且无真值</td></tr>
+<tr><td>14</td><td>看清市场基本面（谁在买/撤/加杠杆）</td><td><span class="tag warn">部分可用</span></td><td class="num">COT 2,067 行、regime 12 类（含 deleveraging、leverage_buildup、cn_state_fund_exit −34.87 亿）、资金流 35,391 行；资金费率<strong>取不到</strong>；盘口仅 28 份快照</td></tr>
+</tbody>
+</table>
+
+<h2>图 1：方向类能力 vs 实测基准（49.98%）</h2>
+<div class="bars">
+  <div class="bar-row"><div>E1 事件K线影响方向</div><div class="bar-track"><div class="bar-fill" style="width:46.37%;background:#e05a5a"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">46.37% · n=3250</div></div>
+  <div class="bar-row"><div>E2 新闻方向（全部）</div><div class="bar-track"><div class="bar-fill" style="width:46.64%;background:#e05a5a"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">46.64% · n=4548</div></div>
+  <div class="bar-row"><div>E2L 新闻方向 · LLM 子集</div><div class="bar-track"><div class="bar-fill" style="width:44.51%;background:#c94a4a"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">44.51% · n=1467</div></div>
+  <div class="bar-row"><div>E2K 新闻方向 · 关键词</div><div class="bar-track"><div class="bar-fill" style="width:47.65%;background:#d05252"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">47.65% · n=3081</div></div>
+  <div class="bar-row"><div>E3 因果链方向（次日）</div><div class="bar-track"><div class="bar-fill" style="width:49.62%;background:#8b97ad"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">49.62% · n=2116</div></div>
+  <div class="bar-row"><div>E4 异动方向延续</div><div class="bar-track"><div class="bar-fill" style="width:53.98%;background:#e0a13a"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">53.98% · n=817</div></div>
+  <div class="bar-row"><div>E6 同行评审方向</div><div class="bar-track"><div class="bar-fill" style="width:37.62%;background:#6b778c"></div><div class="base" style="left:49.98%"></div></div><div class="bar-val">37.62% · n=101</div></div>
+  <div class="legend">竖线 = 实测基准 49.98%（全宇宙无条件“超额为正”的比例，n=70,848）。条子在竖线左边 = 不如抛硬币。</div>
+</div>
+
+<div class="note badnote">
+<strong>最刺眼的一条：</strong>E1 的“反向”命中率是 53.63%，E2 反向 53.36%。
+也就是说，把这些方向标注<strong>反过来做</strong>，比正着做还准 3～4 个百分点。
+这说明当前的方向判断不是“领先信息”，而是“追着已发生的行情起名字”。
+</div>
+
+<h2>口径对照：为什么系统自评 77%，冻结尺只有 49.6%</h2>
+<table>
+<thead><tr><th>同一件事</th><th>系统自评（S3）</th><th>冻结尺（E3）</th><th>差异根源</th></tr></thead>
+<tbody>
+<tr><td>因果链方向命中</td><td class="num">77.1%（n=4,837）</td><td class="num">49.62%（n=2,116）</td><td>① 窗口：5 日 vs 次日；② 计入 HIT_WEAK（方向对幅度错也算对）；③ 4,837 条来自 202 条链、窗口重叠，样本不独立，区间被算窄</td></tr>
+</tbody>
+</table>
+<div class="note">
+<strong>两个数都不算错，但用途不同：</strong>5 日尺说明“这条因果链在几天尺度上有方向价值”；
+次日尺说明“它不能用来做日内”。<strong>不能拿 77% 去支撑日内信号</strong>——那是把波段优势借给了短线。
+</div>
+
+<h2>逐项展开</h2>
+
+<h3>#1 交易信号评估：链路完整，判别力为负</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">方向命中（次日·超额）</div><div>46.37% / 46.64%，95% 区间整体落在 50% 之下</div></div>
+    <div><div class="k4">真实开仓</div><div>41/78 = 52.6%，但样本未到 100，只能报区间</div></div>
+    <div><div class="k4">拒绝率</div><div>规则拒绝 2,659/3,187 = 83.4%，分数型拒绝 0</div></div>
+    <div><div class="k4">口径污染</div><div>全样本 17.2% 是把“本该拒绝的”混进分母的旧口径</div></div>
+  </div>
+  <div class="line"><em>结论：</em>评估链路（信号→开仓→2h/5d 结算→命中）是通的，结算率 100%（3,243/3,243）；
+  但“准”这一层没有证据支持。低于 55% 毕业线，且低于手续费盈亏平衡。</div>
+  <div class="line"><em>修法：</em>先把方向问题拆成“事件已发生后的追涨”与“事件发生前的预判”两类分别统计，
+  现在两类混在一起，前者天然负 alpha，把后者也拖下水。</div>
+</div>
+
+<h3>#2 权重：能排序，不能测幅度</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">判别力</div><div>ρ=+0.319（n=6,013，达标线 0.2）</div></div>
+    <div><div class="k4">解释力</div><div>ρ=0.2 只解释 4% 方差；0.319 约 10%</div></div>
+    <div><div class="k4">分辨率</div><div>46.7% 互不相同；最大并列组 396 条同权重、实际波动 0%–14.6%</div></div>
+    <div><div class="k4">实时写入</div><div>已在决策落库时写（insert 8,337 条），不再只靠离线回填</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“哪个信号更重要”能排对（这点已达标），但“重要多少”算不出来。
+  权重里 consensus / source / reaction / time 四个乘子曾长期坍缩为常数，现在虽已分裂出 4–27 个取值，
+  但覆盖不均衡（共识填充仅 14.3%）。</div>
+  <div class="line"><em>修法：</em>先治分辨率：把 base_mult 与 impact_mult 从 476 / 425 个取值收敛成 5–7 档，
+  再谈幅度校准；否则并列值会把 ρ 稀释。</div>
+</div>
+
+<h3>#3 共识 / 涨跌逻辑 / 心理预期</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">共识</div><div>4 个取值，但多模型共识只填 1,271/8,865 = 14.3%</div></div>
+    <div><div class="k4">心理</div><div>反应乘子 5 个取值；belief 12/14 有证据；peer_reviews 同样 14.3%</div></div>
+    <div><div class="k4">市场状态</div><div>12 类 regime，覆盖 BTC/ETH/EUR/NG/NQ/SILVER/CN_ETF 等</div></div>
+    <div><div class="k4">缺口</div><div>“大家在预期什么”没有独立的预期差读数，只有事后反应</div></div>
+  </div>
+  <div class="line"><em>结论：</em>维度是搭起来的，但输入稀薄。心理预期这条链的实际证据量，撑不起“准确把握”四个字。</div>
+  <div class="line"><em>修法：</em>补一个“预期差”字段（事件前一致预期 vs 实际值），心理维度才有可核验的锚。</div>
+</div>
+
+<h3>#4 K 线还能不能挖出更值钱的信号</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">快 / 慢</div><div>fast 431（1h ≥1.5%）、slow 588（1d ≥3%）</div></div>
+    <div><div class="k4">延续性</div><div>53.98% [50.5,57.4]，比基准高 4pp，但没过 55% 毕业线</div></div>
+    <div><div class="k4">形态</div><div>fast_fall 261 / fast_rise 170 / slow_fall 304 / slow_rise 284</div></div>
+    <div><div class="k4">最近 7 天</div><div>fast 126 条、slow 23 条，慢涨只有 3 条</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“异动之后继续走”有一点边际（+4pp），但不足以覆盖成本；慢涨/慢跌的样本正在变少，
+  不代表没发生，可能代表检测口变窄了。</div>
+  <div class="line"><em>修法：</em>把“异动 + 当时盘口厚度 + 成交量放大倍数”做成三条件联合过滤，
+  单看价格形态已经没有增量。</div>
+</div>
+
+<h3>#5 串联与互通</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">结构层</div><div>23 PASS / 1 FAIL / 1 WARN / 1 SKIP</div></div>
+    <div><div class="k4">调度</div><div>19/19 关键作业已注册；8/8 worker 已注册</div></div>
+    <div><div class="k4">数据底座</div><div>148 张共享表；枚举非法 0；结算率 100%</div></div>
+    <div><div class="k4">假红</div><div>#15 判据在前端只搜 live-desk.tsx 里的三个字符串，组件其实在 v237 目录</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“能不能通”这一层是通的，且留痕完整（gate_evaluations 让被拦候选第一次可统计）。
+  真正的断点在“通但不准”：S12 实质分析覆盖 26.8%，30.8% 的 HOLD 是兜底空输出。</div>
+  <div class="line"><em>修法：</em>把 #15 判据改成“解析 import 图”或直接检查 /missed-signals 页面渲染，否则每次发布都假红一次。</div>
+</div>
+
+<h3>#6 事件识别 + 临界点 + 多维交叉验证</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">识别</div><div>1,019 条临界点；最近一条距今 6.6 小时；24h 内 29 条</div></div>
+    <div><div class="k4">归因</div><div>282 条（快 254 / 慢 28）；候选 896、待定 370、驳回 503</div></div>
+    <div><div class="k4">双重验证</div><div>规则 confirm 169 / partial 109 / reject 4；AI 复核仅 24 条（8.5%）</div></div>
+    <div><div class="k4">交叉维度</div><div>资金流 8 品种、盘口 3 品种（仅 28 份）、COT 13 品种</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“什么事件影响了涨跌”这条主链是成立的：先按时间滞后匹配，再用规则验方向，
+  最后可请 AI 复核。但有两个硬缺口：</div>
+  <ul>
+    <li><strong>慢涨几乎没归因</strong>：588 条慢速异动里只有 28 条（4.8%）有解释，而慢涨恰恰是“没有单一新闻”的形态；</li>
+    <li><strong>AI 第二层没跑起来</strong>：282 条里只有 24 条送到 AI，其余 258 条 ai_verdict 为空——所谓“双重验证”实际只跑了一层。</li>
+  </ul>
+  <div class="line"><em>修法：</em>慢速异动改走“多事件共现 + 资金流方向”归因，不再要求单一新闻；
+  把 AI 复核从“抽样”改成“全量异步队列”，否则这一层永远 8%。</div>
+</div>
+
+<h3>#7 实时信号台接反思 + 错过信号 + 三维细分 + 后台</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">漏检数据</div><div>295 条：A 83 / B 72 / C 140</div></div>
+    <div><div class="k4">小类</div><div>7 类：A2 21 / A4 62 / B1 64 / B2 8 / C1 61 / C2 14 / C3 65</div></div>
+    <div><div class="k4">三维细分</div><div>A 5 小类 / B 4 小类 / C 4 小类；非法枚举 0</div></div>
+    <div><div class="k4">页面</div><div>分析页三件套（Banner / Summary / Panel）+ 折叠 + 60s 同步 + /missed-signals 专页</div></div>
+  </div>
+  <div class="line"><em>结论：</em>这条需求<strong>已经做完了</strong>，而且是三条需求里落地最完整的一条：
+  漏检不从“信号长相”分类，而从“为什么漏”分类，A/B/C 与反思侧共用同一套词表，所以两边能直接对齐统计。
+  S10 集中度 22.7%（目标 ≤40%）说明小类没有全部挤在一个桶里。</div>
+  <div class="line"><em>唯一要修的：</em>验收脚本 #15 的静态字符串匹配是假阴性，
+  它搜 `MissedSignalsByDimBanner` 是否出现在 live-desk.tsx 里，但那两个组件是从 <code>components/v237/</code> import 的。
+  判据不改，以后每次发布都会红一次。</div>
+</div>
+
+<h3>#8 因果图谱第一性原理 + 越算越准（你问的“对吗”）</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">三问填充</div><div>632/734 = 86%（机制 / 前提 / 证伪）</div></div>
+    <div><div class="k4">闭环</div><div>outcomes 5,096 条；权重 101 个不同值，0.125–1.0；734 条 7 天内全更新</div></div>
+    <div><div class="k4">分层有效</div><div>权重 ≥0.8 实际命中 91.3%、0.6–0.8 70.4%、0.4–0.6 57.8%、&lt;0.4 32.5%</div></div>
+    <div><div class="k4">步骤级</div><div>验证 780 / 否证 73 = 91.44%（n=853）</div></div>
+  </div>
+  <div class="line"><strong>逻辑方向是对的。</strong>你描述的闭环——“历史 K 线 → 事件响应时点 → 涨跌逻辑 → 因果图谱 → 事前决策 → 事后反应 → 排除干扰 → 纠正链路”——
+  正好对应代码里的 <code>causal_chain_first_principles</code>（三问）+ <code>causal_chain_evaluator</code>（5 日结算）+
+  <code>causal_weight_feedback</code>（分层贝叶斯收缩回写权重）。这三块都在跑，不是 PPT。</div>
+  <div class="line"><strong>但“越算越准”目前还不能算被证明，原因有三个，都很具体：</strong></div>
+  <ul>
+    <li><strong>样本内自证</strong>：权重是从这批 outcome 算出来的，又拿同一批 outcome 去验“权重高的是否更准”，
+    Spearman 0.844 里有相当一部分是机械相关。需要按时间切一刀（用 t 之前的 outcome 定权重，验 t 之后的 outcome）才能叫“越算越准”。</li>
+    <li><strong>干扰没被分离</strong>：步骤级准确率 91.44% 看着很高，但“归因分离度 = 1 − 不可分离/总链”算出来是 <strong>−77.66%</strong>。
+    不可分离的样本比可验证的还多，说明大多数时候无法排除“同期还有别的事在推价格”。你说的“先排除其他干扰因素”，这一步目前没做到。</li>
+    <li><strong>慢变量缺口</strong>：慢涨归因覆盖 4.8%，因果图谱学到的多是“快事件”，学不到“资金慢慢撤”这类结构。</li>
+  </ul>
+  <div class="line"><em>所以准确的说法是：</em>闭环在转、权重在分层，<strong>但“准”的证明还差一道样本外 + 一道干扰分离</strong>。
+  这两道不补，越算只会在原地打转，而不是越算越准。</div>
+</div>
+
+<h3>#12 信息影响力（幅度）</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">覆盖率</div><div>3,872 条有预测，区间覆盖 2,024 = 52.3%</div></div>
+    <div><div class="k4">判读标准</div><div>≈50% 即区间校准合理；远高=区间太宽，远低=太窄</div></div>
+    <div><div class="k4">覆盖品种</div><div>WTI 1,570 / XAU 1,042 / BTC 923 / ETH 230 / SOL 57</div></div>
+    <div><div class="k4">弱项</div><div>个股几乎无预测（TSLA 2/37、SKHYNIX 0/12）</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“这条新闻能让它动多少”已经能给出可用区间（P25–P75），这是 14 条里少数可以直接拿去用的能力。
+  但“往哪动”仍见 #1，所以只能用来定仓位，不能用来定方向。</div>
+</div>
+
+<h3>#13 利好谁 + 方向</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">映射覆盖</div><div>品种映射 67.2%（21,461/31,920）；孤儿事件 2.1%</div></div>
+    <div><div class="k4">方向准确</div><div>E2 46.64%、E2L 44.51%、E2K 47.65% —— 全部低于基准</div></div>
+    <div><div class="k4">分层含义</div><div>LLM 子集比关键词子集更差（44.5% vs 47.7%）</div></div>
+    <div><div class="k4">真值</div><div>利好/利空映射覆盖率 65.6%，但无独立真值可校</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“这条新闻利好什么”能输出，且粒度到品种；但方向本身不准，而且<strong>LLM 判断反而比关键词更差</strong>。
+  这是最值得警惕的一条：说明模型在“读懂新闻方向”这件事上，被自己的叙事带偏了。</div>
+  <div class="line"><em>修法：</em>先做方向分层校准（按事件类型 × 品种分别定基准），再引入“同一事件历史同类样本的实际方向”作为先验，
+  不要直接让模型从文本推方向。</div>
+</div>
+
+<h3>#14 市场基本面：谁在买、谁在撤、谁在加杠杆</h3>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">COT</div><div>2,067 行，13 个品种，含 spec_net / OI 变化</div></div>
+    <div><div class="k4">体制识别</div><div>12 类：deleveraging（BTC −18.6% OI、ETH −22.7%）、leverage_buildup（NQ +8.2%）、large_spec_short、commercial_hedging</div></div>
+    <div><div class="k4">国家队</div><div><code>cn_state_fund_exit</code>：宽基 ETF 主力净 −34.87 亿、超大单 −8.52 亿（东方财富日度）</div></div>
+    <div><div class="k4">缺口</div><div>资金费率取不到（4 个币种全 skipped）；盘口仅 28 份，无法回测</div></div>
+  </div>
+  <div class="line"><em>结论：</em>“集体撤资 / 集中加杠杆 / 机构 vs 散户”这几类判断已经能落地，
+  而且有真实数据源（COT + ETF 申赎 + OI 变化），不是猜的。这正是 #14 想要的东西。</div>
+  <div class="line"><em>还缺三块：</em>① 资金费率（杠杆成本，判断“套利离场”的关键）；② 盘口历史（只有 28 小时，等于没有）；
+  ③ 角色归因只能到“机构代理”，分不清公募/私募/外资/国家基金。</div>
+</div>
+
+<h2>优先级：先修哪三件</h2>
+<div class="card">
+  <div class="grid" style="grid-template-columns:1fr">
+    <div><strong>① 把“方向”从追涨里拆出来（影响 #1/#13/#4）</strong><br>
+    现在所有方向指标都混着“事件已发生后的标注”。先按“信息是否已公开、价格是否已动”二分，
+    再分别统计。否则永远得到 46%，永远不知道该改模型还是改时机。</div>
+    <div style="margin-top:8px"><strong>② 给因果图谱补样本外（影响 #8）</strong><br>
+    按时间切分：用 t 之前结算的 outcome 定权重，验 t 之后的 outcome。
+    跑通这一步，“越算越准”才从口号变成可测的数。</div>
+    <div style="margin-top:8px"><strong>③ 慢涨/慢跌归因（影响 #6/#8/#14）</strong><br>
+    588 条里只有 28 条有解释。慢变量恰恰是资金面主导的，必须接资金流 + OI 变化，
+    不能再等“一条新闻”。</div>
+  </div>
+</div>
+
+<h2>附：本次跑法与可复核命令</h2>
+<div class="card" style="font-size:13px;color:#b9c4d6">
+<code>cd backend/src_python</code><br>
+<code>python3 capability_acceptance.py --no-http</code> → 23 PASS / 1 FAIL / 1 WARN / 1 SKIP（只读，未写库）<br>
+<code>python3 capability_scorecard.py --no-structure</code> → 7 达标 / 5 未达线 / 3 样本不足<br>
+<code>python3 frozen_ruler_full.py --all</code> → 自检 PASS，基准 49.98%（n=70,848），8 指标全部出值<br>
+<br>
+数据口径：<code>trident_event_bus.db</code>（只读 <code>mode=ro</code>）；<code>runtime/eval/eval.db</code>（impact_forecast）。
+快照时间：2026-11-15 08:23–08:30。
+</div>
+
+<footer>
+报告由只读巡检生成，未修改任何业务表。判定采用“结构层全绿 = 能用；统计层区间 = 准到什么程度”的两层口径。
+所有比例均附样本量与 95% Wilson 区间；n 未达门槛的项标注“样本不足”，不下结论。
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+# ============================================================
+# Trident Agent MVP — Backend Dependencies
+# ============================================================
+# 安装: pip install -r requirements.txt
+# 版本下限声明（>=）。需要可复现环境时用锁定文件：
+#   pip install -r requirements-lock.txt   （固定 2026-11-19 实测版本）
+# ============================================================
+
+# ── FastAPI + Server ────────────────────────────────────────
+fastapi>=0.115.0
+pydantic>=2.0
+uvicorn[standard]>=0.30.0
+
+# ── Database ────────────────────────────────────────────────
+aiosqlite>=0.20.0
+
+# ── LLM Client (DeepSeek / OpenRouter / xAI / Doubao) ──────
+openai>=1.50.0
+
+# ── Excel Export ────────────────────────────────────────────
+xlsxwriter>=3.1.0
+
+# ── Environment Config ─────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── LLM 产出 schema 校验（llm_schema.validate_ai_decision 依赖）──
+jsonschema>=4.20.0
+
+# ── Crypto Exchange (Binance) ──────────────────────────────
+ccxt>=4.3.0
+requests>=2.32.0
+
+# ── Dashboard（Streamlit 离线复盘看板 dashboard/app.py）──────
+streamlit>=1.35.0
+pandas>=2.0.0
+# numpy 是代码里直接 import 的（不是只靠 pandas 带进来）
+numpy>=1.26.0
+
+# ── 美股行情/新闻（Yahoo Finance：个股新闻 stock_news.py + 复盘 K线降级源）──
+yfinance>=0.2.40
+# 代码里直接 import 的 HTTP 底座（requests 的依赖，但按直接依赖声明）
+urllib3>=2.0.0
+certifi>=2024.2.2
+
+# ── Excel / PDF 读写 ───────────────────────────────────────
+# xlsxwriter 负责导出，openpyxl 负责读既有 xlsx
+openpyxl>=3.1.0
+# 研报 / 公告 PDF 抽取正文
+pypdf>=4.0.0
+
+# ── TreeNews Bridge (treenews_bridge.py) ───────────────────
+websocket-client>=1.7.0
+
+# ⚠️ MetaTrader5 仅支持 Windows，Ubuntu 跳过
+# MetaTrader5>=5.0
+lark-oapi>=1.4.0
+
+# ── v300 反爬虫（默认不加载，TRIDENT_ANTI_BOT=1 启用）─────────
+# httpx 用于 admin_dashboard 调自身 API 做 healthcheck
+httpx>=0.27.0
+# 用户代理解析（用于 headless 检测）；只有开反爬虫才需要 → 见 requirements-optional.txt
+# 浏览器指纹 hash（轻量自实现即可，下方不再额外依赖）

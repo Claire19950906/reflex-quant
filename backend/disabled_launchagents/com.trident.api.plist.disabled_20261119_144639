@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.trident.api</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_api.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/claire/Desktop/金融1.0/backend</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/claire/.trident/log/api.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/claire/.trident/log/api.err.log</string>
+</dict>
+</plist>

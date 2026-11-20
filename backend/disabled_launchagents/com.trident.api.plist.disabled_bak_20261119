@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>API_HOST</key>
+		<string>127.0.0.1</string>
+		<key>API_PORT</key>
+		<string>8000</string>
+		<key>PATH</key>
+		<string>/Users/claire/android-runtime/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PYTHONIOENCODING</key>
+		<string>utf-8</string>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+		<key>TRIDENT_BUSY_TIMEOUT_MS</key>
+		<string>30000</string>
+		<key>TRIDENT_NO_AUTO_SETUP</key>
+		<string>1</string>
+	</dict>
+	<key>KeepAlive</key>
+	<false/>
+	<key>Label</key>
+	<string>com.trident.api</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/claire/.trident/wrappers/run_api.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StandardErrorPath</key>
+	<string>/Users/claire/.trident/log/api.err.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/claire/.trident/log/api.out.log</string>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/claire</string>
+</dict>
+</plist>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>优化进展 v341 · 第三轮（功能存活盘点）</title>
+<style>
+  :root{--bg:#0e1116;--card:#171c24;--line:#242c38;--tx:#e6ebf2;--dim:#8b95a5;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--acc:#60a5fa}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;padding:40px 22px 70px}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:13.5px;margin-bottom:24px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+  .k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .k b{display:block;font-size:24px;line-height:1.2;margin-bottom:4px}
+  .k span{color:var(--dim);font-size:12.5px}
+  h2{font-size:17px;margin:28px 0 12px;padding-left:10px;border-left:3px solid var(--acc)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:500;font-size:12.5px}
+  .pill{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:20px;border:1px solid}
+  .p-struct{color:var(--acc);border-color:#274a6b;background:#11202e}
+  .p-ai{color:var(--bad);border-color:#5c2a2a;background:#251313}
+  .p-none{color:var(--warn);border-color:#5c4a1a;background:#241d0f}
+  .p-ok{color:var(--ok);border-color:#2c5c3e;background:#12251a}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  code{background:#1d232c;padding:1px 6px;border-radius:5px;font-size:12.5px;color:#cbd5e1}
+  .foot{color:var(--dim);font-size:12px;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>优化进展 v341 · 第三轮：功能存活盘点</h1>
+<div class="sub">2026-11-15 · 不看代码，看"每张表到底有没有在长数据" · 149 张表逐张扫</div>
+
+<div class="kpis">
+  <div class="k"><b>149</b><span>表总数</span></div>
+  <div class="k"><b style="color:var(--ok)">69</b><span>正常在长</span></div>
+  <div class="k"><b style="color:var(--bad)">66</b><span>0 行</span></div>
+  <div class="k"><b style="color:var(--warn)">14</b><span>有数据但停更</span></div>
+</div>
+
+<h2>关键：66 张空表得先分性质</h2>
+<div class="card">
+<p style="margin:0 0 12px;font-size:14px">拿<strong>清空前的备份库（1.5GB，11-15 09:10）</strong>逐表比行数，才分得清"从来没跑过"和"清空后没回来"——这两个结论的下一步动作完全相反。</p>
+<div class="split">
+  <div><div style="font-size:15px;margin-bottom:6px"><span class="pill p-ai">46 张</span> 清空后没回来</div>
+    <p style="color:var(--dim);font-size:13px;margin:0">备份里都有数据（signal_weight_history 49,606 → 0、abnormal_attributions 27,151 → 0、tech_signals 16,447 → 0、ai_decisions 8,865 → 0…）。绝大多数不是坏了，是<strong>周期没到</strong>或<strong>上游没就绪</strong>。</p></div>
+  <div><div style="font-size:15px;margin-bottom:6px"><span class="pill p-none">20 张</span> 从来就是 0</div>
+    <p style="color:var(--dim);font-size:13px;margin:0">备份里也是 0 —— 这些是<strong>功能从没接上</strong>，不是被清空清掉的。这才是真正"还有哪些值得做"的清单。</p></div>
+</div>
+</div>
+
+<h2>46 张的归因：三层，不是 46 个 bug</h2>
+<div class="card">
+<table>
+<tr><th style="width:20%">性质</th><th style="width:32%">涉及表</th><th>真相</th></tr>
+<tr><td><span class="pill p-struct">结构性空窗</span></td><td>tech_signals / event_impact_curve / kline_at_decision_cache / factor_snapshots</td>
+<td>都靠 K 线算，而日线只到 11-15 08:00（早于纪元 09:10）→ 算出来全是纪元前的，被闸门挡掉。<strong>和慢异动 0 条同一个原因</strong>，等新日线入库自然回来。实测 tech-signals-cron 每轮都算出来了（XAU 340 条），只是落库 0。</td></tr>
+<tr><td><span class="pill p-ai">AI 卡口下游</span></td><td>ai_decisions / decision_evidence / trade_decisions / trade_reflections_v2 / decision_errors / gate_evaluations / reflection_cycles / beliefs…（约 24 张）</td>
+<td>全部挂在 ai_decisions 上。通道挂着（两把 MiniMax key 都 2056、本地 3B 超时、.env 里四家 key 全空），<strong>一层卡住，整条决策→反思→经验闭环全空</strong>。代码侧已就绪。</td></tr>
+<tr><td><span class="pill p-ok">真在该跑却没跑</span></td><td>signal_weight_history（备份 49,606 行）</td>
+<td>权重反馈作业 <code>causal-weight-feedback-cron</code> 在场，但日志每次都是 <code>database is locked</code> → 完成了 0 次。这是唯一"既非结构、又非上游"的真断链。</td></tr>
+</table>
+</div>
+
+<h2>20 张从未接上的：功能层的空白</h2>
+<div class="card">
+<table>
+<tr><th style="width:26%">层</th><th style="width:34%">表</th><th>含义</th></tr>
+<tr><td>回测 / 模拟验证</td><td>backtest_runs / backtest_event_outcomes / backtest_daily_runs / signal_performance</td><td>没有回测跑道 → 任何策略改动都无法验证"改完更好还是更差"</td></tr>
+<tr><td>事件原子化</td><td>event_atoms / judgment_calibration / decision_narrative</td><td>事件没被拆成原子 → 无法做"这类事件历史上怎么走"的统计</td></tr>
+<tr><td>数据源接入</td><td>coinglass_lsr_samples / coinglass_lsr_health</td><td>Coinglass 多空比采样从没落库，只有 health 骨架</td></tr>
+<tr><td>人工策略参数</td><td>ai_main_prompts / experience_applications / experience_application_daily</td><td>经验应用侧没闭环，学了不用</td></tr>
+<tr><td>测试/探针残渣</td><td>_perf_test / _ec / _lockprobe2 / _infra_health_probe</td><td>调试留下的空表，建议清理（先确认没有测试在写）</td></tr>
+</table>
+</div>
+
+<h2>14 张停更表：多数是"最近没这种事"，不是坏了</h2>
+<div class="card">
+<table>
+<tr><th style="width:32%">表</th><th style="width:16%">停更</th><th>判断</th></tr>
+<tr><td>quality_rejections</td><td>67.8h</td><td><strong>正常</strong>：数据质量作业每天在跑，日志显示"检查 18 个指标，越界 0 点"——没拒绝才是好事</td></tr>
+<tr><td>trade_audit_log</td><td>33.8h</td><td>结构性：没有决策就没有交易，等 AI 通道</td></tr>
+<tr><td>market_role_labels</td><td>97h</td><td><strong>可疑</strong>：role_data_builder 没有对应 cron，像是一次性脚本跑的</td></tr>
+<tr><td>filter_keywords / ai_prompts / strategies</td><td>1200h+</td><td>静态配置，不更新属正常</td></tr>
+</table>
+</div>
+
+<h2>所以"还有哪些值得优化"——按可做性排序</h2>
+<div class="card">
+<table>
+<tr><th style="width:14%">优先级</th><th style="width:30%">事项</th><th>为什么现在做</th></tr>
+<tr><td style="color:var(--bad);font-weight:600">P0</td><td>AI 通道（唯一总卡口）</td><td>一把 key 到位，24 张表一起活；不解决，决策/反思/经验/归因全部停在 0</td></tr>
+<tr><td style="color:var(--bad);font-weight:600">P0</td><td>锁竞争治理</td><td>41 个作业里 33 个在丢写，连带 <code>signal_weight_history</code> 这条真断链</td></tr>
+<tr><td style="color:var(--warn);font-weight:600">P1</td><td>补一条回测跑道（backtest_runs + signal_performance）</td><td>现在任何阈值/权重改动都没法验证，只能靠拍；这是"优化"能不能持续的前提</td></tr>
+<tr><td style="color:var(--warn);font-weight:600">P1</td><td>event_atoms 原子化</td><td>事件拆原子后，归因才能从"这条新闻"升级到"这类事件"</td></tr>
+<tr><td style="color:var(--acc)">P2</td><td>Coinglass 多空比接上 / market_role_labels 挂 cron</td><td>补数据维度，成本低</td></tr>
+<tr><td style="color:var(--acc)">P2</td><td>清掉 4 张调试残表</td><td>纯洁净度</td></tr>
+</table>
+</div>
+
+<div class="foot">
+新增工具：<code>scripts/audit_tables.py</code>（149 张表逐张扫，EMPTY / STALE / OK 分类）· 与 <code>scripts/audit_jobs.py</code> 互补：一个看"表有没有长数据"，一个看"作业有没有跑成"<br>
+复检：<code>bash scripts/recheck_acceptance.sh</code>
+</div>
+</div></body></html>

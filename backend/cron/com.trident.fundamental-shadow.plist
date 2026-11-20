@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- v448: 基本面权重影子账本每日结算。
+         Label 必须与文件名一致。 -->
+    <key>Label</key>
+    <string>com.trident.fundamental-shadow</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/Desktop/金融1.0/backend/cron/run_fundamental_shadow.sh</string>
+    </array>
+
+    <!-- 06:10：排在财报日更（05:10）之后，确保当日财报事件已落库再结算 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>6</integer>
+        <key>Minute</key>
+        <integer>10</integer>
+    </dict>
+
+    <!-- cwd 不能放 ~/Desktop（TCC 保护，launchd 会 126）；脚本内部自己 cd -->
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/.trident</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+        <key>PYTHONIOENCODING</key>
+        <string>utf-8</string>
+        <key>TRIDENT_BUSY_TIMEOUT_MS</key>
+        <string>30000</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/claire/.trident/log/fundamental_shadow.launchd.out.log</string>
+    <key>StandardErrorPath</string>
+    <string>/Users/claire/.trident/log/fundamental_shadow.launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>LowPriorityIO</key>
+    <true/>
+</dict>
+</plist>

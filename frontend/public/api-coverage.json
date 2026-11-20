@@ -1,0 +1,1809 @@
+{
+ "generated_at": "2026-11-19 13:22",
+ "totals": {
+  "routes": 576,
+  "shown": 250,
+  "alias": 68,
+  "orphan": 115,
+  "action": 125,
+  "internal": 18
+ },
+ "modules": [
+  {
+   "module": "/api/news",
+   "total": 26,
+   "shown": 7,
+   "alias": 3,
+   "action": 6,
+   "internal": 0,
+   "orphan": 10
+  },
+  {
+   "module": "/api/v1",
+   "total": 14,
+   "shown": 6,
+   "alias": 0,
+   "action": 1,
+   "internal": 3,
+   "orphan": 4
+  },
+  {
+   "module": "/api/trident2",
+   "total": 11,
+   "shown": 2,
+   "alias": 3,
+   "action": 2,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/beliefs",
+   "total": 10,
+   "shown": 2,
+   "alias": 0,
+   "action": 4,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/exchange",
+   "total": 9,
+   "shown": 1,
+   "alias": 0,
+   "action": 4,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/v190",
+   "total": 9,
+   "shown": 0,
+   "alias": 1,
+   "action": 4,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/llm-stats",
+   "total": 5,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/timeseries",
+   "total": 5,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/v187",
+   "total": 5,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 4
+  },
+  {
+   "module": "/api/v189",
+   "total": 21,
+   "shown": 1,
+   "alias": 11,
+   "action": 5,
+   "internal": 1,
+   "orphan": 3
+  },
+  {
+   "module": "/api/v188",
+   "total": 18,
+   "shown": 0,
+   "alias": 6,
+   "action": 8,
+   "internal": 1,
+   "orphan": 3
+  },
+  {
+   "module": "/api/reasoning",
+   "total": 7,
+   "shown": 2,
+   "alias": 1,
+   "action": 1,
+   "internal": 0,
+   "orphan": 3
+  },
+  {
+   "module": "/api/v291",
+   "total": 21,
+   "shown": 2,
+   "alias": 12,
+   "action": 5,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/discovery",
+   "total": 15,
+   "shown": 13,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/reflection",
+   "total": 15,
+   "shown": 8,
+   "alias": 2,
+   "action": 3,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/market",
+   "total": 14,
+   "shown": 10,
+   "alias": 1,
+   "action": 1,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/analysis",
+   "total": 8,
+   "shown": 3,
+   "alias": 0,
+   "action": 3,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/strategies",
+   "total": 8,
+   "shown": 3,
+   "alias": 0,
+   "action": 3,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/v186",
+   "total": 8,
+   "shown": 0,
+   "alias": 3,
+   "action": 3,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/backtest",
+   "total": 7,
+   "shown": 3,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/decision",
+   "total": 7,
+   "shown": 4,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/v237",
+   "total": 6,
+   "shown": 0,
+   "alias": 4,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/security",
+   "total": 5,
+   "shown": 1,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/guards",
+   "total": 4,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/kb",
+   "total": 4,
+   "shown": 0,
+   "alias": 2,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/signal-weights",
+   "total": 4,
+   "shown": 1,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/v201",
+   "total": 3,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/attribution",
+   "total": 2,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/event_impact_curves",
+   "total": 2,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 2
+  },
+  {
+   "module": "/api/review",
+   "total": 26,
+   "shown": 15,
+   "alias": 1,
+   "action": 9,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/crowd",
+   "total": 9,
+   "shown": 7,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/replay",
+   "total": 8,
+   "shown": 7,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/decisions",
+   "total": 6,
+   "shown": 0,
+   "alias": 1,
+   "action": 4,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/history",
+   "total": 6,
+   "shown": 3,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/trading",
+   "total": 6,
+   "shown": 1,
+   "alias": 2,
+   "action": 2,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/capabilities",
+   "total": 4,
+   "shown": 3,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/journal",
+   "total": 4,
+   "shown": 1,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/abnormal-signals",
+   "total": 3,
+   "shown": 1,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/analysis-process",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/calendar",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/missed-signal",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/counterfactual",
+   "total": 2,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/event_atoms",
+   "total": 2,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/gate-reflection-cycle",
+   "total": 2,
+   "shown": 0,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/markets",
+   "total": 2,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/{x}",
+   "total": 2,
+   "shown": 0,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/decision-archive",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/event",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/gate-calibration",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/kline",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/klines",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/knowledge-gaps",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/persona-stats",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/reflection-dimension-map",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/reflection-dimension-stats",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/secret",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/signal",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/structured_reflections",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/trade-points",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 1
+  },
+  {
+   "module": "/api/admin",
+   "total": 17,
+   "shown": 3,
+   "alias": 0,
+   "action": 9,
+   "internal": 5,
+   "orphan": 0
+  },
+  {
+   "module": "/api/ai",
+   "total": 13,
+   "shown": 6,
+   "alias": 0,
+   "action": 7,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/causal",
+   "total": 11,
+   "shown": 5,
+   "alias": 0,
+   "action": 6,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/divergence",
+   "total": 9,
+   "shown": 9,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/paper",
+   "total": 8,
+   "shown": 3,
+   "alias": 0,
+   "action": 5,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/experiences",
+   "total": 6,
+   "shown": 2,
+   "alias": 2,
+   "action": 2,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/causal-chains",
+   "total": 5,
+   "shown": 5,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/cot",
+   "total": 5,
+   "shown": 5,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/events",
+   "total": 5,
+   "shown": 5,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/health",
+   "total": 5,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 3,
+   "orphan": 0
+  },
+  {
+   "module": "/api/policy",
+   "total": 5,
+   "shown": 4,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/coinglass",
+   "total": 4,
+   "shown": 0,
+   "alias": 3,
+   "action": 0,
+   "internal": 1,
+   "orphan": 0
+  },
+  {
+   "module": "/api/connectivity",
+   "total": 4,
+   "shown": 4,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/data-health",
+   "total": 4,
+   "shown": 3,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/macro",
+   "total": 4,
+   "shown": 3,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/obs",
+   "total": 4,
+   "shown": 4,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/tech",
+   "total": 4,
+   "shown": 4,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/abnormal",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/backups",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 1,
+   "orphan": 0
+  },
+  {
+   "module": "/api/external",
+   "total": 3,
+   "shown": 1,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/filter",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/ohlcv",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/sources",
+   "total": 3,
+   "shown": 3,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/targets",
+   "total": 3,
+   "shown": 3,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/trade-reflections",
+   "total": 3,
+   "shown": 2,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/agent_chat",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/causal-graph",
+   "total": 2,
+   "shown": 1,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/edge",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/event-move-attribution",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/event_dim",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/export",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/indicators",
+   "total": 2,
+   "shown": 0,
+   "alias": 1,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/intraday",
+   "total": 2,
+   "shown": 0,
+   "alias": 0,
+   "action": 2,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/memory",
+   "total": 2,
+   "shown": 1,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/missed-signals",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/smart-money",
+   "total": 2,
+   "shown": 2,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/abnormal-attribution",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/attribution-stats",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/batch",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/bets",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/calibration",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/critical-moves",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/cross-asset",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/cross-asset-chains",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/crypto",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/dashboard",
+   "total": 1,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/debug",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 1,
+   "orphan": 0
+  },
+  {
+   "module": "/api/decision-thresholds",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/event-move-attribution-pending",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/event_atom",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/event_impact_stat",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/experience-reflect",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/factory",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/fed",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/funding-rate",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/horizons",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/impact",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/input-layer",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/internal",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 1,
+   "orphan": 0
+  },
+  {
+   "module": "/api/judgment-quality",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/ledger",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/market-regime",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/master",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 0,
+   "internal": 1,
+   "orphan": 0
+  },
+  {
+   "module": "/api/move-attributions",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/nlq",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/orderbook-depth",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/paper-reflection",
+   "total": 1,
+   "shown": 0,
+   "alias": 0,
+   "action": 1,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/profit",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/reflections",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/scorecard",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/shadow-ledger-summary",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/signals",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/stats",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/structured_reflection",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/technical-state",
+   "total": 1,
+   "shown": 1,
+   "alias": 0,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  },
+  {
+   "module": "/api/v275",
+   "total": 1,
+   "shown": 0,
+   "alias": 1,
+   "action": 0,
+   "internal": 0,
+   "orphan": 0
+  }
+ ],
+ "orphans": [
+  {
+   "path": "/api/v237/reflection-dimension-map",
+   "method": "GET",
+   "module": "/api/v237"
+  },
+  {
+   "path": "/api/reflection-dimension-map",
+   "method": "GET",
+   "module": "/api/reflection-dimension-map"
+  },
+  {
+   "path": "/api/v237/reflection-dimension-stats",
+   "method": "GET",
+   "module": "/api/v237"
+  },
+  {
+   "path": "/api/reflection-dimension-stats",
+   "method": "GET",
+   "module": "/api/reflection-dimension-stats"
+  },
+  {
+   "path": "/api/attribution/ai-verify-queue",
+   "method": "GET",
+   "module": "/api/attribution"
+  },
+  {
+   "path": "/api/attribution/event-scatter",
+   "method": "GET",
+   "module": "/api/attribution"
+  },
+  {
+   "path": "/api/analysis/error-taxonomy",
+   "method": "GET",
+   "module": "/api/analysis"
+  },
+  {
+   "path": "/api/v201/event/opportunities",
+   "method": "GET",
+   "module": "/api/v201"
+  },
+  {
+   "path": "/api/v291/gate-calibration",
+   "method": "GET",
+   "module": "/api/v291"
+  },
+  {
+   "path": "/api/gate-calibration",
+   "method": "GET",
+   "module": "/api/gate-calibration"
+  },
+  {
+   "path": "/api/v291/decision-archive",
+   "method": "GET",
+   "module": "/api/v291"
+  },
+  {
+   "path": "/api/decision-archive",
+   "method": "GET",
+   "module": "/api/decision-archive"
+  },
+  {
+   "path": "/api/history/news-trades/{x}",
+   "method": "GET",
+   "module": "/api/history"
+  },
+  {
+   "path": "/api/market/history/{x}",
+   "method": "GET",
+   "module": "/api/market"
+  },
+  {
+   "path": "/api/v189/calendar/events-for-asset",
+   "method": "GET",
+   "module": "/api/v189"
+  },
+  {
+   "path": "/api/news/exports",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/exports/latency",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/exports/download/{x}/{x}",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/eastmoney",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/blockbeats",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/{x}/atoms",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/{x}/event_timeline",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/{x}/structured",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/{x}/analysis",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/news/qinghong",
+   "method": "GET",
+   "module": "/api/news"
+  },
+  {
+   "path": "/api/discovery/cycle-analysis/{x}",
+   "method": "GET",
+   "module": "/api/discovery"
+  },
+  {
+   "path": "/api/discovery/cycle-narrative/{x}",
+   "method": "GET",
+   "module": "/api/discovery"
+  },
+  {
+   "path": "/api/reflection/deep/enrich/{x}",
+   "method": "GET",
+   "module": "/api/reflection"
+  },
+  {
+   "path": "/api/reflection/deep/{x}",
+   "method": "GET",
+   "module": "/api/reflection"
+  },
+  {
+   "path": "/api/v188/missed-signal/{x}",
+   "method": "GET",
+   "module": "/api/v188"
+  },
+  {
+   "path": "/api/missed-signal/{x}",
+   "method": "GET",
+   "module": "/api/missed-signal"
+  },
+  {
+   "path": "/api/v188/decision/{x}/diagnosis",
+   "method": "GET",
+   "module": "/api/v188"
+  },
+  {
+   "path": "/api/decision/{x}/diagnosis",
+   "method": "GET",
+   "module": "/api/decision"
+  },
+  {
+   "path": "/api/decision/{x}/horizons",
+   "method": "GET",
+   "module": "/api/decision"
+  },
+  {
+   "path": "/api/v1/kline/coverage/{x}",
+   "method": "GET",
+   "module": "/api/v1"
+  },
+  {
+   "path": "/api/kline/coverage/{x}",
+   "method": "GET",
+   "module": "/api/kline"
+  },
+  {
+   "path": "/api/v1/decisions/actions",
+   "method": "GET",
+   "module": "/api/v1"
+  },
+  {
+   "path": "/api/decisions/actions",
+   "method": "GET",
+   "module": "/api/decisions"
+  },
+  {
+   "path": "/api/v1/counterfactual/{x}",
+   "method": "GET",
+   "module": "/api/v1"
+  },
+  {
+   "path": "/api/counterfactual/{x}",
+   "method": "GET",
+   "module": "/api/counterfactual"
+  },
+  {
+   "path": "/api/v186/gate-reflection-cycle",
+   "method": "GET",
+   "module": "/api/v186"
+  },
+  {
+   "path": "/api/gate-reflection-cycle",
+   "method": "GET",
+   "module": "/api/gate-reflection-cycle"
+  },
+  {
+   "path": "/api/v186/persona-stats",
+   "method": "GET",
+   "module": "/api/v186"
+  },
+  {
+   "path": "/api/persona-stats",
+   "method": "GET",
+   "module": "/api/persona-stats"
+  },
+  {
+   "path": "/api/v188/markets/status/{x}",
+   "method": "GET",
+   "module": "/api/v188"
+  },
+  {
+   "path": "/api/markets/status/{x}",
+   "method": "GET",
+   "module": "/api/markets"
+  },
+  {
+   "path": "/api/v189/backtest/active_run",
+   "method": "GET",
+   "module": "/api/v189"
+  },
+  {
+   "path": "/api/backtest/active_run",
+   "method": "GET",
+   "module": "/api/backtest"
+  },
+  {
+   "path": "/api/v189/journal/{x}",
+   "method": "GET",
+   "module": "/api/v189"
+  },
+  {
+   "path": "/api/journal/{x}",
+   "method": "GET",
+   "module": "/api/journal"
+  },
+  {
+   "path": "/api/v187/llm-stats/by-purpose",
+   "method": "GET",
+   "module": "/api/v187"
+  },
+  {
+   "path": "/api/llm-stats/by-purpose",
+   "method": "GET",
+   "module": "/api/llm-stats"
+  },
+  {
+   "path": "/api/v187/llm-stats/by-key",
+   "method": "GET",
+   "module": "/api/v187"
+  },
+  {
+   "path": "/api/llm-stats/by-key",
+   "method": "GET",
+   "module": "/api/llm-stats"
+  },
+  {
+   "path": "/api/v187/llm-stats/by-call-site",
+   "method": "GET",
+   "module": "/api/v187"
+  },
+  {
+   "path": "/api/llm-stats/by-call-site",
+   "method": "GET",
+   "module": "/api/llm-stats"
+  },
+  {
+   "path": "/api/v187/llm-stats/timeline",
+   "method": "GET",
+   "module": "/api/v187"
+  },
+  {
+   "path": "/api/llm-stats/timeline",
+   "method": "GET",
+   "module": "/api/llm-stats"
+  },
+  {
+   "path": "/api/v190/exchange/audit",
+   "method": "GET",
+   "module": "/api/v190"
+  },
+  {
+   "path": "/api/exchange/audit",
+   "method": "GET",
+   "module": "/api/exchange"
+  },
+  {
+   "path": "/api/v190/exchange/daily_summary",
+   "method": "GET",
+   "module": "/api/v190"
+  },
+  {
+   "path": "/api/exchange/daily_summary",
+   "method": "GET",
+   "module": "/api/exchange"
+  },
+  {
+   "path": "/api/v190/exchange/daily_resets",
+   "method": "GET",
+   "module": "/api/v190"
+  },
+  {
+   "path": "/api/exchange/daily_resets",
+   "method": "GET",
+   "module": "/api/exchange"
+  },
+  {
+   "path": "/api/v190/exchange/signal_archive",
+   "method": "GET",
+   "module": "/api/v190"
+  },
+  {
+   "path": "/api/exchange/signal_archive",
+   "method": "GET",
+   "module": "/api/exchange"
+  },
+  {
+   "path": "/api/security/watermark",
+   "method": "GET",
+   "module": "/api/security"
+  },
+  {
+   "path": "/api/signal/{x}",
+   "method": "GET",
+   "module": "/api/signal"
+  },
+  {
+   "path": "/api/beliefs/{x}",
+   "method": "GET",
+   "module": "/api/beliefs"
+  },
+  {
+   "path": "/api/beliefs/{x}/lineage",
+   "method": "GET",
+   "module": "/api/beliefs"
+  },
+  {
+   "path": "/api/knowledge-gaps",
+   "method": "GET",
+   "module": "/api/knowledge-gaps"
+  },
+  {
+   "path": "/api/beliefs/{x}/knowledge-gaps",
+   "method": "GET",
+   "module": "/api/beliefs"
+  },
+  {
+   "path": "/api/beliefs/{x}/external-coverage",
+   "method": "GET",
+   "module": "/api/beliefs"
+  },
+  {
+   "path": "/api/strategies/meta/defaults",
+   "method": "GET",
+   "module": "/api/strategies"
+  },
+  {
+   "path": "/api/strategies/{x}",
+   "method": "GET",
+   "module": "/api/strategies"
+  },
+  {
+   "path": "/api/analysis-process/news/{x}",
+   "method": "GET",
+   "module": "/api/analysis-process"
+  },
+  {
+   "path": "/api/analysis/yield/retry-list",
+   "method": "GET",
+   "module": "/api/analysis"
+  },
+  {
+   "path": "/api/guards/entry/config",
+   "method": "GET",
+   "module": "/api/guards"
+  },
+  {
+   "path": "/api/guards/entry/shadow",
+   "method": "GET",
+   "module": "/api/guards"
+  },
+  {
+   "path": "/api/review/causal-graph/knowledge/{x}",
+   "method": "GET",
+   "module": "/api/review"
+  },
+  {
+   "path": "/api/event_atoms/{x}",
+   "method": "GET",
+   "module": "/api/event_atoms"
+  },
+  {
+   "path": "/api/event_impact_curves",
+   "method": "GET",
+   "module": "/api/event_impact_curves"
+  },
+  {
+   "path": "/api/event_impact_curves/by_atom/{x}",
+   "method": "GET",
+   "module": "/api/event_impact_curves"
+  },
+  {
+   "path": "/api/reasoning/review/{x}",
+   "method": "GET",
+   "module": "/api/reasoning"
+  },
+  {
+   "path": "/api/reasoning/narrative/{x}",
+   "method": "GET",
+   "module": "/api/reasoning"
+  },
+  {
+   "path": "/api/reasoning/decision/{x}/text",
+   "method": "GET",
+   "module": "/api/reasoning"
+  },
+  {
+   "path": "/api/signal-weights",
+   "method": "GET",
+   "module": "/api/signal-weights"
+  },
+  {
+   "path": "/api/signal-weights/{x}",
+   "method": "GET",
+   "module": "/api/signal-weights"
+  },
+  {
+   "path": "/api/kb/asset/{x}",
+   "method": "GET",
+   "module": "/api/kb"
+  },
+  {
+   "path": "/api/kb/dim/{x}",
+   "method": "GET",
+   "module": "/api/kb"
+  },
+  {
+   "path": "/api/timeseries/ticks/{x}",
+   "method": "GET",
+   "module": "/api/timeseries"
+  },
+  {
+   "path": "/api/timeseries/ohlc/{x}",
+   "method": "GET",
+   "module": "/api/timeseries"
+  },
+  {
+   "path": "/api/timeseries/factors",
+   "method": "GET",
+   "module": "/api/timeseries"
+  },
+  {
+   "path": "/api/timeseries/winrate",
+   "method": "GET",
+   "module": "/api/timeseries"
+  },
+  {
+   "path": "/api/capabilities/research/{x}",
+   "method": "GET",
+   "module": "/api/capabilities"
+  },
+  {
+   "path": "/api/replay/signal/{x}/kline",
+   "method": "GET",
+   "module": "/api/replay"
+  },
+  {
+   "path": "/api/event/opportunities",
+   "method": "GET",
+   "module": "/api/event"
+  },
+  {
+   "path": "/api/v201/trade-points",
+   "method": "GET",
+   "module": "/api/v201"
+  },
+  {
+   "path": "/api/trade-points",
+   "method": "GET",
+   "module": "/api/trade-points"
+  },
+  {
+   "path": "/api/backtest/runs",
+   "method": "GET",
+   "module": "/api/backtest"
+  },
+  {
+   "path": "/api/structured_reflections",
+   "method": "GET",
+   "module": "/api/structured_reflections"
+  },
+  {
+   "path": "/api/klines/{x}",
+   "method": "GET",
+   "module": "/api/klines"
+  },
+  {
+   "path": "/api/trading/manager/logs",
+   "method": "GET",
+   "module": "/api/trading"
+  },
+  {
+   "path": "/api/calendar/events-for-asset",
+   "method": "GET",
+   "module": "/api/calendar"
+  },
+  {
+   "path": "/api/abnormal-signals/{x}/similar",
+   "method": "GET",
+   "module": "/api/abnormal-signals"
+  },
+  {
+   "path": "/api/market/depth/{x}",
+   "method": "GET",
+   "module": "/api/market"
+  },
+  {
+   "path": "/api/trident2/spec/{x}",
+   "method": "GET",
+   "module": "/api/trident2"
+  },
+  {
+   "path": "/api/trident2/results",
+   "method": "GET",
+   "module": "/api/trident2"
+  },
+  {
+   "path": "/api/trident2/account",
+   "method": "GET",
+   "module": "/api/trident2"
+  },
+  {
+   "path": "/api/trident2/orders",
+   "method": "GET",
+   "module": "/api/trident2"
+  },
+  {
+   "path": "/api/secret",
+   "method": "GET",
+   "module": "/api/secret"
+  },
+  {
+   "path": "/api/v1/_test/connection",
+   "method": "GET",
+   "module": "/api/v1"
+  },
+  {
+   "path": "/api/security/challenge",
+   "method": "GET",
+   "module": "/api/security"
+  },
+  {
+   "path": "/api/crowd/subjects",
+   "method": "GET",
+   "module": "/api/crowd"
+  },
+  {
+   "path": "/api/{x}",
+   "method": "GET",
+   "module": "/api/{x}"
+  }
+ ],
+ "notes": [
+  "分类基于前端源码字符串匹配；动态拼接的路径可能被误判为 alias/orphan",
+  "action 类（POST/PUT/DELETE）是写操作，不属于需要“看”的页面功能"
+ ]
+}

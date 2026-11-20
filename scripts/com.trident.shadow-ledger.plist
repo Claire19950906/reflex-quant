@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- v400: 影子账本自动结算。每 4 小时一次，与 240 分钟结算窗口对齐。
+       入口指向 ~/.trident/wrappers/：工程在 ~/Desktop，launchd 执行桌面上的 .sh 会被
+       macOS 拒绝（Operation not permitted）；仓库内 scripts/run_shadow_ledger.sh 是同内容的手动入口。
+       安装：cp scripts/com.trident.shadow-ledger.plist ~/Library/LaunchAgents/ && launchctl load -w ~/Library/LaunchAgents/com.trident.shadow-ledger.plist -->
+  <key>Label</key>
+  <string>com.trident.shadow-ledger</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_shadow_ledger.sh</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>14400</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/claire/.trident/log/shadow_ledger.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/claire/.trident/log/shadow_ledger.err.log</string>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+</dict>
+</plist>

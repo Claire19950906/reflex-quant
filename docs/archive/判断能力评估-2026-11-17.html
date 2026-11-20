@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>判断能力评估 · 2026-11-17 · Reflex Quant</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315211F'/%3E%3Cline x1='4' y1='16' x2='28' y2='16' stroke='%23B4452F' stroke-width='2'/%3E%3Ccircle cx='11' cy='10' r='2.4' fill='%23EEF1EF'/%3E%3Ccircle cx='20' cy='22' r='2.4' fill='%23EEF1EF'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --paper:#EEF1EF; --panel:#F7F8F5; --ink:#15211F; --muted:#5D6B67; --faint:#8A9691;
+  --line:#CBD3CF; --rust:#B4452F; --teal:#2C655C; --amber:#A9791F;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --serif:"Noto Serif SC","Songti SC",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.75 var(--sans)}
+.wrap{max-width:1120px;margin:0 auto;padding:52px 40px 60px}
+@media (max-width:720px){.wrap{padding:30px 18px 44px}}
+.topline{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;
+  font:500 12px/1.6 var(--mono);letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--ink);padding-bottom:10px}
+h1{font:900 clamp(34px,4.8vw,58px)/1.1 var(--serif);letter-spacing:-.01em;margin:30px 0 12px}
+.lede{max-width:800px;font-size:16.5px;line-height:1.85;color:#2B3A36;margin:0}
+.lede b{font-weight:700;color:var(--ink);border-bottom:2px solid var(--rust);padding-bottom:1px}
+.meta{margin-top:16px;font:400 12px/1.7 var(--mono);color:var(--faint)}
+
+/* 裁决带 */
+.verdict{margin-top:38px;padding:26px 0 22px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+.verdict-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:32px;align-items:start}
+@media (max-width:860px){.verdict-grid{grid-template-columns:1fr;gap:18px}}
+.big{font:900 clamp(54px,8vw,92px)/.95 var(--serif);letter-spacing:-.03em;color:var(--rust);font-variant-numeric:tabular-nums}
+.big small{font:500 12px/1.6 var(--mono);color:var(--muted);display:block;letter-spacing:.05em;margin-top:12px}
+.delta{margin-top:16px;font:400 12.5px/1.7 var(--sans);color:var(--muted)}
+.delta b{font:700 34px/1 var(--mono);color:var(--rust);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-right:6px;vertical-align:-3px}
+.delta span{display:block;font-size:11.5px;color:var(--faint)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-left:1px solid var(--line)}
+@media (max-width:860px){.kpis{border-left:0;border-top:1px solid var(--line);padding-top:14px}}
+.kpi{padding:4px 18px 6px}
+.kpi:nth-child(2n){border-left:1px solid var(--line)}
+.kpi:nth-child(n+3){border-top:1px solid var(--line);margin-top:10px;padding-top:12px}
+.kpi .v{font:700 25px/1.15 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .t{font-size:12px;line-height:1.6;color:var(--muted);margin-top:5px}
+.dim{color:var(--faint);font-weight:400}
+
+/* 区块 */
+section{margin-top:44px}
+h2{font:700 24px/1.3 var(--serif);margin:0 0 4px;letter-spacing:-.01em}
+h2 .sub{display:block;font:400 13px/1.7 var(--sans);color:var(--muted);margin-top:6px;letter-spacing:0}
+.rule{height:1px;background:var(--line);margin:14px 0 18px}
+
+/* 森林图 */
+.forest{background:var(--panel);border:1px solid var(--line);padding:18px 20px 14px}
+.forest-head{display:grid;grid-template-columns:186px minmax(0,1fr) 236px;gap:18px;
+  font:500 11.5px/1.6 var(--mono);color:var(--faint);letter-spacing:.04em;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.frow{display:grid;grid-template-columns:186px minmax(0,1fr) 236px;gap:18px;align-items:center;
+  padding:13px 0;border-bottom:1px solid #E3E8E5}
+.frow:last-child{border-bottom:0}
+.frow .lab{font-size:13.5px;line-height:1.4}
+.frow .lab em{display:block;font:400 11.5px/1.5 var(--mono);color:var(--faint);font-style:normal;margin-top:3px}
+.track{position:relative;height:30px}
+.track:before{content:"";position:absolute;inset:0;background:
+  repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 1px),#DCE2DE calc(10% - 1px),#DCE2DE 10%)}
+.base{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--ink)}
+.base-tag{position:absolute;left:50%;top:-14px;transform:translateX(-50%);
+  font:500 10px/1 var(--mono);color:var(--muted);letter-spacing:.03em;white-space:nowrap}
+.whisk{position:absolute;top:50%;height:2px;transform:translateY(-1px)}
+.whisk .cap{position:absolute;top:-4px;width:1px;height:10px}
+.dot{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%)}
+.val{font:700 12px/1 var(--mono);position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap}
+.fnote{font-size:12.5px;line-height:1.55;color:var(--muted)}
+@media (max-width:800px){
+  .forest-head{display:none}
+  .frow{grid-template-columns:1fr;gap:6px;padding:14px 0}
+  .fnote{color:var(--faint)}
+}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13.5px}
+caption{caption-side:top;text-align:left;font:400 12px/1.7 var(--sans);color:var(--faint);padding-bottom:8px}
+th,td{text-align:left;padding:9px 12px 9px 0;vertical-align:top;border-bottom:1px solid #E3E8E5}
+th{font:500 11.5px/1.5 var(--mono);color:var(--faint);letter-spacing:.03em;border-bottom:1px solid var(--line)}
+td.num{font:600 13px/1.5 var(--mono);font-variant-numeric:tabular-nums}
+.neg{color:var(--rust)}
+.pos{color:var(--teal)}
+.flat{color:var(--amber)}
+
+/* 双栏 */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media (max-width:800px){.duo{grid-template-columns:1fr;gap:18px}}
+.card{background:var(--panel);border:1px solid var(--line);padding:18px 20px}
+.card h3{font:700 15px/1.4 var(--sans);margin:0 0 10px}
+.card .tag{font:500 10.5px/1 var(--mono);letter-spacing:.08em;padding:2px 6px;border:1px solid currentColor;margin-left:6px;vertical-align:1px}
+.card ul{margin:0;padding-left:18px}
+.card li{font-size:13.5px;line-height:1.7;margin-bottom:5px}
+
+/* 漏斗 */
+.funnel{display:flex;height:44px;border:1px solid var(--line);background:var(--panel)}
+.seg{position:relative;display:flex;align-items:center;justify-content:center;font:600 12px/1 var(--mono);
+  color:var(--panel);overflow:hidden}
+.seg.min{color:var(--ink);background:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border:1px solid var(--line)}
+
+/* 步骤 */
+.steps{margin:0;padding:0;list-style:none}
+.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:15px 0;border-top:1px solid var(--line)}
+.step .n{font:700 13px/1.4 var(--mono);color:var(--rust);padding-top:2px}
+.step h4{font:700 14.5px/1.5 var(--sans);margin:0 0 3px}
+.step p{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+.step p.add{margin-top:7px;color:var(--ink)}
+.step code{font-family:var(--mono);font-size:12px;background:rgba(21,33,31,.06);padding:1px 4px;border-radius:2px}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--ink);font-size:12px;line-height:1.8;color:var(--faint)}
+footer b{color:var(--muted);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topline">
+    <span>REFLEX QUANT &nbsp;/&nbsp; 判断能力评估</span>
+    <span>2026-11-17 · 数据截至 18:40 CST</span>
+  </div>
+
+  <h1>它会不会看市场</h1>
+  <p class="lede">
+    把 <b>391 笔已结算的影子信号</b>、<b>1213 个事件日格</b>、今天的 <b>57 条决策</b>放在一起看，
+    结论是同一句话：方向命中率在 <b>31%–40%</b>，低于抛硬币；线上 99% 的 HOLD 不是「看空」，
+    是判断在闸门之前就没发生。这份评估只回答一件事——<b>哪些能力是真的，哪些是叙事</b>。
+  </p>
+  <p class="meta">
+    口径：shadow_ledger / ai_decisions（trident_event_bus.db 现算）· docs/判断力体检-2026-11-16.html · docs/v413、v414 · 区间为 Wilson 95%
+  </p>
+
+  <div class="verdict">
+    <div class="verdict-grid">
+      <div>
+        <div class="big" id="bigNum">40.2%<small>影子账本方向命中 · 历史 · n=391 · CI [35.4, 45.1]</small></div>
+        <div class="delta"><b>−9.8</b> 个百分点 · 相对随机基线 50%
+          <span>区间上界 45.1，仍未过线</span></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi">
+          <div class="v neg">71.9%</div>
+          <div class="t">今日降级率（41/57）。判断没有发生，闸门只是在决定要不要把兜底结论变成仓位。</div>
+        </div>
+        <div class="kpi">
+          <div class="v">15</div>
+          <div class="t">影子账本当前已结算笔数。历史 391 笔是重置前的口径，两者不可直接比。</div>
+        </div>
+        <div class="kpi">
+          <div class="v">5 <span class="dim">/ 胜 1</span></div>
+          <div class="t">全库已结算成交 5 笔，累计 −2.67%。样本不足 60，任何胜率都不构成结论。</div>
+        </div>
+        <div class="kpi">
+          <div class="v neg">0.00%</div>
+          <div class="t">端到端转化：21135 条新闻 → 1 笔盈利。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>七个口径，没有一个稳定站在 50% 右侧
+      <span class="sub">把「事件方向」「开仓方向」「独立信号」「因果链」分开算，避免一个口径的偏差被另一个口径掩盖</span>
+    </h2>
+    <div class="rule"></div>
+    <div class="forest">
+      <div class="forest-head">
+        <div>口径</div><div>命中率 · 95% 区间（基准线 50%）</div><div>怎么读</div>
+      </div>
+      <div id="forestRows"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>分层之后，差距不是随机噪声
+      <span class="sub">按品种、按方向拆开看：问题不是「看错方向」，是「先有偏多结论，再找理由」</span>
+    </h2>
+    <div class="rule"></div>
+    <div class="duo">
+      <div>
+        <table>
+          <caption>按品种 · 历史口径（11-16 体检）与现库并列</caption>
+          <colgroup><col style="width:22%"><col style="width:26%"><col style="width:26%"><col style="width:26%"></colgroup>
+          <thead><tr><th>品种</th><th>历史命中</th><th>现库 命中/结算</th><th>建议</th></tr></thead>
+          <tbody>
+            <tr><td>BTC</td><td class="num pos">54.8%</td><td class="num">2 / 5</td><td>唯一高于 50%，单独保留观察</td></tr>
+            <tr><td>ETH</td><td class="num neg">40.7%</td><td class="num">2 / 2</td><td>现库样本 2 笔，不可读</td></tr>
+            <tr><td>WTI</td><td class="num neg">36.7%</td><td class="num">1 / 3</td><td>方向单先停，留事件雷达</td></tr>
+            <tr><td>XAU</td><td class="num neg">36.6%</td><td class="num">3 / 5</td><td>方向单先停，留事件雷达</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table>
+          <caption>按方向 · 历史口径（n=391）</caption>
+          <colgroup><col style="width:22%"><col style="width:24%"><col style="width:24%"><col style="width:30%"></colgroup>
+          <thead><tr><th>方向</th><th>样本占比</th><th>命中</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>BUY</td><td class="num">63%</td><td class="num neg">38.3%</td><td>押多为主，且明显低于随机</td></tr>
+            <tr><td>SELL</td><td class="num">37%</td><td class="num neg">43.4%</td><td>相对好一点，仍未过线</td></tr>
+          </tbody>
+        </table>
+        <p class="meta" style="margin-top:10px">
+          BUY 占样本 63% 但命中只有 38.3%，两头都不到 50% —— 这是「先有偏多结论，再找理由」的直接证据。
+          六维权重里只有 impact（ρ=0.309）与 source（ρ=−0.100）有判别力，consensus / reaction / regime / time 在决策时点几乎没有方差。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>今天的判断量，被产能吃掉了
+      <span class="sub">不是「判断不准」，是九个小时里五个小时决策产出为 0（v413：供应商全池熔断 → pool-blocked 干等 → 看门狗 1800s 强杀重启）</span>
+    </h2>
+    <div class="rule"></div>
+    <div class="funnel" aria-hidden="true">
+      <div class="seg" style="flex:0 0 52.6%;background:var(--muted)">target_none 30</div>
+      <div class="seg" style="flex:0 0 19.3%;background:#7E8B86">其它降级 11</div>
+      <div class="seg min" style="flex:0 0 19.3%;border-right:1px solid var(--line)">真 HOLD 11</div>
+      <div class="seg" style="flex:0 0 8.8%;background:var(--rust)">方向 5</div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--muted)"></i>标的不可交易（A 股个股公告为主）30</span>
+      <span><i class="sw" style="background:#7E8B86"></i>summary_only 8 + llm_empty 3</span>
+      <span><i class="sw" style="background:var(--panel)"></i>非降级真 HOLD 11</span>
+      <span><i class="sw" style="background:var(--rust)"></i>方向性：BUY 1 / SELL 4</span>
+    </div>
+    <table style="margin-top:22px">
+      <colgroup><col style="width:26%"><col style="width:22%"><col style="width:52%"></colgroup>
+      <thead><tr><th>环节</th><th>今日实测</th><th>断点性质</th></tr></thead>
+      <tbody>
+        <tr><td>决策产出</td><td class="num neg">57 条</td><td>昨日 504 条。00/01/04/05/06/08 六个小时为 0；本地 3B 在跑，但 purpose 只有 anomaly / advisor / sql / optimizer，不含 main</td></tr>
+        <tr><td>进池错配</td><td class="num neg">30 / 57</td><td>target_none 占一半：A 股个股公告本不该进主分析（预路由已修，触发源仍在）</td></tr>
+        <tr><td>结构化失败</td><td class="num neg">11 / 57</td><td>只有摘要 / LLM 空输出 → 写成模板 HOLD，留下 analysis_degraded=1</td></tr>
+        <tr><td>闸门</td><td class="num">5 / 57</td><td>只看 confidence ≥ 15/20，不校验这条结论是不是真推演出来的</td></tr>
+        <tr><td>结算</td><td class="num neg">5 笔全库</td><td>端到端 1 / 21135；有效样本远低于 60 笔门槛</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>唯一被验证有效的增量：等市场先动
+      <span class="sub">决策前 30 分钟盘面已同向 vs 未同向，这是全系统唯一在统计上抬得起头的因子</span>
+    </h2>
+    <div class="rule"></div>
+    <div class="duo">
+      <table>
+        <caption>历史口径（影子账本 11-16）</caption>
+        <colgroup><col style="width:34%"><col style="width:20%"><col style="width:22%"><col style="width:24%"></colgroup>
+        <thead><tr><th>盘面状态</th><th>n</th><th>命中</th><th>CI</th></tr></thead>
+        <tbody>
+          <tr><td>已同向</td><td class="num">144</td><td class="num flat">48.7%</td><td class="num">[40.6, 56.7]</td></tr>
+          <tr><td>未同向</td><td class="num">185</td><td class="num neg">31.4%</td><td class="num">[25.1, 38.4]</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <caption>现库口径（pre_confirm 字段，重置后）</caption>
+        <colgroup><col style="width:34%"><col style="width:20%"><col style="width:22%"><col style="width:24%"></colgroup>
+        <thead><tr><th>pre_confirm</th><th>n</th><th>命中</th><th>CI</th></tr></thead>
+        <tbody>
+          <tr><td>1 · 已确认</td><td class="num">5</td><td class="num pos">80.0%</td><td class="num">[37.6, 96.4]</td></tr>
+          <tr><td>0 · 未确认</td><td class="num">8</td><td class="num neg">25.0%</td><td class="num">[7.1, 59.1]</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta" style="margin-top:14px">
+      增量约 17 个百分点，但只是把「明显在减分」拉回「接近随机」，还不是 edge。现库只有 13 笔可用样本，
+      方向与历史一致，但区间宽到不能下结论——这也是为什么下一步的第一件事是攒样本，而不是继续调阈值。
+    </p>
+  </section>
+
+  <section>
+    <h2>按证据强度分层：哪些能信，哪些不能
+      <span class="sub">这是整份评估最该被记住的一节</span>
+    </h2>
+    <div class="rule"></div>
+    <div class="duo">
+      <div class="card">
+        <h3>可以信<span class="tag" style="color:var(--teal)">EVIDENCE</span></h3>
+        <ul>
+          <li><b>事件雷达与去噪</b>：双源采集 + L1 关键词 + L2 LLM，273 条 NONE 判定正确，93% 的 NONE 是真无关（v414 审计）。</li>
+          <li><b>行情归因</b>：事后解释与因果对齐，S6 事前因果占比 100%，n=250。</li>
+          <li><b>错误编码与复盘</b>：E001–E033 七层反思，能把坏交易归到具体层；反思维度 566 条。</li>
+          <li><b>异动归因覆盖</b>：S7 被归因覆盖率 52.1%，n=493。</li>
+          <li><b>盘面确认</b>：唯一有正增量的因子，方向可复现，但样本还太小。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>不能信<span class="tag" style="color:var(--rust)">NARRATIVE</span></h3>
+        <ul>
+          <li><b>方向预测</b>：影子账本 40.2%、独立信号 40.0%，均低于随机。</li>
+          <li><b>幅度预测</b>：权重判别力 ρ≈0.2，只解释约 4% 方差。</li>
+          <li><b>择时</b>：固定 2h / 4h 窗口；fast_rise 里 68% 其实是匀速 drift，没有时点 edge。</li>
+          <li><b>自评置信度</b>：门槛 0 → 39.8%，门槛 20 → 37.5%，门槛 30 → 16.7%。筛掉的是样本量，不是坏信号。</li>
+          <li><b>「99% HOLD = 保守」</b>：442/494 是降级兜底，不是判断。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>下一步：先让判断真的发生，再谈准不准
+      <span class="sub">顺序不能反。没有有效样本，校准曲线画不出来；没有校准，阈值仍然是拍脑袋</span>
+    </h2>
+    <div class="rule"></div>
+    <ol class="steps">
+      <li class="step"><div class="n">01</div><div>
+        <h4>先修产能，而不是修模型</h4>
+        <p>P0-A1 已落（v434）：pool-blocked 带轮次 / 已等待 / 最近可恢复倒计时，看门狗 6 小时宽线；P0-A2 主动探测先不上（冷却到期会自动放行）。P0-B 本地 3B 已经在 gate 池（LOCAL_LLM_FAST 的 purpose 含 gate），主分析保持 LOCAL_LLM_MAIN_ENABLED=0——3B 出方向会污染决策表。P0-C 认领优先级与 filter_reason 已由 v408 / v419 / v432 落地。</p>
+        <p class="add">还有一个此前没被点名的产能杀手：引擎正被<b>外部会话每几分钟 <code>kickstart -k</code> 一次</b>（今日近 1 小时 SIGTERM×9，ops-audit 已报警）。落库是批末一次性提交，每杀一次就作废一批——零产出小时不能只记在熔断头上。另修了看门狗的回收判据：<code>processing_at</code> 为空的 PROCESSING 行原来永远判不了死（今日 6 条从 18:00 挂到重启），现在按新闻入库时间兜底，已实测自动回收 8 条。验收：零产出小时 ≤1（今日 5/9）、强杀 0 次、僵尸靠看门狗自动回收、不靠重启。</p>
+      </div></li>
+      <li class="step"><div class="n">02</div><div>
+        <h4>别动阈值，先攒样本</h4>
+        <p>连跑 2–4 周，目标有效结算 ≥ 60 笔。门槛每收紧一档都在删证据，当前 n=15 时任何命中率都不该被当成结论。</p>
+      </div></li>
+      <li class="step"><div class="n">03</div><div>
+        <h4>把「盘面确认」做成按品种的硬闸</h4>
+        <p>按品种分别启用，不要全局硬上；确认动作本身要留痕（pre_confirm + 决策前 30 分钟的真实涨跌）。目标：先追平随机。</p>
+      </div></li>
+      <li class="step"><div class="n">04</div><div>
+        <h4>品种分层，允许停单</h4>
+        <p>BTC 单独跑；XAU / WTI 先停方向单，只保留事件雷达与归因。砍掉两个负期望品种，比调参更快见效。</p>
+      </div></li>
+      <li class="step"><div class="n">05</div><div>
+        <h4>用校准替代自评信心</h4>
+        <p>把 confidence 从「感觉」换成可验证概率：Brier score + 校准曲线，按品种、按事件类型分别校准。目标 Brier ≤ 0.25 且单调。</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <footer>
+    <b>口径与来源</b>：方向命中率取 shadow_ledger（settled_at 非空、hit 字段）现算；现库 n=15、命中 8；历史 391 笔引用 docs/判断力体检-2026-11-16.html；当日决策构成、降级原因、闸门原因、已结算成交均由 trident_event_bus.db 现算（2026-11-17 18:40 CST）；产能事实见 docs/v413-产能诊断、docs/v414-产能体检；端到端漏斗取 docs/信号成绩单-2026-11-17.html。<br>
+    <b>样本警告</b>：本库 11-16 重置，当前已结算样本 15 笔，其中方向性结论多数来自非降级路径。历史 391 笔与现库口径不同，仅作对照，不可拼接统计。样本不足 60 笔时，任何胜率 / 均值都不构成能力结论。<br>
+    <b>定位</b>：它是一个会记账、会认错的事件雷达，不是一个能下注的预测器。本页为系统内部能力评估，不构成任何交易建议。
+  </footer>
+
+</div>
+
+<script>
+/* ===== 森林图数据：单一来源，改数只改这里 ===== */
+const SCALES = [
+  {label:'影子账本 · 历史', value:40.2, lo:35.4, hi:45.1, n:'n=391', note:'闸门拦下的单也结算，最接近「真实判断」'},
+  {label:'影子账本 · 现库', value:53.3, lo:30.1, hi:75.2, n:'n=15', note:'重置后新口径；区间宽到不能下结论'},
+  {label:'独立信号 S11', value:40.0, lo:29.7, hi:51.3, n:'n=75', note:'按品种/方向/小时去重后，仍低于随机'},
+  {label:'事件方向 S1', value:50.2, lo:47.4, hi:53.0, n:'n=1213', note:'等于随机；方向由固定偏好表给出'},
+  {label:'真实开仓 S2', value:52.9, lo:39.5, hi:65.9, n:'n=51', note:'样本不足 100，区间跨过 50，不算证据'},
+  {label:'因果链 · 真方向', value:47.8, lo:null, hi:null, n:'旧纪元', note:'剔除 BOTH 双向链；宽口径 77.1% 是被虚抬的'}
+];
+
+function colorFor(v){
+  if (v < 50) return 'var(--rust)';
+  if (v > 50) return 'var(--teal)';
+  return 'var(--amber)';
+}
+
+const host = document.getElementById('forestRows');
+SCALES.forEach(d => {
+  const c = colorFor(d.value);
+  const row = document.createElement('div');
+  row.className = 'frow';
+
+  /* 标签 */
+  const lab = document.createElement('div');
+  lab.className = 'lab';
+  lab.innerHTML = d.label + '<em>' + d.n + '</em>';
+
+  /* 图道 */
+  const track = document.createElement('div');
+  track.className = 'track';
+  const base = document.createElement('div');
+  base.className = 'base';
+  const baseTag = document.createElement('div');
+  baseTag.className = 'base-tag';
+  baseTag.textContent = '50%';
+  track.appendChild(base);
+  track.appendChild(baseTag);
+
+  if (d.lo !== null) {
+    const w = document.createElement('div');
+    w.className = 'whisk';
+    w.style.left = d.lo + '%';
+    w.style.width = (d.hi - d.lo) + '%';
+    w.style.background = c;
+    w.style.opacity = '0.55';
+    [0, 100].forEach(pos => {
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.style.left = pos + '%';
+      cap.style.background = c;
+      w.appendChild(cap);
+    });
+    track.appendChild(w);
+  }
+
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.style.left = d.value + '%';
+  dot.style.background = c;
+  track.appendChild(dot);
+
+  const val = document.createElement('div');
+  val.className = 'val';
+  val.style.color = c;
+  /* 点太靠右时把数字放到左侧；无区间的口径一律放左，避免与基准线重叠 */
+  if (d.value > 62 || d.lo === null) {
+    val.style.right = (100 - d.value) + '%';
+    val.style.marginRight = '12px';
+  } else {
+    val.style.left = d.value + '%';
+    val.style.marginLeft = '12px';
+  }
+  val.textContent = d.value.toFixed(1) + '%';
+  track.appendChild(val);
+
+  /* 读数 */
+  const note = document.createElement('div');
+  note.className = 'fnote';
+  note.textContent = d.note;
+
+  row.appendChild(lab);
+  row.appendChild(track);
+  row.appendChild(note);
+  host.appendChild(row);
+});
+</script>
+</body>
+</html>

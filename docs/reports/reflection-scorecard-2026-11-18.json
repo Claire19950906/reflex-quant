@@ -1,0 +1,144 @@
+{
+  "at": "2026-11-18T23:34:46",
+  "corpus": {
+    "total": 194,
+    "template": 176,
+    "llm": 13,
+    "paper": 5,
+    "real_ratio": 0.0928,
+    "settled": 18
+  },
+  "judged": {
+    "judged": 15,
+    "verified": 3,
+    "falsified": 12,
+    "unknown": 179,
+    "judge_rate": 0.0773,
+    "consistency": 0.2
+  },
+  "coverage": {
+    "decisions": 1071,
+    "with_reflection": 194,
+    "rate": 0.1811,
+    "real_trade_reflections": 18
+  },
+  "shadow": {
+    "rows": 38,
+    "ok": 19,
+    "wrong": 18,
+    "flat": 1,
+    "insufficient": 0,
+    "hit_rate": 0.5135,
+    "hit_rate_note": "样本不足(<60)，不构成结论",
+    "rows_24h": 38,
+    "by_asset": [
+      {
+        "asset": "BTC",
+        "n": 14,
+        "ok": 8,
+        "hit_rate": 0.5714
+      },
+      {
+        "asset": "XAU",
+        "n": 10,
+        "ok": 4,
+        "hit_rate": 0.4
+      },
+      {
+        "asset": "WTI",
+        "n": 8,
+        "ok": 5,
+        "hit_rate": 0.625
+      }
+    ],
+    "by_direction": [
+      {
+        "direction": "SELL",
+        "n": 21,
+        "ok": 14
+      },
+      {
+        "direction": "BUY",
+        "n": 16,
+        "ok": 5
+      }
+    ],
+    "ledger": {
+      "settled": 53,
+      "hit": 26,
+      "hit_rate": 0.4906,
+      "avg_move_pct": -0.283
+    },
+    "by_confidence": [
+      {
+        "bucket": "<0.5",
+        "n": 1,
+        "hit": 0
+      },
+      {
+        "bucket": ">=0.8",
+        "n": 52,
+        "hit": 26
+      }
+    ],
+    "h24": {
+      "ok": 7,
+      "wrong": 3,
+      "flat": 0,
+      "insufficient": 25,
+      "pending": 3,
+      "settled": 10,
+      "hit_rate": 0.7,
+      "flipped_from_4h_wrong": 3,
+      "note": "4h 判错但 24h 判对 = 窗口太短，不是判断错"
+    }
+  },
+  "meta": {
+    "cycles": 107,
+    "last": "2026-11-16 14:13:01",
+    "kinds": {
+      "no_baseline_new": 107
+    }
+  },
+  "patches": {
+    "pending": 0,
+    "rejected": 8,
+    "applied": 0
+  },
+  "scheduler": {
+    "verifier_last_evaluated": "2026-11-18T15:00:34+00:00",
+    "shadow_watermark": 1795013469,
+    "shadow_floor": 1794931200,
+    "enrich_last_ok": "2026-11-18 15:33:12"
+  },
+  "injection": {
+    "rules_total": 113,
+    "observable_only": 98,
+    "injectable": 6,
+    "experience_applications": 0,
+    "decisions_with_hit_ids": 270,
+    "hit_sources": {
+      "unknown": 270
+    }
+  },
+  "ab": {
+    "ok": true,
+    "days": 14,
+    "rate": 0.3,
+    "groups": {
+      "control": {
+        "batches": 1,
+        "n_decisions": 2,
+        "n_shadow": 0,
+        "ok": 0,
+        "hit_rate": null,
+        "n_shadow_24h": 0,
+        "hit_rate_24h": null,
+        "avg_confidence": null,
+        "directional_ratio": 0.5,
+        "claimed_hit_ratio": 0.0,
+        "avg_soft_rules": 0.0
+      }
+    }
+  }
+}

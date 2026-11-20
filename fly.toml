@@ -1,0 +1,40 @@
+app = "trident-proxy"
+primary_region = "nrt"  # Tokyo,中国大陆延迟低 +30ms
+
+[build]
+  dockerfile = "backend/Dockerfile.proxy"
+  context = "."
+
+[env]
+  TRIDENT_MODE = "demo"
+  TRIDENT_ANTI_BOT = "1"
+  TRIDENT_HONEYPOT = "1"
+  TRIDENT_WATERMARK_V2 = "1"
+  TRIDENT_DATA_POISON = "1"
+  TRIDENT_DATA_POISON_PCT = "0.03"
+  TRIDENT_DEMO_RPM = "30"
+  TRIDENT_DEMO_DAILY_BUDGET = "5000"
+  TRIDENT_DEMO_DELAY_MS = "200"
+  TRIDENT_DEMO_JITTER_MS = "80"
+  TRIDENT_DEMO_HISTORY_DAYS = "1"
+  TRIDENT_DEMO_DECIMALS = "2"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"   # 免费层上限

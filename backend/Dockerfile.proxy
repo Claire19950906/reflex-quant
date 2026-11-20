@@ -1,0 +1,40 @@
+# Fly.io 镜像 — 纯代理,**不含任何算法**
+# ===========================================
+# 这个镜像只跑:限流 + 脱敏 + 转发 + 反爬虫 + 水印
+# 算法本体在 Mac 上的 master_api.py 跑,这个镜像**不包含** master_api.py
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 装最小依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ⚠️ 关键:只复制"代理层"文件,**绝不**复制 master_api.py / 你的算法文件
+COPY src_python/api_server.py .
+COPY src_python/demo_mode.py .
+COPY src_python/license_auth.py .
+COPY src_python/demo_audit.py .
+COPY src_python/anti_bot.py .
+COPY src_python/honeypot.py .
+COPY src_python/watermark_v2.py .
+COPY src_python/data_poison.py .
+COPY src_python/_honesty.py . 2>/dev/null || true
+
+# v300 默认配置
+ENV TRIDENT_MODE=demo
+ENV TRIDENT_ANTI_BOT=1
+ENV TRIDENT_HONEYPOT=1
+ENV TRIDENT_WATERMARK_V2=1
+ENV TRIDENT_DATA_POISON=1
+ENV TRIDENT_LISTEN_HOST=0.0.0.0
+ENV TRIDENT_LISTEN_PORT=8000
+# MASTER_URL 在 fly.toml secrets 里配
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()" || exit 1
+
+CMD ["python3", "-u", "api_server.py"]

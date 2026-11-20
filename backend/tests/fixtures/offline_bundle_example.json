@@ -1,0 +1,311 @@
+{
+ "meta": {
+  "source": "合成示例（不是真实数据）",
+  "note": "用于自检 replay_bundle 装载与结论口径；真实数据导出方式见脚本文件头 SQL"
+ },
+ "tables": {
+  "ai_decisions": [
+   {
+    "id": 1,
+    "news_id": 9001,
+    "sentiment_score": 0.62,
+    "suggested_action": "BUY",
+    "reasoning": "合成：ETF 赎回后回踩确认",
+    "created_at": "2026-11-20 00:23:13",
+    "status": "UNREAD",
+    "market_category": "CRYPTO",
+    "target_asset": "BTC",
+    "ts": 1795105393,
+    "settled": 1,
+    "is_correct": "LOSS",
+    "analysis_degraded": 0,
+    "paper_trading_run_id": 1,
+    "completeness_score": 0.88,
+    "code_fingerprint": "example:v1"
+   },
+   {
+    "id": 2,
+    "news_id": 9002,
+    "sentiment_score": 0.31,
+    "suggested_action": "HOLD",
+    "reasoning": "合成：证据不足，观望",
+    "created_at": "2026-11-20 01:23:13",
+    "status": "UNREAD",
+    "market_category": "CRYPTO",
+    "target_asset": "ETH",
+    "ts": 1795108993,
+    "settled": 0,
+    "analysis_degraded": 0,
+    "paper_trading_run_id": 1,
+    "completeness_score": 0.55,
+    "code_fingerprint": "example:v1"
+   },
+   {
+    "id": 3,
+    "news_id": 9003,
+    "sentiment_score": 0.5,
+    "suggested_action": "SELL",
+    "reasoning": "合成：LLM 全挂，走规则兜底",
+    "created_at": "2026-11-20 02:23:13",
+    "status": "UNREAD",
+    "market_category": "CRYPTO",
+    "target_asset": "SOL",
+    "ts": 1795112593,
+    "settled": 0,
+    "analysis_degraded": 1,
+    "paper_trading_run_id": 1,
+    "completeness_score": 0.4,
+    "code_fingerprint": "example:v1"
+   }
+  ],
+  "quick_sim_trades": [
+   {
+    "decision_id": 1,
+    "news_id": 9001,
+    "asset": "BTC",
+    "action": "BUY",
+    "score": 0.62,
+    "gate_passed": 1,
+    "gate_reason": "ok",
+    "strategy_id": "example",
+    "notional_usdt": 1000,
+    "entry_price": 64000,
+    "entry_ts": 1795105393,
+    "horizon_minutes": 240,
+    "exit_price": 63200,
+    "exit_ts": 1795119793,
+    "pnl_pct": -1.25,
+    "pnl_usdt": -12.5,
+    "verdict": "LOSS",
+    "settled": 1,
+    "created_at": "2026-11-20 00:23:13",
+    "mfe_pct": 1.2,
+    "mae_pct": -3.0,
+    "cost_bps": 8,
+    "trade_uuid": "example-uuid-1"
+   },
+   {
+    "decision_id": 2,
+    "news_id": 9002,
+    "asset": "ETH",
+    "action": "SELL",
+    "score": 0.31,
+    "gate_passed": 1,
+    "gate_reason": "ok",
+    "strategy_id": "example",
+    "notional_usdt": 1000,
+    "entry_price": 1800,
+    "entry_ts": 1795108993,
+    "horizon_minutes": 240,
+    "exit_price": 1840,
+    "exit_ts": 1795112593,
+    "pnl_pct": -2.22,
+    "pnl_usdt": -22.2,
+    "verdict": "LOSS",
+    "settled": 1,
+    "created_at": "2026-11-20 01:23:13",
+    "mfe_pct": 0.2,
+    "mae_pct": -2.3,
+    "cost_bps": 8,
+    "trade_uuid": "example-uuid-2"
+   }
+  ],
+  "trade_reflections_v2": [
+   {
+    "decision_id": 1,
+    "paper_run_id": 1,
+    "asset": "BTC",
+    "action": "BUY",
+    "entry_price": 64000,
+    "exit_price": 63200,
+    "pnl_pct": -1.25,
+    "mfe_pct": 1.2,
+    "mae_pct": -3.0,
+    "settled": 1,
+    "root_cause": "入场滞后于事件 >30min，且只有单一来源",
+    "lesson": "单一来源 + 滞后入场，方向再对也扛不住回撤",
+    "dimension": "C",
+    "subcategory": "signal_delay",
+    "hit": 0,
+    "actual_outcome_pct": -1.25,
+    "depth_score": 65,
+    "origin": "paper_v2"
+   }
+  ],
+  "decision_reflection": [
+   {
+    "asset": "BTC",
+    "window": "per_decision",
+    "n_decisions": 1,
+    "win_n": 0,
+    "loss_n": 1,
+    "flat_n": 0,
+    "avg_pnl_pct": -1.25,
+    "bias_text": "单一来源 + 滞后入场｜本笔 BTC -1.25%",
+    "trigger": "paper_v2_loss",
+    "ts": 1795119793,
+    "depth_score": 65,
+    "actionable_suggestion": "下一笔 BTC 决策：confidence 上限压到 0.50，要求至少 2 个独立来源同向"
+   }
+  ],
+  "signal_performance": [
+   {
+    "decision_id": 1,
+    "asset": "BTC",
+    "ts": 1795119793,
+    "action": "BUY",
+    "is_correct": "LOSS",
+    "forward_pnl": -1.25,
+    "mfe_pct": 1.2,
+    "mae_pct": -3.0
+   },
+   {
+    "decision_id": 2,
+    "asset": "ETH",
+    "ts": 1795112593,
+    "action": "HOLD",
+    "is_correct": "HOLD",
+    "forward_pnl": 0.67,
+    "mfe_pct": 0.9,
+    "mae_pct": -0.3
+   }
+  ],
+  "news_events": [
+   {
+    "id": 101,
+    "news_id": 9001,
+    "ts": 1795104793,
+    "source": "wire",
+    "headline": "比特币现货 ETF 单日净流出 4.2 亿美元",
+    "assets": "BTC",
+    "score": 0.72,
+    "is_noise": 0,
+    "status": "ok"
+   }
+  ],
+  "critical_price_moves": [
+   {
+    "id": 201,
+    "asset": "BTC",
+    "ts": 1795108993,
+    "start_price": 64000,
+    "peak_price": 64800,
+    "end_price": 63200,
+    "move_pct": -1.25,
+    "move_kind": "slow",
+    "duration_min": 120,
+    "algo_score": 0.7
+   }
+  ],
+  "ohlcv_intraday": [
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795105393,
+    "open": 64000,
+    "high": 64100,
+    "low": 63900,
+    "close": 64000,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   },
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795105993,
+    "open": 64100,
+    "high": 64200,
+    "low": 64000,
+    "close": 64100,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   },
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795106593,
+    "open": 64200,
+    "high": 64300,
+    "low": 64100,
+    "close": 64200,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   },
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795107193,
+    "open": 64300,
+    "high": 64400,
+    "low": 64200,
+    "close": 64300,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   },
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795107793,
+    "open": 64400,
+    "high": 64500,
+    "low": 64300,
+    "close": 64400,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   },
+   {
+    "asset": "BTC",
+    "interval": "10m",
+    "ts": 1795108393,
+    "open": 64500,
+    "high": 64600,
+    "low": 64400,
+    "close": 64500,
+    "volume": 120,
+    "trades": 20,
+    "closed": 1,
+    "source": "example"
+   }
+  ],
+  "t2_positions": [
+   {
+    "id": 301,
+    "asset": "BTC",
+    "side": "long",
+    "qty": 0.05,
+    "entry_price": 64000,
+    "entry_ts": 1795105393,
+    "status": "closed",
+    "exit_price": 63200,
+    "closed_ts": 1795119793,
+    "realized_pnl": -42.0,
+    "fee_paid": 5.1,
+    "strategy_id": "example"
+   },
+   {
+    "id": 302,
+    "asset": "ETH",
+    "side": "short",
+    "qty": 1.5,
+    "entry_price": 1800,
+    "entry_ts": 1795108993,
+    "status": "closed",
+    "exit_price": 1812,
+    "closed_ts": 1795116193,
+    "realized_pnl": -18.2,
+    "fee_paid": 2.7,
+    "strategy_id": "example"
+   }
+  ]
+ }
+}

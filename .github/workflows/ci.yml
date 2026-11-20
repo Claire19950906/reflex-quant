@@ -1,0 +1,120 @@
+name: ci
+
+# 目的不是"跑一遍全量"，而是让每次提交都能回答一个问题：
+# "这次改动有没有让原本绿的东西变红"。
+#
+# 设计取舍：
+#   * 全量 3,500+ 条测试在本机约需数分钟到十几分钟；CI 上先跑"离线核心子集"
+#     （结构/口径/端点契约），全量挂在 nightly / workflow_dispatch。
+#   * 所有测试必须离线：conftest.py 已把 DB / 熔断器 / 限流槽隔离到临时目录，
+#     CI 里再显式设 TRIDENT_OFFLINE=1，防止任何用例意外打到真实网络。
+#   * 端点基线（architecture_baseline.py）作为**护栏**产出 artifact：
+#     拆分 api_server 期间，端点数只应"有计划地"变化，不该悄悄掉。
+#   * lint 只拦「错误级」规则（E9/F63/F7/F82），历史债按文件冻结在 ruff.toml，
+#     新代码必须干净；规则集刻意不开风格类，避免万条噪音导致全员 ignore。
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+  # 每晚 03:17（UTC+8）跑一次全量；之前注释里写了 nightly，但 on: 里没有 schedule，
+  # 等于全量任务只能手动点 —— 回归只能靠人记得跑。
+  schedule:
+    - cron: "17 19 * * *"
+
+jobs:
+  frontend-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装前端依赖
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: 类型检查（tsc --noEmit）
+        working-directory: frontend
+        run: npx tsc --noEmit -p tsconfig.json
+
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TRIDENT_OFFLINE: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+
+      - name: lint（错误级门禁）
+        run: ruff check backend/src_python backend/scripts backend/tests
+
+      - name: 依赖一致性审计（requirements ↔ 实装）
+        run: python backend/scripts/deps_audit.py
+      # 可选依赖单独看一眼实装状态：缺失只打印，不算失败
+      - name: 可选依赖状态（不阻塞）
+        run: python backend/scripts/deps_audit.py --optional-file backend/requirements-optional.txt -f backend/requirements-optional.txt
+
+      - name: 端点基线（只读，产 artifact）
+        run: python backend/scripts/architecture_baseline.py --out backend/reports/baseline
+
+      - name: 版本号命名空间冻结 + 真重复审计
+        run: python backend/scripts/legacy_namespace_audit.py
+
+      - name: 结构质量闸门（事件循环阻塞 / 兼容垫片 / 别名蜜罐）
+        run: python backend/scripts/quality_gates.py
+
+      - name: 离线核心子集
+        working-directory: backend
+        run: |
+          python -m pytest tests/ -q -p no:cacheprovider \
+            -k "dimension or reflection or risk or gate or contract or schema or registry" \
+            --maxfail=20
+
+      - name: 上传基线
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: endpoint-baseline
+          path: backend/reports/baseline/
+
+  full-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    env:
+      TRIDENT_OFFLINE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+      - name: 全量
+        working-directory: backend
+        run: python -m pytest tests/ -q -p no:cacheprovider
+      - name: 失败时留档
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: backend/.pytest_cache/v/cache/lastfailed

@@ -1,0 +1,2263 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "file": "src_python/master_api.py",
+    "category": "catch_all"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "file": "src_python/master_api.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/signal/{}",
+    "file": "src_python/master_api.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/backtest",
+    "file": "src_python/master_api.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "POST",
+    "path": "/batch",
+    "file": "src_python/master_api.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/signal/{}",
+    "file": "src_python/data_poison.py",
+    "category": "docstring_example"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/insight/weekly-status",
+    "file": "src_python/api_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trading/health",
+    "file": "src_python/api_server.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/api/debug/mem",
+    "file": "src_python/api_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/abnormal/feedback-stats",
+    "file": "src_python/bridge_server.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v201/impact/by-asset",
+    "file": "src_python/bridge_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v201/event/opportunities",
+    "file": "src_python/bridge_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/causal/accuracy-stats",
+    "file": "src_python/bridge_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/calendar/events-for-asset",
+    "file": "src_python/bridge_server.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/...",
+    "file": "src_python/bridge_server.py",
+    "category": "catch_all"
+  },
+  {
+    "method": "GET",
+    "path": "/api/{}",
+    "file": "src_python/bridge_server.py",
+    "category": "catch_all"
+  },
+  {
+    "method": "POST",
+    "path": "/api/{}",
+    "file": "src_python/bridge_server.py",
+    "category": "catch_all"
+  },
+  {
+    "method": "GET",
+    "path": "...",
+    "file": "src_python/selftest_v309_endpoints.py",
+    "category": "test_file"
+  },
+  {
+    "method": "POST",
+    "path": "...",
+    "file": "src_python/selftest_v309_endpoints.py",
+    "category": "test_file"
+  },
+  {
+    "method": "GET",
+    "path": "/api/policy/expectancy",
+    "file": "src_python/routers/bets.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v201/impact/by-asset",
+    "file": "src_python/routers/trading_v201.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v201/event/opportunities",
+    "file": "src_python/routers/trading_v201.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v201/trade-points",
+    "file": "src_python/routers/trading_v201.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trading/latest",
+    "file": "src_python/routers/trading_v201.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/security/watermark",
+    "file": "src_python/routers/portal.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/security/entry",
+    "file": "src_python/routers/portal.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/signal/{}",
+    "file": "src_python/routers/portal.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/batch",
+    "file": "src_python/routers/portal.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/master/health",
+    "file": "src_python/routers/portal.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/signals/actionable",
+    "file": "src_python/routers/actionable.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/causal/quality",
+    "file": "src_python/routers/causal_graph.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/causal/export",
+    "file": "src_python/routers/causal_graph.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/causal/accuracy-stats",
+    "file": "src_python/routers/causal_graph.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v189/causal/expand-from-insights",
+    "file": "src_python/routers/causal_graph.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/es",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/nq",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/us10y",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/us5y",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/yield-curve-spread",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/market/funding-rate",
+    "file": "src_python/routers/market.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "acceptance_check.py",
+      "ai_worker.py",
+      "anchor_replay.py",
+      "backtest_pro.py",
+      "bridge_server.py",
+      "decision_guard.py",
+      "intraday_store.py",
+      "migrate_hynix_v211.py",
+      "net_curl.py",
+      "ohlcv_refresh_cn.py",
+      "review_agent.py",
+      "trade_executor.py",
+      "trade_preflight.py",
+      "trading_health.py",
+      "worker_helpers.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/event_atoms",
+    "file": "src_python/routers/event_atoms.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/event_atoms/{}",
+    "file": "src_python/routers/event_atoms.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/event_impact_curves",
+    "file": "src_python/routers/event_atoms.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/event_impact_stat",
+    "file": "src_python/routers/event_atoms.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/deep/enrich/{}",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/reflection/deep/enrich-pending",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/reflection/meta-loop/run",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/meta-loop/stats",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/reflection/reasoning-logic-blindspot/detect",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/reasoning-logic-blindspot/scan",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/deep/{}",
+    "file": "src_python/routers/reflection.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/experiences/add",
+    "file": "src_python/routers/reflection.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/experiences/{}/update",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/experiences/{}/archive",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/experiences/{}/stats",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/missed-signal/detect",
+    "file": "src_python/routers/reflection.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/missed-signal/attention-candidates",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/missed-signal/{}",
+    "file": "src_python/routers/reflection.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/trade-reflections/{}/reproduce",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/trade-reflections/enrich-pending",
+    "file": "src_python/routers/reflection.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/reflection/stats",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/decision/{}/diagnosis",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/recent",
+    "file": "src_python/routers/reflection.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/clustering",
+    "file": "src_python/routers/reflection.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/stats",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reflection/stock-decisions",
+    "file": "src_python/routers/reflection.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ablation_v9.py",
+      "analysis_layer_feedback.py",
+      "backfill_decision_error_codes.py",
+      "backfill_reflection_a_subclass.py",
+      "backfill_reflection_dimensions.py",
+      "backfill_reflection_error_codes.py",
+      "backfill_settlement_dimensions.py",
+      "blindspot_reflector.py",
+      "bridge_server.py",
+      "capability_acceptance.py",
+      "capability_gate.py",
+      "cron_reflection_enrich.py",
+      "db_maintenance.py",
+      "decision_engine.py",
+      "experience_distiller.py",
+      "feedback_chain_test.py",
+      "kg_feedback.py",
+      "main.py",
+      "meta_reflection_loop.py",
+      "meta_reflection_updater.py",
+      "missed_signal_reflection.py",
+      "missed_signal_taxonomy.py",
+      "ops.py",
+      "paper.py",
+      "paper_reflection_worker.py",
+      "perf_benchmarks.py",
+      "policy.py",
+      "reflection_alert.py",
+      "reflection_logic_analysis.py",
+      "reflection_scheduler.py",
+      "review_agent.py",
+      "run_l2_feedback.py",
+      "run_reflection.py",
+      "selftest_reflection_dimension_map.py",
+      "selftest_v309_endpoints.py",
+      "shadow_reflections.py",
+      "verifier_feedback.py",
+      "verify_p1_downstream.py",
+      "verify_v189_event_logic.py",
+      "verify_v189_item4_cross_asset_evidence.py",
+      "verify_v189_item6_segment_alignment.py",
+      "verify_v189_item7_counter_keywords.py",
+      "verify_v189_item8_weight_column.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/horizons/stats",
+    "file": "src_python/routers/decisions.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/policy/sibling-rules",
+    "file": "src_python/routers/policy.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/insight/promote-now",
+    "file": "src_python/routers/policy.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/paper/buy-sell-kpi",
+    "file": "src_python/routers/paper.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "api_maintenance.py",
+      "engine.py",
+      "experience.py",
+      "expire_unlandable_adjustments.py",
+      "param_adjust_apply.py",
+      "strategy_reflection.py",
+      "verify_p1_downstream.py",
+      "weekly_insight_apply.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v186/experiences",
+    "file": "src_python/routers/experience.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v186/experiences/stats",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v186/trade-reflections",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v186/gate-reflection-cycle",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v186/persona-stats",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v186/experience-reflect/run",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v186/gate-reflection-cycle/run",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v186/paper-reflection/run",
+    "file": "src_python/routers/experience.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "cron_experience_adaptive.py",
+      "paper_reflection_worker.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v190/exchange/status",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v190/exchange/mode/start",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v190/exchange/mode/stop",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v190/exchange/stop_all",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v190/exchange/credentials",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v190/exchange/audit",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v190/exchange/daily_summary",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v190/exchange/daily_resets",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v190/exchange/signal_archive",
+    "file": "src_python/routers/exchange.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/trading/manager/start",
+    "file": "src_python/routers/trading.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "offline_selftest.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/trading/manager/stop",
+    "file": "src_python/routers/trading.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "offline_selftest.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trading/manager/status",
+    "file": "src_python/routers/trading.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "offline_selftest.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trading/manager/logs",
+    "file": "src_python/routers/trading.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "offline_selftest.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/security/challenge",
+    "file": "src_python/routers/antibot.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/security/challenge/verify",
+    "file": "src_python/routers/antibot.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/visitors",
+    "file": "src_python/routers/antibot.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/block",
+    "file": "src_python/routers/antibot.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/admin",
+    "file": "src_python/routers/antibot.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v187/llm-stats/by-purpose",
+    "file": "src_python/routers/llm.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "attribute_multi_factor.py",
+      "budget_status.py",
+      "doctor.py",
+      "gate_replay_guard.py",
+      "judge_worker.py",
+      "key_health_probe.py",
+      "llm_budget.py",
+      "llm_quota_sentinel.py",
+      "model_probe.py",
+      "realtime_filter.py",
+      "report_llm_degrade.py",
+      "review_agent.py",
+      "test_budget_gate.py",
+      "verify_no_burn.py",
+      "verify_v189_item6_segment_alignment.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v187/llm-stats/by-key",
+    "file": "src_python/routers/llm.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "attribute_multi_factor.py",
+      "budget_status.py",
+      "doctor.py",
+      "gate_replay_guard.py",
+      "judge_worker.py",
+      "key_health_probe.py",
+      "llm_budget.py",
+      "llm_quota_sentinel.py",
+      "model_probe.py",
+      "realtime_filter.py",
+      "report_llm_degrade.py",
+      "review_agent.py",
+      "test_budget_gate.py",
+      "verify_no_burn.py",
+      "verify_v189_item6_segment_alignment.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v187/llm-stats/by-call-site",
+    "file": "src_python/routers/llm.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "attribute_multi_factor.py",
+      "budget_status.py",
+      "doctor.py",
+      "gate_replay_guard.py",
+      "judge_worker.py",
+      "key_health_probe.py",
+      "llm_budget.py",
+      "llm_quota_sentinel.py",
+      "model_probe.py",
+      "realtime_filter.py",
+      "report_llm_degrade.py",
+      "review_agent.py",
+      "test_budget_gate.py",
+      "verify_no_burn.py",
+      "verify_v189_item6_segment_alignment.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v187/llm-stats/timeline",
+    "file": "src_python/routers/llm.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "attribute_multi_factor.py",
+      "budget_status.py",
+      "doctor.py",
+      "gate_replay_guard.py",
+      "judge_worker.py",
+      "key_health_probe.py",
+      "llm_budget.py",
+      "llm_quota_sentinel.py",
+      "model_probe.py",
+      "realtime_filter.py",
+      "report_llm_degrade.py",
+      "review_agent.py",
+      "test_budget_gate.py",
+      "verify_no_burn.py",
+      "verify_v189_item6_segment_alignment.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v187/llm-stats/summary",
+    "file": "src_python/routers/llm.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "attribute_multi_factor.py",
+      "budget_status.py",
+      "doctor.py",
+      "gate_replay_guard.py",
+      "judge_worker.py",
+      "key_health_probe.py",
+      "llm_budget.py",
+      "llm_quota_sentinel.py",
+      "model_probe.py",
+      "realtime_filter.py",
+      "report_llm_degrade.py",
+      "review_agent.py",
+      "test_budget_gate.py",
+      "verify_no_burn.py",
+      "verify_v189_item6_segment_alignment.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/indicators",
+    "file": "src_python/routers/indicators.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/indicators/run",
+    "file": "src_python/routers/indicators.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/macro/snapshot",
+    "file": "src_python/routers/indicators.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/uploads/{}",
+    "file": "src_python/routers/agent_chat.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/factory/report",
+    "file": "src_python/routers/factory.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/signal-weights",
+    "file": "src_python/routers/signal_weights.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "POST",
+    "path": "/api/signal-weights/recompute",
+    "file": "src_python/routers/signal_weights.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/signal-weights/{}",
+    "file": "src_python/routers/signal_weights.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/abnormal/backfill",
+    "file": "src_python/routers/abnormal.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "bridge_panels.py",
+      "bridge_server.py",
+      "indicator_rules.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/abnormal/feedback-stats",
+    "file": "src_python/routers/abnormal.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/swing-writeback",
+    "file": "src_python/routers/abnormal.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "bridge_panels.py",
+      "bridge_server.py",
+      "indicator_rules.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v188/admin/daily-archive",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v188/admin/db-stats",
+    "file": "src_python/routers/ops.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/backtest/active_run",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v189/backtest/archive",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v189/backtest/cleanup",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v189/journal/record",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v189/journal/rollup",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/journal/{}",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/journal",
+    "file": "src_python/routers/ops.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/calendar/events-for-asset",
+    "file": "src_python/routers/calendar.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v275/calendar/impact-by-asset",
+    "file": "src_python/routers/calendar.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "macro_calendar_ff.py",
+      "missed_signal_reflection.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/dashboard/overview",
+    "file": "src_python/routers/overview.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/status",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/spec/{}",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/results",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/alerts",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/account",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/positions",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trident2/orders",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/trident2/nl-amend",
+    "file": "src_python/routers/trident2.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/analysis/yield",
+    "file": "src_python/routers/analysis_yield.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/analysis/yield/retry-list",
+    "file": "src_python/routers/analysis_yield.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/id-reconcile/migrate",
+    "file": "src_python/routers/admin.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/id-reconcile/backfill",
+    "file": "src_python/routers/admin.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/id-reconcile/check",
+    "file": "src_python/routers/admin.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/id-reconcile/resolve",
+    "file": "src_python/routers/admin.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/id-reconcile/alerts",
+    "file": "src_python/routers/admin.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/data-health/summary",
+    "file": "src_python/routers/data_health.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "multi_source_fetcher.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/data-health/recent",
+    "file": "src_python/routers/data_health.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "multi_source_fetcher.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/data-health/record",
+    "file": "src_python/routers/data_health.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "multi_source_fetcher.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/coinglass/lsr/latest",
+    "file": "src_python/routers/coinglass.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/coinglass/lsr/history",
+    "file": "src_python/routers/coinglass.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/coinglass/health",
+    "file": "src_python/routers/coinglass.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v189/coinglass/lsr/ranking",
+    "file": "src_python/routers/coinglass.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/obs/sources",
+    "file": "src_python/routers/obs.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "fd_guard.py",
+      "model_probe.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/obs/staleness",
+    "file": "src_python/routers/obs.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "fd_guard.py",
+      "model_probe.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/obs/llm",
+    "file": "src_python/routers/obs.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "fd_guard.py",
+      "model_probe.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reasoning/review/segment-history",
+    "file": "src_python/routers/reasoning.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reasoning/review/{}",
+    "file": "src_python/routers/reasoning.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reasoning/narrative/list",
+    "file": "src_python/routers/reasoning.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "reflection.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reasoning/narrative/{}",
+    "file": "src_python/routers/reasoning.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "reflection.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "POST",
+    "path": "/api/reasoning/narrative/{}/generate",
+    "file": "src_python/routers/reasoning.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "reflection.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/macro/history",
+    "file": "src_python/routers/macro.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/macro/calendar",
+    "file": "src_python/routers/macro.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/market/price-at",
+    "file": "src_python/routers/market_quotes.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/market/gate-reflection",
+    "file": "src_python/routers/market_quotes.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/kb/asset/{}",
+    "file": "src_python/routers/kb.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "abnormal.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/kb/dim/{}",
+    "file": "src_python/routers/kb.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "abnormal.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/kb/search",
+    "file": "src_python/routers/kb.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "abnormal.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/kb/stats",
+    "file": "src_python/routers/kb.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "abnormal.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/smart-money/fills",
+    "file": "src_python/routers/smart_money.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/smart-money/state",
+    "file": "src_python/routers/smart_money.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/nlq",
+    "file": "src_python/routers/views.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/memory/search",
+    "file": "src_python/routers/views.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/knowledge-gaps",
+    "file": "src_python/routers/beliefs.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/external/fetch-and-ingest",
+    "file": "src_python/routers/beliefs.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "POST",
+    "path": "/api/external/ingest",
+    "file": "src_python/routers/beliefs.py",
+    "category": "truly_candidate",
+    "module_reusers": [],
+    "reuse_class": "server_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/external/indicators",
+    "file": "src_python/routers/beliefs.py",
+    "category": "frontend_only"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "file": "src_python/routers/meta.py",
+    "category": "frontend+internal"
+  },
+  {
+    "method": "GET",
+    "path": "/metrics",
+    "file": "src_python/routers/meta.py",
+    "category": "internal_only"
+  },
+  {
+    "method": "GET",
+    "path": "/api/timeseries/ticks/{}",
+    "file": "src_python/routers/timeseries.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "ingest.py",
+      "market_snapshot.py",
+      "news.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/timeseries/ohlc/{}",
+    "file": "src_python/routers/timeseries.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "ingest.py",
+      "market_snapshot.py",
+      "news.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/timeseries/factors",
+    "file": "src_python/routers/timeseries.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "ingest.py",
+      "market_snapshot.py",
+      "news.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/timeseries/news",
+    "file": "src_python/routers/timeseries.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "ingest.py",
+      "market_snapshot.py",
+      "news.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  },
+  {
+    "method": "GET",
+    "path": "/api/timeseries/winrate",
+    "file": "src_python/routers/timeseries.py",
+    "category": "truly_candidate",
+    "module_reusers": [
+      "ai_worker.py",
+      "ingest.py",
+      "market_snapshot.py",
+      "news.py",
+      "webhook.py"
+    ],
+    "reuse_class": "reused_by_worker"
+  }
+]

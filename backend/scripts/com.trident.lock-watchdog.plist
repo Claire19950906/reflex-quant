@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PYTHONIOENCODING</key>
+		<string>utf-8</string>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+	</dict>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.trident.lock-watchdog</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Library/Frameworks/Python.framework/Versions/3.14/bin/python3</string>
+		<string>/Users/claire/Desktop/金融1.0/backend/scripts/lock_watchdog.py</string>
+		<string>--interval</string>
+		<string>30</string>
+		<string>--threshold</string>
+		<string>3</string>
+		<string>--timeout</string>
+		<string>2</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/claire/.trident/log/lock_watchdog.err.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/claire/.trident/log/lock_watchdog.out.log</string>
+	<key>WorkingDirectory</key>
+	<string>/Users/claire/Desktop/金融1.0/backend</string>
+</dict>
+</plist>

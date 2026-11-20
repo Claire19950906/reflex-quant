@@ -1,0 +1,22 @@
+# Trident 新闻引擎（WebSocket 采集 + AI worker + 前向验证）
+# 部署路径假设为 /opt/trident，venv 在 /opt/trident/venv — 按需修改
+[Unit]
+Description=Trident Agent - News Engine (WS ingest + AI worker)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trident
+WorkingDirectory=/opt/trident/backend/src_python
+EnvironmentFile=/opt/trident/backend/.env
+# 启动前先建库/补列并补齐配置种子库（幂等：已有数据不覆盖）。
+# 这样 `systemctl start trident-engine` 一步到位，不必记得手跑 init_db.py；
+# 失败不阻断启动 —— engine.py 自身也会 migrate + 自动入库兜底。
+ExecStartPre=-/opt/trident/venv/bin/python /opt/trident/backend/init_db.py
+ExecStart=/opt/trident/venv/bin/python engine.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

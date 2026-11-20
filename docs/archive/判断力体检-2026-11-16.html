@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflex Quant · 判断力体检 2026-11-16</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315211F'/%3E%3Cpath d='M7 23 L16 9 L25 23' stroke='%23B4452F' stroke-width='2.4' fill='none'/%3E%3Cline x1='6' y1='26' x2='26' y2='26' stroke='%23EEF1EF' stroke-width='1' stroke-dasharray='3 3'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#EEF1EF;
+  --panel:#F7F8F5;
+  --ink:#15211F;
+  --muted:#5D6B67;
+  --faint:#8A9691;
+  --line:#CBD3CF;
+  --rust:#B4452F;
+  --teal:#2C655C;
+  --amber:#A9791F;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.75 "Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 44px 72px}
+@media (max-width:720px){.wrap{padding:32px 20px 56px}}
+
+/* ---------- 页眉 ---------- */
+.topline{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  font:500 12px/1.6 var(--mono);letter-spacing:.08em;color:var(--muted);
+  border-bottom:1px solid var(--ink);padding-bottom:10px;
+}
+h1{
+  font:900 clamp(38px,5.2vw,64px)/1.08 "Noto Serif SC","Songti SC",serif;
+  letter-spacing:-.01em;margin:34px 0 10px;
+}
+.lede{max-width:820px;font-size:17px;line-height:1.85;color:#2B3A36;margin:0}
+.lede b{font-weight:700;color:var(--ink);border-bottom:2px solid var(--rust);padding-bottom:1px}
+.meta{margin-top:18px;font:400 12.5px/1.7 var(--mono);color:var(--faint)}
+
+/* ---------- 裁决区 ---------- */
+.verdict{margin-top:44px;padding:30px 0 26px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+.verdict-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1.85fr);gap:36px;align-items:start}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start}
+@media (max-width:860px){.verdict-grid{grid-template-columns:1fr;gap:20px}}
+.big{font:900 clamp(62px,9vw,104px)/.95 "Noto Serif SC",serif;letter-spacing:-.03em;color:var(--rust);font-variant-numeric:tabular-nums}
+.big small{font:500 13px/1.5 var(--mono);color:var(--muted);display:block;letter-spacing:.06em;margin-top:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:1px solid var(--line)}
+@media (max-width:860px){.kpis{border-left:0;border-top:1px solid var(--line);padding-top:16px}}
+.kpi{padding:2px 18px 4px}
+.kpi+.kpi{border-left:1px solid var(--line)}
+.kpi .v{font:700 27px/1.15 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .t{font-size:12px;line-height:1.6;color:var(--muted);margin-top:6px}
+.kpi .v.rust{color:var(--rust)}
+.kpi .v.teal{color:var(--teal)}
+
+/* 标尺 */
+.ruler{margin-top:34px;padding-top:24px}
+.ruler-track{position:relative;height:2px;background:var(--ink);margin:0 30px}
+.tick{position:absolute;top:-4px;width:1px;height:10px;background:var(--line)}
+.tick-label{position:absolute;top:12px;transform:translateX(-50%);font:400 10.5px/1 var(--mono);color:var(--faint)}
+.base-line{position:absolute;top:-16px;bottom:-16px;left:50%;border-left:1px dashed var(--rust);opacity:.65}
+.base-tag{position:absolute;top:-36px;left:50%;transform:translateX(-50%);font:500 11px/1 var(--mono);color:var(--rust);white-space:nowrap}
+.marker{position:absolute;top:-14px;left:40.2%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid var(--rust)}
+.marker-tag{position:absolute;top:-38px;left:40.2%;transform:translateX(-50%);font:700 12px/1 var(--mono);color:var(--rust);white-space:nowrap}
+.ruler-note{margin:30px 0 0;font-size:13px;color:var(--muted)}
+
+/* ---------- 通用区块 ---------- */
+section{margin-top:64px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.sec-no{font:500 12px/1 var(--mono);color:var(--faint);letter-spacing:.1em;min-width:26px}
+.sec-head h2{font:700 clamp(21px,2.4vw,27px)/1.35 "Noto Serif SC",serif;margin:0;letter-spacing:.01em}
+.sec-head .hint{margin-left:auto;font-size:12px;color:var(--faint);text-align:right}
+p{margin:16px 0;max-width:860px}
+.note{font-size:13px;color:var(--muted);border-left:2px solid var(--line);padding-left:12px;margin:18px 0;max-width:860px}
+.fig-title{font:500 12px/1.6 var(--mono);color:var(--muted);margin:24px 0 0;letter-spacing:.04em}
+
+/* ---------- 横向条形图 ---------- */
+.hbars{margin-top:18px;border-top:1px solid var(--line)}
+.hrow{display:grid;grid-template-columns:236px minmax(0,1fr) 82px;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
+@media (max-width:720px){.hrow{grid-template-columns:130px minmax(0,1fr) 64px;gap:10px}}
+.hrow .lbl{font-size:12.5px;line-height:1.45;color:var(--ink)}
+.hrow .lbl small{display:block;font:400 10.5px/1.4 var(--mono);color:var(--faint)}
+.track{position:relative;height:18px;background:#E4E9E6;border:1px solid #D3DAD6}
+.track .fill{position:absolute;left:0;top:0;bottom:0;background:var(--rust)}
+.track .fill.teal{background:var(--teal)}
+.track .fill.gray{background:var(--gray,#8A9691)}
+.track .fill.muted{background:#7C8B86}
+.track .rand{position:absolute;left:50%;top:-5px;bottom:-5px;border-left:1px dashed var(--rust);opacity:.55}
+.hrow .v{text-align:right;font:700 13px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.hrow .v.rust{color:var(--rust)}
+.hrow .v.teal{color:var(--teal)}
+.hrow .v.gray{color:var(--faint)}
+
+/* ---------- 纵向柱图 ---------- */
+.vchart{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.plot{position:relative;height:224px;border-bottom:1px solid var(--ink);margin-right:8px}
+.gridline{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.6}
+.rand-line{position:absolute;left:0;right:0;border-top:1px dashed var(--rust);opacity:.6}
+.rand-line span{position:absolute;right:0;top:-18px;font:500 10.5px/1 var(--mono);color:var(--rust)}
+.vcols{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-around;padding:0 8px}
+.col{position:relative;width:56px;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.colbar{width:42px;background:var(--rust)}
+.colbar.teal{background:var(--teal)}
+.colval{position:absolute;left:50%;transform:translateX(-50%);font:700 11px/1 var(--mono);color:var(--ink);white-space:nowrap}
+.xlabels{display:flex;justify-content:space-around;padding:10px 8px 0;margin-right:8px}
+.xlabels span{width:56px;text-align:center;font:500 11.5px/1.4 var(--mono);color:var(--ink)}
+@media (max-width:720px){.colbar{width:32px}.col,.xlabels span{width:44px}}
+
+/* ---------- 堆叠构成条 ---------- */
+.stack{margin-top:26px}
+.stack-track{display:flex;height:34px;border:1px solid var(--line);background:#E4E9E6}
+.stack-seg{height:100%;position:relative}
+.stack-seg+.stack-seg{border-left:1px solid rgba(238,241,239,.7)}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;margin-top:14px}
+@media (max-width:720px){.legend{grid-template-columns:1fr}}
+.leg-row{display:grid;grid-template-columns:12px 1fr auto;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.leg-row .sw{width:10px;height:10px;background:var(--gray,#8A9691);transform:translateY(1px)}
+.leg-row .nm{color:var(--ink)}
+.leg-row .nm small{display:block;font-size:11px;color:var(--faint)}
+.leg-row .ct{font:500 12.5px/1 var(--mono);color:var(--muted);text-align:right;white-space:nowrap}
+
+/* ---------- 表格 ---------- */
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:22px;table-layout:fixed}
+th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 11.5px/1.5 var(--mono);letter-spacing:.05em;color:var(--muted)}
+td.n{font:500 13px/1.5 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.small{font-size:12.5px;color:var(--muted)}
+.col-name{width:27%}.col-v{width:12%}.col-n{width:11%}.col-ci{width:18%}.col-read{width:32%}
+.rust{color:var(--rust)}.teal{color:var(--teal)}.gray{color:var(--faint)}
+
+/* 轨迹 */
+.trace{margin-top:22px;border-top:1px solid var(--line)}
+.trace-row{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+@media (max-width:620px){.trace-row{grid-template-columns:1fr;gap:4px}}
+.trace-row .lab{color:var(--muted);font-family:var(--mono);font-size:12px}
+.trace-row .val{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.trace-row .val em{font-style:normal;color:var(--faint);padding:0 8px}
+.trace-row .val b{font-weight:700}
+.trace-row .val .down{color:var(--rust)}
+
+/* 机制链 */
+.chain{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-top:26px;border:1px solid var(--line)}
+@media (max-width:900px){.chain{grid-template-columns:1fr}}
+.chain-cell{padding:18px 16px 20px;border-right:1px solid var(--line);background:var(--panel)}
+.chain-cell:last-child{border-right:0}
+@media (max-width:900px){.chain-cell{border-right:0;border-bottom:1px solid var(--line)}}
+.chain-cell .idx{font:500 11px/1 var(--mono);color:var(--faint)}
+.chain-cell h4{font:700 14.5px/1.5 "Noto Sans SC",sans-serif;margin:10px 0 6px}
+.chain-cell p{font-size:12.5px;line-height:1.7;color:var(--muted);margin:0}
+.chain-cell .fig{font-family:var(--mono);font-weight:700;color:var(--ink);font-size:13px;display:block;margin-top:10px}
+.chain-cell .fixed{font:500 10.5px/1 var(--mono);color:var(--teal);margin-left:7px;white-space:nowrap}
+
+/* 能信 / 不能信 */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:24px;border-top:2px solid var(--ink)}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.split-col{padding:20px 24px 6px 0}
+.split-col+.split-col{border-left:1px solid var(--line);padding-left:24px;padding-right:0}
+@media (max-width:820px){.split-col+.split-col{border-left:0;border-top:1px solid var(--line);padding-left:0;margin-top:12px}}
+.split-col h3{font:700 15px/1.5 "Noto Sans SC",sans-serif;margin:0 0 10px}
+.split-col h3 .dot{display:inline-block;width:8px;height:8px;vertical-align:2px;margin-right:8px}
+.dot.teal{background:var(--teal)}.dot.rust{background:var(--rust)}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.item .d{color:var(--muted);font-size:12px}
+
+/* 步骤 */
+.steps{margin-top:26px;border-top:1px solid var(--ink)}
+.step{display:grid;grid-template-columns:52px 1fr 210px;gap:18px;align-items:start;padding:18px 0;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.step{grid-template-columns:36px 1fr;gap:12px}.step .target{grid-column:2}}
+.step .no{font:700 22px/1 var(--mono);color:var(--rust);font-variant-numeric:tabular-nums}
+.step h4{font:700 15.5px/1.5 "Noto Sans SC",sans-serif;margin:0 0 4px}
+.step p{font-size:13px;color:var(--muted);margin:0;max-width:none}
+.step .target{font:500 12px/1.6 var(--mono);color:var(--teal);text-align:right}
+@media (max-width:760px){.step .target{text-align:left}}
+
+/* 复测 */
+.retest{display:grid;grid-template-columns:1.05fr 1fr;margin-top:26px;border-top:2px solid var(--ink)}
+@media (max-width:820px){.retest{grid-template-columns:1fr}}
+.retest-col{padding:22px 26px 10px 0}
+.retest-col+.retest-col{border-left:1px solid var(--line);padding-left:26px;padding-right:0}
+@media (max-width:820px){.retest-col+.retest-col{border-left:0;border-top:1px solid var(--line);padding-left:0;margin-top:8px}}
+.retest-col h3{font:700 15px/1.5 "Noto Sans SC",sans-serif;margin:0 0 12px}
+.flow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.flow .n{font:700 54px/1 var(--mono);color:var(--rust);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.flow .to{font:400 20px/1 var(--mono);color:var(--faint)}
+.flow .n.ink{color:var(--ink)}
+.flow-note{font:500 11.5px/1.7 var(--mono);color:var(--muted);margin-top:8px}
+.rrow{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.rrow:last-child{border-bottom:0}
+.rrow .k{color:var(--muted)}
+.rrow .v{font-family:var(--mono);font-weight:700;color:var(--ink);white-space:nowrap}
+.rrow .v.rust{color:var(--rust)}
+.rrow .v.teal{color:var(--teal)}
+
+/* 页脚 */
+footer{margin-top:66px;border-top:2px solid var(--ink);padding-top:18px;font-size:12.5px;color:var(--muted)}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:30px;position:static;inset:auto;align-items:initial;justify-content:initial;padding:0}
+@media (max-width:820px){footer .cols{grid-template-columns:1fr}}
+footer h5{font:600 11.5px/1.5 var(--mono);letter-spacing:.06em;margin:0 0 8px;color:var(--ink)}
+footer p{margin:6px 0;font-size:12.5px;line-height:1.8;overflow-wrap:anywhere}
+.disclaimer{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);color:var(--faint);font-size:12px}
+
+@media print{
+  body{background:#fff}
+  .wrap{max-width:none;padding:0 16mm}
+  section{break-inside:avoid}
+  .plot{height:190px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= 页眉 ================= -->
+<div class="topline">
+  <span>REFLEX QUANT / 判断力体检</span>
+  <span>2026-11-16 · 数据截至 18:30 CST</span>
+</div>
+
+<h1>它到底会不会看市场</h1>
+<p class="lede">
+  把 <b>391 笔已结算的影子信号</b>、<b>1213 个事件日格</b>、<b>494 条当日决策</b> 放在一起看，
+  结论是同一句话：方向命中率在 31%–40%，低于抛硬币；线上 99% 的 HOLD 不是“看空”，
+  是判断在闸门之前就没发生。这份体检只回答一个问题——<b>哪些能力是真的，哪些是叙事</b>。
+</p>
+<p class="meta">口径：影子账本 / capability_scorecard 快照 / trident_event_bus.db / v399 决策构成复核</p>
+
+<!-- ================= 裁决 ================= -->
+<div class="verdict">
+  <div class="verdict-grid">
+    <div>
+      <div class="big">40.2%<small>影子账本方向命中 · n=391 · 95% CI [35.4, 45.1]</small></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="v rust">−9.8pp</div>
+        <div class="t">相对随机基线 50%；区间上界 45.1，仍未过线</div>
+      </div>
+      <div class="kpi">
+        <div class="v rust">89.5%</div>
+        <div class="t">决策中“降级兜底”的占比（442/494）</div>
+      </div>
+      <div class="kpi">
+        <div class="v teal">1 笔</div>
+        <div class="t">当日方向性决策 · 有效结算</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ruler" aria-hidden="true">
+    <div class="ruler-track">
+      <div class="base-line"></div>
+      <div class="base-tag">随机 50%</div>
+      <div class="marker"></div>
+      <div class="marker-tag">40.2</div>
+      <div class="tick" style="left:0"><div class="tick-label">0</div></div>
+      <div class="tick" style="left:10%"><div class="tick-label">10</div></div>
+      <div class="tick" style="left:20%"><div class="tick-label">20</div></div>
+      <div class="tick" style="left:30%"><div class="tick-label">30</div></div>
+      <div class="tick" style="left:40%"><div class="tick-label">40</div></div>
+      <div class="tick" style="left:50%"><div class="tick-label">50</div></div>
+      <div class="tick" style="left:60%"><div class="tick-label">60</div></div>
+      <div class="tick" style="left:70%"><div class="tick-label">70</div></div>
+      <div class="tick" style="left:80%"><div class="tick-label">80</div></div>
+      <div class="tick" style="left:90%"><div class="tick-label">90</div></div>
+      <div class="tick" style="left:100%"><div class="tick-label">100</div></div>
+    </div>
+    <p class="ruler-note">同一把尺子量所有口径：距离 50% 的左侧就是“判断在减分”。下面每张图都保留这条 50% 基准线。</p>
+  </div>
+</div>
+
+<!-- ================= 01 口径对照 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">01</span>
+    <h2>七个口径，没有一个稳定站在 50% 右侧</h2>
+    <span class="hint">方向命中率 · 点估计与 95% 区间</span>
+  </div>
+
+  <p>把“事件方向”“开仓方向”“独立信号”“因果链”分开算，是为了避免一个口径的偏差被另一个口径掩盖。结果很一致：凡是样本量足够下结论的，点估计都在 50% 以下或恰好等于 50%。唯一超过 60% 的因果链口径，是被双向链虚抬出来的。</p>
+
+  <div class="hbars" role="img" aria-label="七个方向命中口径的横向条形图，虚线为 50% 随机基准">
+    <div class="hrow"><div class="lbl">因果链 · 宽口径<small>含 BOTH · n=4837</small></div><div class="track"><div class="fill gray" style="width:77.1%"></div><div class="rand"></div></div><div class="v gray">77.1%</div></div>
+    <div class="hrow"><div class="lbl">真实开仓 S2<small>已结算 · n=51</small></div><div class="track"><div class="fill teal" style="width:52.9%"></div><div class="rand"></div></div><div class="v teal">52.9%</div></div>
+    <div class="hrow"><div class="lbl">事件方向 S1<small>独立日格 · n=1213</small></div><div class="track"><div class="fill muted" style="width:50.2%"></div><div class="rand"></div></div><div class="v">50.2%</div></div>
+    <div class="hrow"><div class="lbl">因果链 · 真方向<small>剔除 BOTH · 旧纪元</small></div><div class="track"><div class="fill" style="width:47.8%"></div><div class="rand"></div></div><div class="v rust">47.8%</div></div>
+    <div class="hrow"><div class="lbl">影子账本 · 历史<small>已结算 · n=391</small></div><div class="track"><div class="fill" style="width:40.2%"></div><div class="rand"></div></div><div class="v rust">40.2%</div></div>
+    <div class="hrow"><div class="lbl">独立信号 S11<small>去重口径 · n=75</small></div><div class="track"><div class="fill" style="width:40%"></div><div class="rand"></div></div><div class="v rust">40.0%</div></div>
+    <div class="hrow"><div class="lbl">影子账本 · 当前<small>数据重置后 · n=29</small></div><div class="track"><div class="fill" style="width:31%"></div><div class="rand"></div></div><div class="v rust">31.0%</div></div>
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="col-name"><col class="col-v"><col class="col-n"><col class="col-ci"><col class="col-read">
+    </colgroup>
+    <thead>
+      <tr><th>口径</th><th>命中率</th><th>样本</th><th>95% 区间</th><th>怎么读</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>影子账本（历史）</td><td class="n rust">40.2%</td><td class="n">391</td><td class="n">[35.4, 45.1]</td><td class="small">被闸门拦下的单也结算，最接近“真实判断”</td></tr>
+      <tr><td>影子账本（当前库）</td><td class="n rust">31.0%</td><td class="n">29</td><td class="n">[17.3, 49.2]</td><td class="small">数据重置后样本，区间很宽，方向与历史一致</td></tr>
+      <tr><td>独立信号 S11</td><td class="n rust">40.0%</td><td class="n">75</td><td class="n">[29.7, 51.3]</td><td class="small">按（品种 / 方向 / 小时）去重，消掉重复计数</td></tr>
+      <tr><td>事件方向 S1</td><td class="n">50.2%</td><td class="n">1213</td><td class="n">[47.4, 53.0]</td><td class="small">等于随机；方向由固定偏好表给出；11-16 重置后仅 3 条、0 命中</td></tr>
+      <tr><td>真实开仓 S2</td><td class="n teal">52.9%</td><td class="n">51</td><td class="n">[39.5, 65.9]</td><td class="small">样本不足 100，区间跨过 50，不能当作能力证据</td></tr>
+      <tr><td>因果链 · 真方向</td><td class="n rust">47.8%</td><td class="n">旧纪元</td><td class="n">—</td><td class="small">剔除 BOTH 双向链后的真实方向口径</td></tr>
+      <tr><td>因果链 · 宽口径</td><td class="n gray">77.1%</td><td class="n">4837</td><td class="n">—</td><td class="small">含 BOTH：只验幅度不验方向，是虚高部分</td></tr>
+    </tbody>
+  </table>
+
+  <div class="trace">
+    <div class="trace-row">
+      <div class="lab">S1 事件方向</div>
+      <div class="val">50.2 <em>→</em> 46.7 <em>→</em> <span class="down">0.0</span> <em>（n 1213 → 30 → 3，重置后样本归零）</em></div>
+    </div>
+    <div class="trace-row">
+      <div class="lab">S2 真实开仓</div>
+      <div class="val"><b>56.3</b> <em>→</em> 55.1 <em>→</em> <span class="down">52.9</span> <em>（n 48 → 49 → 51；11-16 重置后 n=0）</em></div>
+    </div>
+    <div class="trace-row">
+      <div class="lab">S11 独立信号</div>
+      <div class="val">56.3 <em>→</em> 41.1 <em>→</em> <span class="down">40.0</span> <em>（56.3 是分母未修的虚高值；修正后 n=73，去重后 n=75）</em></div>
+    </div>
+  </div>
+  <p class="note">没有一条指标是靠优化本身变好的：S11 的 56.3 是分母虚高，修正后 41.1；S1 的 50.2 在分母缩到 30 后变成 46.7；S2 的 56.3 在 n 从 48 涨到 51 后变成 52.9。数字变小的方向，恰好是把假精度挤出去的方向。</p>
+</section>
+
+<!-- ================= 02 反向置信度 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">02</span>
+    <h2>置信度不是质量，是随机性的另一种写法</h2>
+    <span class="hint">门槛扫描 · 方向确认</span>
+  </div>
+
+  <p>如果置信度真的在筛质量，门槛越高命中率应该越高。实测正好相反：门槛 0 → 39.8%，门槛 20 → 37.5%，门槛 30 → 16.7%。它筛掉的不是坏信号，是样本量。</p>
+
+  <div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
+    <div>
+      <div class="fig-title">置信度门槛 → 方向命中率</div>
+      <div class="vchart" role="img" aria-label="置信度门槛越高，方向命中率越低">
+        <div class="plot">
+          <div class="gridline" style="bottom:25%"></div>
+          <div class="gridline" style="bottom:50%"></div>
+          <div class="gridline" style="bottom:75%"></div>
+          <div class="rand-line" style="bottom:50%"><span>随机 50%</span></div>
+          <div class="vcols">
+            <div class="col"><span class="colval" style="bottom:calc(39.8% + 6px)">39.8%</span><div class="colbar" style="height:39.8%"></div></div>
+            <div class="col"><span class="colval" style="bottom:calc(37.5% + 6px)">37.5%</span><div class="colbar" style="height:37.5%"></div></div>
+            <div class="col"><span class="colval" style="bottom:calc(16.7% + 6px)">16.7%</span><div class="colbar" style="height:16.7%;background:#7A2E21"></div></div>
+          </div>
+        </div>
+        <div class="xlabels"><span>门槛 0</span><span>门槛 20</span><span>门槛 30</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="fig-title">决策前 30 分钟市场是否已同向</div>
+      <div class="hbars" style="margin-top:14px" role="img" aria-label="已同向命中 48.7%，未同向 31.4%">
+        <div class="hrow" style="grid-template-columns:150px minmax(0,1fr) 62px"><div class="lbl">已同向<small>n=144</small></div><div class="track"><div class="fill teal" style="width:48.7%"></div><div class="rand"></div></div><div class="v teal">48.7%</div></div>
+        <div class="hrow" style="grid-template-columns:150px minmax(0,1fr) 62px"><div class="lbl">未同向<small>n=185</small></div><div class="track"><div class="fill" style="width:31.4%"></div><div class="rand"></div></div><div class="v rust">31.4%</div></div>
+      </div>
+      <p class="note" style="margin-top:22px">增量约 17 个百分点，但区间上界 56.7，仍只到“接近随机”。</p>
+    </div>
+  </div>
+
+  <p>唯一被验证有效的增量，是“等市场先动”：决策前 30 分钟没同向动时命中 31.4% [25.1, 38.4]（n=185），已同向动时 48.7% [40.6, 56.7]（n=144）。当前影子账本复现了同一方向：未确认 26.1%，已确认 50.0%。但这只是把“明显在减分”拉回“接近随机”，还不是 edge。</p>
+  <p class="note">六维权重同样只有两维在工作：impact ρ=0.309、source ρ=−0.100 有效；consensus / reaction / regime / time 在决策时点几乎没有方差。</p>
+</section>
+
+<!-- ================= 03 品种与方向 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">03</span>
+    <h2>只有 BTC 勉强及格，且系统性押多</h2>
+    <span class="hint">影子账本分层 · n≈数十至百余</span>
+  </div>
+
+  <p>按品种拆开，差距不是随机的：XAU 36.6%、WTI 36.7%、ETH 40.7%、BTC 54.8%。按方向拆，BUY 占样本 63%，命中只有 38.3%；SELL 命中 43.4%。两头都不到 50%，说明问题不是“看错方向”，而是“先有偏多结论，再找理由”。</p>
+
+  <div class="vchart" role="img" aria-label="四个品种的方向命中率，BTC 为 54.8%，其余低于 50%">
+    <div class="plot">
+      <div class="gridline" style="bottom:25%"></div>
+      <div class="gridline" style="bottom:50%"></div>
+      <div class="gridline" style="bottom:75%"></div>
+      <div class="rand-line" style="bottom:50%"><span>随机 50%</span></div>
+      <div class="vcols">
+        <div class="col"><span class="colval" style="bottom:calc(54.8% + 6px)">54.8%</span><div class="colbar teal" style="height:54.8%"></div></div>
+        <div class="col"><span class="colval" style="bottom:calc(40.7% + 6px)">40.7%</span><div class="colbar" style="height:40.7%"></div></div>
+        <div class="col"><span class="colval" style="bottom:calc(36.7% + 6px)">36.7%</span><div class="colbar" style="height:36.7%"></div></div>
+        <div class="col"><span class="colval" style="bottom:calc(36.6% + 6px)">36.6%</span><div class="colbar" style="height:36.6%"></div></div>
+      </div>
+    </div>
+    <div class="xlabels"><span>BTC</span><span>ETH</span><span>WTI</span><span>XAU</span></div>
+  </div>
+
+  <table>
+    <colgroup><col style="width:22%"><col style="width:18%"><col style="width:18%"><col style="width:42%"></colgroup>
+    <thead><tr><th>分层</th><th>样本占比</th><th>方向命中</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>BUY</td><td class="n">63%</td><td class="n rust">38.3%</td><td class="small">押多为主，且明显低于随机</td></tr>
+      <tr><td>SELL</td><td class="n">37%</td><td class="n rust">43.4%</td><td class="small">相对好一点，但仍未过线</td></tr>
+      <tr><td>BTC</td><td class="n">—</td><td class="n teal">54.8%</td><td class="small">唯一高于 50% 的品种，可单独保留观察</td></tr>
+      <tr><td>XAU / WTI</td><td class="n">—</td><td class="n rust">36.6 / 36.7%</td><td class="small">方向单建议先停，保留事件雷达</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================= 04 线上现状 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">04</span>
+    <h2>89.5% 的决策是降级兜底，不是判断</h2>
+    <span class="hint">2026-11-16 当日 · v399 复核</span>
+  </div>
+
+  <p>99.4% HOLD 经常被误读成“模型保守”。拆开看，55.3% 是标的不可交易（A 股个股公告走到主分析），14.8% 是 LLM 空输出，12.8% 只有摘要，6.7% 是服务端模板；非降级的只有 52 条：真 HOLD 49 条、方向性 3 条（BUY 2 / SELL 1），有效结算 1 笔。</p>
+
+  <div class="stack" role="img" aria-label="当日 494 条决策的构成：标的不可交易 55.3%，空输出 14.8%，只有摘要 12.8%，服务端兜底 6.7%，真 HOLD 9.9%，方向性 0.6%">
+    <div class="stack-track">
+      <div class="stack-seg" style="width:55.26%;background:#8A9691" title="标的不可交易 273 条"></div>
+      <div class="stack-seg" style="width:14.78%;background:#76857F" title="LLM 空输出 73 条"></div>
+      <div class="stack-seg" style="width:12.75%;background:#5F736D" title="只有摘要 63 条"></div>
+      <div class="stack-seg" style="width:6.68%;background:#A9791F" title="服务端兜底 33 条"></div>
+      <div class="stack-seg" style="width:9.92%;background:#B4452F" title="真 HOLD 49 条"></div>
+      <div class="stack-seg" style="width:0.61%;background:#15211F" title="方向性 3 条"></div>
+    </div>
+    <div class="legend">
+      <div class="leg-row"><span class="sw" style="background:#8A9691"></span><span class="nm">标的不可交易<small>target_none，A 股个股公告为主</small></span><span class="ct">273 条 · 55.3%</span></div>
+      <div class="leg-row"><span class="sw" style="background:#76857F"></span><span class="nm">LLM 空输出<small>截断 / 纯空响应</small></span><span class="ct">73 条 · 14.8%</span></div>
+      <div class="leg-row"><span class="sw" style="background:#5F736D"></span><span class="nm">只有摘要<small>未形成八段推演</small></span><span class="ct">63 条 · 12.8%</span></div>
+      <div class="leg-row"><span class="sw" style="background:#A9791F"></span><span class="nm">服务端兜底<small>模板拼出的方向</small></span><span class="ct">33 条 · 6.7%</span></div>
+      <div class="leg-row"><span class="sw" style="background:#B4452F"></span><span class="nm">真 HOLD<small>非降级，未形成方向</small></span><span class="ct">49 条 · 9.9%</span></div>
+      <div class="leg-row" style="border-bottom:none"><span class="sw" style="background:#15211F"></span><span class="nm">方向性决策<small>BUY 2 / SELL 1，已结算 1 笔</small></span><span class="ct">3 条 · 0.6%</span></div>
+    </div>
+  </div>
+
+  <p>这也解释了为什么“调阈值”没有用：判断根本没发生，闸门只是在决定要不要把兜底结论变成仓位。更糟的是反向激励——reasoning 超过 800 字会被“过度分析惩罚”扣到 ×0.86，全库唯一一条真正有方向的 BTC SELL 因此被压到 17.9，卡在 20 分闸门下。</p>
+</section>
+
+<!-- ================= 05 机制 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">05</span>
+    <h2>判断力是在哪一步丢掉的</h2>
+    <span class="hint">从新闻进入到下单的五段链</span>
+  </div>
+
+  <div class="chain">
+    <div class="chain-cell">
+      <div class="idx">01</div>
+      <h4>新闻池错配</h4>
+      <p>55.3% 的决策是 target_none；其中 91% 来自 A 股个股公告。它们本来就不该进入主分析。</p>
+      <span class="fig">273 / 494 <b class="fixed">v396 预路由已修</b></span>
+    </div>
+    <div class="chain-cell">
+      <div class="idx">02</div>
+      <h4>结构化失败</h4>
+      <p>叙述字段为空触发 schema 拒绝：asset_nature 104 次、factor_ranking 103 次、reasoning 100 次。</p>
+      <span class="fig">307 次报错 <b class="fixed">已移出 required</b></span>
+    </div>
+    <div class="chain-cell">
+      <div class="idx">03</div>
+      <h4>降级成兜底</h4>
+      <p>空输出 / 截断 / 只有摘要，最终都被写成模板 HOLD，并留下 analysis_degraded=1。</p>
+      <span class="fig">降级率 89.5%</span>
+    </div>
+    <div class="chain-cell">
+      <div class="idx">04</div>
+      <h4>闸门只看数值</h4>
+      <p>只校验 confidence ≥ 20，不校验这条结论是不是真推演出来的，降级路径也能产出方向。</p>
+      <span class="fig">3 笔成交 / 2 笔来自降级 <b class="fixed">R11 已拦</b></span>
+    </div>
+    <div class="chain-cell">
+      <div class="idx">05</div>
+      <h4>结果被误读</h4>
+      <p>HOLD 被当成“看空”，实际是“没判断”；于是继续调阈值，样本反而更少。</p>
+      <span class="fig">有效样本 1 笔</span>
+    </div>
+  </div>
+
+  <p>判断链本身也不是逐条推理：事件 → 方向主要靠 event_type × asset 的固定偏好表（S1 的口径注释写明“无逐条判断能力”）。当输入是查表、输出是兜底时，中间那层“判断”实际上不存在。</p>
+</section>
+
+<!-- ================= 06 能信 / 不能信 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">06</span>
+    <h2>这份系统真正值钱的地方，不在预测</h2>
+    <span class="hint">按证据强度分层</span>
+  </div>
+
+  <div class="split">
+    <div class="split-col">
+      <h3><span class="dot teal"></span>可以信</h3>
+      <div class="item"><div>事件雷达与去噪<div class="d">双源采集 + 两层过滤，能把不可交易项识别出来</div></div><div class="n">273 条 NONE 判定正确</div></div>
+      <div class="item"><div>行情归因<div class="d">事后解释与因果对齐，S6 事前因果占比 100%</div></div><div class="n">n=250</div></div>
+      <div class="item"><div>错误编码与复盘<div class="d">E001–E027 七层反思，能把坏交易归到具体层</div></div><div class="n">反思维度 566 条</div></div>
+      <div class="item"><div>异动覆盖<div class="d">S7 异动被归因覆盖率 52.1%</div></div><div class="n">n=493</div></div>
+    </div>
+    <div class="split-col">
+      <h3><span class="dot rust"></span>不能信</h3>
+      <div class="item"><div>方向预测<div class="d">影子账本 40.2%，独立信号 40.0%，均低于随机</div></div><div class="n rust">−9.8pp</div></div>
+      <div class="item"><div>幅度预测<div class="d">权重判别力 ρ≈0.2，只解释约 4% 方差</div></div><div class="n rust">4%</div></div>
+      <div class="item"><div>择时<div class="d">固定 2h / 4h 窗口；fast_rise 里 68% 其实是匀速 drift</div></div><div class="n rust">无时点 edge</div></div>
+      <div class="item"><div>自评置信度<div class="d">门槛越高命中越低；20–30 档 0/2</div></div><div class="n rust">反向</div></div>
+    </div>
+  </div>
+
+  <p>一句话定位：它是一个<b>会记账、会认错的事件雷达</b>，不是一个能下注的预测器。把前者当后者用，就是当前所有“不准”的根源。</p>
+</section>
+
+<!-- ================= 07 下一步 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">07</span>
+    <h2>下一步不是调得更准，是先让判断真的发生</h2>
+    <span class="hint">按优先级排序</span>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="no">01</div>
+      <div><h4>先攒有效样本，别动阈值</h4><p>门槛 0 / 20 / 30 对应 39.8% / 37.5% / 16.7%，每收紧一档都在删证据。开仓闸门 R11 已生效（回归全绿），降级方向已挡在影子账本外（结算样本 29→9）；接下来连跑 2–4 周。</p></div>
+      <div class="target">目标：有效结算 ≥ 60 笔</div>
+    </div>
+    <div class="step">
+      <div class="no">02</div>
+      <div><h4>把“方向确认”做成硬闸</h4><p>决策前 30 分钟未同向 31.4%，已同向 48.7%。按品种分别启用，不要全局硬上；确认动作本身要留痕。</p></div>
+      <div class="target">目标：+17pp，先追平随机</div>
+    </div>
+    <div class="step">
+      <div class="no">03</div>
+      <div><h4>品种分层，允许停单</h4><p>BTC 54.8% 单独跑；XAU / WTI 36.6% / 36.7%，先停方向单，只保留事件雷达与归因。</p></div>
+      <div class="target">目标：砍掉两个负期望品种</div>
+    </div>
+    <div class="step">
+      <div class="no">04</div>
+      <div><h4>用校准替代自评信心</h4><p>把 confidence 从“感觉”换成可验证的概率：Brier score + 校准曲线，按品种、按事件类型分别校准。</p></div>
+      <div class="target">目标：Brier ≤ 0.25 且单调</div>
+    </div>
+  </div>
+
+  <p class="note">顺序不能反：没有有效样本，校准曲线画不出来；没有校准，阈值仍然是拍脑袋。当前的“99.4% HOLD”不是保守，是这套循环还没启动。</p>
+</section>
+
+<!-- ================= 08 修完复测 ================= -->
+<section>
+  <div class="sec-head">
+    <span class="sec-no">08</span>
+    <h2>修完再测：账本干净了，证据也没了</h2>
+    <span class="hint">复测 2026-11-16 20:40</span>
+  </div>
+
+  <div class="retest">
+    <div class="retest-col">
+      <h3>影子账本：29 → 9</h3>
+      <div class="flow"><span class="n">29</span><span class="to">→</span><span class="n ink">9</span></div>
+      <p class="flow-note">剔除 20 笔 analysis_degraded=1 的方向结论：这些方向是模板拼的，不是推演出来的。</p>
+      <div class="rrow"><span class="k">已结算样本</span><span class="v">29 → 9</span></div>
+      <div class="rrow"><span class="k">方向命中率</span><span class="v">31.0% → 33.3%</span></div>
+      <div class="rrow"><span class="k">95% 区间</span><span class="v">[17.3, 49.2] → [12.1, 64.6]</span></div>
+      <div class="rrow"><span class="k">距离 60 笔门槛</span><span class="v rust">还差 51 笔</span></div>
+    </div>
+    <div class="retest-col">
+      <h3>这轮修掉的是口径，不是判断</h3>
+      <div class="rrow"><span class="k">预路由：非池市场代码</span><span class="v teal">已挡（新增 6 条回归）</span></div>
+      <div class="rrow"><span class="k">影子账本：降级方向</span><span class="v teal">已剔除</span></div>
+      <div class="rrow"><span class="k">建仓闸门 R11</span><span class="v teal">已生效（回归全绿）</span></div>
+      <div class="rrow"><span class="k">降级率（历史 89.5%）</span><span class="v rust">待新样本验证</span></div>
+      <div class="rrow"><span class="k">方向能力（n=9）</span><span class="v rust">无法判定</span></div>
+      <div class="rrow"><span class="k">事件方向 S1 / 开仓 S2</span><span class="v rust">n=5 / n=0</span></div>
+    </div>
+  </div>
+
+  <p class="note">能修的代码项已经修完，但“修完”不等于“变准”：过去 40.2% 里有相当一部分是模板方向，剔除后连可比样本都不够。要让判断力重新可测，只剩一个办法——不动阈值，连跑 2–4 周，把有效结算做到 60 笔。</p>
+</section>
+
+<!-- ================= 页脚 ================= -->
+<footer>
+  <div class="cols">
+    <div>
+      <h5>口径与来源</h5>
+      <p>方向命中率：shadow_ledger（已结算，hit 字段）；S1/S2/S3/S11：capability_scorecard 快照（runtime/capability_scorecard/history.jsonl，2026-11-09 至 11-16）；当日构成：trident_event_bus.db 与 docs/v399-诚实口径修正-2026-11-16.md（442/494）复核；置信度扫描与品种分层来自影子账本分层统计。</p>
+      <p>区间为 Wilson 95% 置信区间，按各口径实际命中数与样本量重算；S3 宽口径不含区间，因其分母含 BOTH 双向链，不作为方向能力证据。</p>
+    </div>
+    <div>
+      <h5>样本警告</h5>
+      <p>当前库于 11-16 重置：29 笔已结算里有 20 笔方向来自降级路径，剔除后只剩 9 笔（3 命中，33.3%，CI [12.1, 64.6]）。这个样本量不支持任何能力结论；历史 391 笔与 1213 个日格是主要证据。</p>
+      <p>“因果链真方向 47.8%”来自旧纪元 5096 条链的复核记录，样本构成与当前不同，仅作对照。</p>
+    </div>
+  </div>
+  <p class="disclaimer">本报告为系统内部能力评估，不构成任何交易建议。所有数字可在上述文件与数据库中追溯；未标注来源的表述均为基于这些数据的推断。</p>
+</footer>
+
+</div>
+</body>
+</html>

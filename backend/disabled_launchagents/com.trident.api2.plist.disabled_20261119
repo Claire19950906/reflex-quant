@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.trident.api2</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_api.sh</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/claire/Desktop/金融1.0/backend</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>API_HOST</key><string>127.0.0.1</string>
+    <key>API_PORT</key><string>8000</string>
+    <key>PYTHONIOENCODING</key><string>utf-8</string>
+    <key>PYTHONUNBUFFERED</key><string>1</string>
+    <key>TRIDENT_BUSY_TIMEOUT_MS</key><string>30000</string>
+    <key>TRIDENT_NO_AUTO_SETUP</key><string>1</string>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key><string>/Users/claire/.trident/log/api.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/claire/.trident/log/api.err.log</string>
+</dict>
+</plist>

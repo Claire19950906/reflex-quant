@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Label: launchd 唯一标识，必须与文件名一致 -->
+    <key>Label</key>
+    <string>com.trident.macro-calibration</string>
+
+    <!-- v459: 每月 1 日 07:20 校准宏观驱动系数。
+         为什么月频：系数是慢变量的慢结论，日频只多耗 FRED 请求、不改结论；
+         但必须周期跑 —— tilt 静默失效时没人会主动去看它。 -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/Desktop/金融1.0/backend/cron/run_macro_calibration.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Day</key>
+        <integer>1</integer>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>20</integer>
+    </dict>
+
+    <!-- 桌面目录受 TCC 保护，后台进程不能拿它当 cwd（见 equity-fundamentals plist 注释）；
+         脚本内部自己 cd 到项目根，所以这里放系统目录即可。 -->
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/.trident</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+        <key>PYTHONIOENCODING</key>
+        <string>utf-8</string>
+        <key>TRIDENT_MACRO_CALIB_YEARS</key>
+        <string>5</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/claire/.trident/log/macro_calibration.launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/claire/.trident/log/macro_calibration.launchd.err.log</string>
+
+    <!-- 不在加载时立刻跑：加载通常发生在改代码当天，已经手动跑过一次 -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- 数据源抖动不重试：下个月再跑即可，避免把 FRED 请求打成重试风暴 -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

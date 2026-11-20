@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Trident 量化策略 — 投资人专属</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0e1a; color: #e5e7eb; font-family: -apple-system, system-ui, sans-serif; }
+    .gradient-border { background: linear-gradient(135deg, #1e3a8a 0%, #581c87 100%); padding: 1px; border-radius: 12px; }
+    .signal-buy { color: #10b981; } .signal-sell { color: #ef4444; } .signal-hold { color: #9ca3af; }
+    .watermark { position: fixed; right: 12px; bottom: 12px; z-index: 9999;
+                 font: 11px/1.3 ui-monospace, monospace; color: rgba(255,255,255,0.35);
+                 background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px;
+                 pointer-events: none; user-select: none; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="watermark" id="wm">trident-portal</div>
+
+  <!-- NDA 同意页 -->
+  <div id="nda-screen" class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-md w-full">
+      <div class="gradient-border">
+        <div class="bg-gray-900 p-8 rounded-[11px]">
+          <div class="text-3xl mb-2">🛡️</div>
+          <h1 class="text-xl font-semibold mb-3">Trident 量化策略</h1>
+          <p class="text-sm text-gray-400 mb-6">投资人专属 Demo · 访问即同意以下条款</p>
+          <ul class="text-xs text-gray-400 space-y-2 mb-6 leading-relaxed">
+            <li>· 不可截图 / 录屏 / 转发</li>
+            <li>· 不可透露任何细节给第三方</li>
+            <li>· 你的访问行为会被记录（含 IP / 时间戳 / 专属水印 ID）</li>
+            <li>· 每次访问内容都带你的专属水印</li>
+            <li>· 多次访问或非常规行为会触发风控</li>
+          </ul>
+          <input id="investor-input" type="text" placeholder="你的姓名 / 公司"
+                 class="w-full px-3 py-2 mb-3 bg-gray-800 border border-gray-700 rounded text-sm
+                        focus:outline-none focus:border-blue-500" />
+          <input id="code-input" type="text" placeholder="邀请码 (可选)"
+                 class="w-full px-3 py-2 mb-4 bg-gray-800 border border-gray-700 rounded text-sm
+                        focus:outline-none focus:border-blue-500" />
+          <button id="accept-btn" disabled
+                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700
+                         disabled:cursor-not-allowed rounded font-medium transition">
+            ✅ 我同意 NDA,继续
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主体 -->
+  <div id="main" class="hidden max-w-4xl mx-auto p-6 md:p-10">
+    <header class="mb-8">
+      <h1 class="text-2xl font-semibold mb-1">📊 Trident 量化策略</h1>
+      <p class="text-sm text-gray-400">
+        欢迎,<code id="welcome" class="text-blue-400">—</code>。
+        <span class="text-gray-500">水印 ID: <code id="wm-text" class="text-gray-500">—</code></span>
+      </p>
+    </header>
+
+    <div class="gradient-border mb-6">
+      <div class="bg-gray-900 p-6 rounded-[11px]">
+        <div class="flex gap-2">
+          <input id="symbol" type="text" value="BTCUSDT" placeholder="BTCUSDT"
+                 class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded
+                        font-mono focus:outline-none focus:border-blue-500" />
+          <button id="fetch-btn"
+                  class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded font-medium transition">
+            🔍 获取信号
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">支持:股票 / 加密货币 / 期货代码</p>
+      </div>
+    </div>
+
+    <div id="result" class="hidden gradient-border">
+      <div class="bg-gray-900 p-6 rounded-[11px]">
+        <div class="flex items-baseline justify-between mb-4">
+          <h2 id="r-symbol" class="text-xl font-mono">—</h2>
+          <span class="text-xs text-gray-500">延迟 <span id="r-latency">—</span> ms</span>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">信号</div>
+            <div id="r-signal" class="text-3xl font-bold">—</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">强度</div>
+            <div id="r-strength" class="text-2xl">—</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">置信度</div>
+            <div id="r-confidence" class="text-2xl">—</div>
+          </div>
+        </div>
+        <div id="r-reasons-wrap" class="hidden">
+          <div class="text-xs text-gray-500 mb-2">触发原因</div>
+          <ul id="r-reasons" class="text-sm space-y-1 list-disc list-inside text-gray-300"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="error" class="hidden p-4 bg-red-900/30 border border-red-700 rounded text-sm text-red-200"></div>
+
+    <footer class="mt-10 text-center text-xs text-gray-600">
+      Trident v300 · 本页所有访问受 v300 反爬虫体系保护
+    </footer>
+  </div>
+
+  <script>
+    const API_BASE = '';   // 同源
+    let investorId = '';
+    let watermark = '';
+
+    // ── NDA ──
+    const investorInput = document.getElementById('investor-input');
+    const acceptBtn = document.getElementById('accept-btn');
+    investorInput.addEventListener('input', () => {
+      acceptBtn.disabled = !investorInput.value.trim();
+    });
+    acceptBtn.addEventListener('click', async () => {
+      investorId = investorInput.value.trim();
+      try {
+        const r = await fetch(`${API_BASE}/api/security/watermark?investor_id=${encodeURIComponent(investorId)}`);
+        if (r.ok) {
+          const d = await r.json();
+          watermark = d.watermark || '';
+          document.getElementById('wm').textContent = `${investorId} · ${watermark.slice(0, 12)}`;
+          document.getElementById('wm-text').textContent = watermark.slice(0, 16);
+        }
+      } catch (e) {}
+      fetch(`${API_BASE}/api/security/entry`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({investor_id: investorId, ua: navigator.userAgent})
+      }).catch(() => {});
+      document.getElementById('nda-screen').classList.add('hidden');
+      document.getElementById('main').classList.remove('hidden');
+      document.getElementById('welcome').textContent = investorId;
+    });
+
+    // ── 拿信号 ──
+    document.getElementById('fetch-btn').addEventListener('click', async () => {
+      const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+      if (!symbol) return;
+      const btn = document.getElementById('fetch-btn');
+      const err = document.getElementById('error');
+      const result = document.getElementById('result');
+      err.classList.add('hidden');
+      result.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = '⏳ 计算中...';
+      try {
+        const r = await fetch(`${API_BASE}/api/signal/${symbol}`);
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.detail || d.error || `HTTP ${r.status}`);
+        }
+        const d = await r.json();
+        document.getElementById('r-symbol').textContent = d.symbol;
+        const sig = (d.signal || 'hold').toLowerCase();
+        const sigEl = document.getElementById('r-signal');
+        sigEl.textContent = sig.toUpperCase();
+        sigEl.className = 'text-3xl font-bold signal-' + sig;
+        document.getElementById('r-strength').textContent =
+          d.strength != null ? Math.round(d.strength * 100) + '%' : '—';
+        document.getElementById('r-confidence').textContent =
+          d.confidence != null ? Math.round(d.confidence * 100) + '%' : '—';
+        document.getElementById('r-latency').textContent = d.latency_ms || '—';
+        const reasonsWrap = document.getElementById('r-reasons-wrap');
+        const reasons = document.getElementById('r-reasons');
+        if (d.reasons && d.reasons.length) {
+          reasons.innerHTML = d.reasons.map(r => `<li>${r}</li>`).join('');
+          reasonsWrap.classList.remove('hidden');
+        } else {
+          reasonsWrap.classList.add('hidden');
+        }
+        result.classList.remove('hidden');
+      } catch (e) {
+        err.textContent = '❌ ' + e.message;
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 获取信号';
+      }
+    });
+
+    document.getElementById('symbol').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('fetch-btn').click();
+    });
+
+    // 反爬虫:禁用右键 + 拖拽 + 选中文本 + 复制保护
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('copy', e => {
+      e.preventDefault();
+      e.clipboardData.setData('text/plain',
+        '[受 NDA 保护] 该内容不可复制。访问 ID: ' + watermark);
+    });
+  </script>
+</body>
+</html>

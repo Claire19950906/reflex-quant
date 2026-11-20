@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- v453: 追加型表保留策略。默认 dry-run（RETENTION_APPLY=0），只写报告不删数据。 -->
+    <key>Label</key>
+    <string>com.trident.retention-prune</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/Desktop/金融1.0/backend/cron/run_retention_prune.sh</string>
+    </array>
+
+    <!-- 每天 05:20（避开 04:00 kg_review / 04:10 causal_expand / 04:30 kg_reconcile） -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>20</integer>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/Desktop/金融1.0/backend</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+        <key>RETENTION_APPLY</key>
+        <string>0</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/claire/Desktop/金融1.0/backend/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/claire/Desktop/金融1.0/backend/logs/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

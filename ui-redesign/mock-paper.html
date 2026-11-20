@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Trident · 模拟盘控制台 改版方案</title>
+<style>
+  :root{
+    --bg:#0d0e11;--panel:#16181c;--panel2:#1b1e23;--line:rgba(255,255,255,.08);
+    --fg:#e8eaee;--muted:#9aa2ad;--muted2:#6f7783;--pri:#5b8cff;
+    --long:#37c07f;--short:#e5534b;--hold:#e2a53d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1680px;height:1050px;overflow:hidden}
+  body{background:var(--bg);color:var(--fg);font-family:-apple-system,system-ui,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;line-height:1.45;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  .num{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .muted{color:var(--muted)}
+
+  header{height:60px;flex:0 0 60px;display:flex;align-items:center;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#131519,#0f1114)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .mark{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:rgba(91,140,255,.12);border:1px solid rgba(91,140,255,.32)}
+  .brand h1{font-size:17px;font-weight:700;letter-spacing:.02em}
+  .brand p{font-size:10px;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase}
+  .h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .model{height:34px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:12px}
+  .model .dot{width:6px;height:6px;border-radius:50%;background:var(--long);box-shadow:0 0 0 4px rgba(55,192,127,.12)}
+  .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;color:var(--muted)}
+
+  .markets{height:38px;flex:0 0 38px;display:flex;align-items:center;gap:8px;padding:0 24px;border-bottom:1px solid var(--line);background:#101216;font-size:11.5px}
+  .chip{display:flex;align-items:center;gap:7px;height:24px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02);white-space:nowrap}
+  .chip .d{width:6px;height:6px;border-radius:50%}
+  .up{color:var(--long)} .down{color:var(--short)}
+  .clock{margin-left:auto;color:var(--muted2);font-size:11px}
+
+  nav{height:46px;flex:0 0 46px;display:flex;align-items:center;gap:26px;padding:0 24px;border-bottom:1px solid var(--line);background:#101216}
+  nav a{color:var(--muted);text-decoration:none;font-size:13px;height:46px;display:flex;align-items:center;position:relative}
+  nav a.on{color:var(--fg);font-weight:600}
+  nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--pri);border-radius:2px}
+
+  main{flex:1;min-height:0;padding:16px 24px;display:grid;grid-template-columns:1fr 400px;gap:14px}
+  .col{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0}
+  .card-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .card-h h2{font-size:13px;font-weight:600}
+  .card-h .hint{font-size:11px;color:var(--muted2)}
+  .card-b{padding:14px 16px 16px;display:flex;flex-direction:column;gap:16px;min-height:0}
+
+  .strategy{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .select{height:34px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--panel2);font-size:12.5px;min-width:260px}
+  .select .c{margin-left:auto;color:var(--muted2)}
+  .pill{display:flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:11px;background:rgba(55,192,127,.12);color:#5ddc9b;border:1px solid rgba(55,192,127,.25)}
+  .pill i{width:5px;height:5px;border-radius:50%;background:var(--long)}
+  .spacer{margin-left:auto}
+  .btn{height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);font-size:12.5px;display:flex;align-items:center;gap:8px;cursor:default;white-space:nowrap}
+  .btn.primary{background:linear-gradient(180deg,#5b8cff,#4472e8);border-color:#5b8cff;font-weight:600;color:#fff;box-shadow:0 6px 18px rgba(91,140,255,.25)}
+  .btn.ghost{color:var(--muted);background:transparent}
+  .btn-sm{height:26px;padding:0 10px;font-size:11px;border-radius:6px}
+
+  .group{display:flex;flex-direction:column;gap:10px}
+  .group-h{display:flex;align-items:center;gap:10px}
+  .group-h .t{font-size:11px;letter-spacing:.14em;color:var(--muted2);text-transform:uppercase}
+  .group-h .line{flex:1;height:1px;background:var(--line)}
+  .group-h .act{font-size:11px;color:#a8c0ff}
+
+  .sources{display:flex;flex-wrap:wrap;gap:8px}
+  .src{display:flex;align-items:center;gap:7px;height:30px;padding:0 11px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);font-size:12px;white-space:nowrap;color:var(--muted)}
+  .src.on{color:var(--fg);border-color:rgba(91,140,255,.4);background:rgba(91,140,255,.1)}
+  .src.on .tick{color:#a8c0ff}
+  .src .tick{font-size:11px}
+  .src.off .tick{color:var(--muted2)}
+  .src.core::after{content:"核心";font-size:9.5px;color:#f0c479;border:1px solid rgba(226,165,61,.3);border-radius:3px;padding:0 4px;margin-left:2px}
+
+  .params{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .field label em{font-style:normal;color:var(--muted2);font-size:10.5px}
+  .input{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid var(--line-2);border-radius:7px;background:var(--panel2);font-size:12.5px}
+  .input .u{margin-left:auto;font-size:10.5px;color:var(--muted2)}
+  .track{position:relative;height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+  .track .rail{position:absolute;left:10px;right:10px;height:4px;border-radius:2px;background:rgba(255,255,255,.1)}
+  .track .fill{position:absolute;left:10px;height:4px;border-radius:2px;background:var(--pri);width:34%}
+  .track .knob{position:absolute;left:34%;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(91,140,255,.3);transform:translateX(-6px)}
+  .track .v{position:absolute;right:10px;font-size:11.5px;color:var(--muted)}
+  .toggle{width:42px;height:24px;border-radius:999px;background:rgba(55,192,127,.22);border:1px solid rgba(55,192,127,.4);position:relative}
+  .toggle::after{content:"";position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#5ddc9b}
+  .toggle.off{background:rgba(255,255,255,.08);border-color:var(--line-2)}
+  .toggle.off::after{right:auto;left:3px;background:var(--muted)}
+
+  .adv{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);border:1px dashed var(--line-2);border-radius:7px;padding:9px 12px}
+  .adv .c{margin-left:auto;color:var(--muted2)}
+
+  .stat{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 12px}
+  .stat .cell{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .stat .k{font-size:10.5px;letter-spacing:.08em;color:var(--muted2)}
+  .stat .v{font-size:19px;font-weight:600;margin-top:5px}
+  .stat .v small{font-size:10.5px;color:var(--muted2);font-weight:400;margin-left:4px}
+  .equity{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px}
+  .equity .top{display:flex;align-items:baseline;gap:8px}
+  .equity .big{font-size:27px;font-weight:650}
+  .equity .chg{font-size:11.5px;color:#5ddc9b}
+  .equity svg{width:100%;height:54px;margin-top:6px}
+
+  .log{display:flex;flex-direction:column;gap:0}
+  .log .row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:11.5px}
+  .log .row:last-child{border-bottom:0}
+  .log .t{color:var(--muted2);font-size:11px;width:44px;flex:0 0 44px}
+  .log .txt{color:var(--muted)}
+  .log .txt b{color:var(--fg);font-weight:600}
+
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:22px 0;color:var(--muted2)}
+  .empty .t{font-size:12.5px;color:var(--muted)}
+  .empty .btn{margin-top:4px}
+
+  .ptable{display:flex;flex-direction:column}
+  .phead,.prow{display:grid;grid-template-columns:150px 70px 1fr 1fr 1fr 1fr 90px;align-items:center;gap:8px}
+  .phead{height:38px;font-size:10.5px;letter-spacing:.06em;color:var(--muted2);border-bottom:1px solid var(--line)}
+  .prow{height:42px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.045)}
+  .prow:last-child{border-bottom:0}
+  .dir{display:inline-flex;width:38px;justify-content:center;padding:1px 0;border-radius:3px;font-size:10.5px;font-weight:600}
+  .dir.l{background:rgba(55,192,127,.14);color:#5ddc9b}
+  .dir.s{background:rgba(229,83,75,.14);color:#ff817a}
+  .up{color:var(--long)} .down{color:var(--short)}
+  .st{font-size:10.5px;justify-self:start;padding:1px 7px;border-radius:3px;border:1px solid var(--line)}
+  .st.open{color:#f0c479;border-color:rgba(226,165,61,.3);background:rgba(226,165,61,.08)}
+  .st.done{color:var(--muted2)}
+
+  footer{height:52px;flex:0 0 52px;display:flex;align-items:center;gap:10px;padding:0 24px;border-top:1px solid var(--line);background:#0f1114}
+  footer .note{font-size:11px;color:var(--muted2)}
+  footer .right{margin-left:auto;display:flex;gap:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3 22 21H2L12 3Z" fill="#5b8cff"/></svg></div>
+    <div><h1>Trident</h1><p>Quant Platform</p></div>
+  </div>
+  <div class="h-right">
+    <div class="model"><span class="dot"></span><span>MiniMax-M3</span><span style="color:var(--muted2)">▾</span></div>
+    <div class="icon-btn">◐</div>
+    <div class="icon-btn">⚙</div>
+  </div>
+</header>
+
+<div class="markets">
+  <div class="chip"><span class="d" style="background:var(--long)"></span><b>BTC</b><span class="num up">68,420.50</span><span class="num up" style="font-size:10.5px">+1.82%</span></div>
+  <div class="chip"><span class="d" style="background:var(--muted2)"></span><b>美股</b><span style="font-size:10.5px;color:var(--muted2)">休市 · 18:00 ET</span></div>
+  <div class="chip"><span class="d" style="background:var(--long)"></span><b>黄金</b><span class="num">2,684.2</span></div>
+  <div class="chip"><span class="d"></span><b>HYPE</b><span class="num">38.62</span></div>
+  <div class="clock num">2026-11-15 22:16:42 CST · PAPER 模式</div>
+</div>
+
+<nav>
+  <a href="#">实时信号台</a>
+  <a class="on" href="#">模拟盘</a>
+  <a href="#">行情归因</a>
+  <a href="#">漏检信号</a>
+  <a href="#">反思系统</a>
+  <a href="#">发现</a>
+  <a href="#">新闻流</a>
+  <a href="#">更多 ▾</a>
+</nav>
+
+<main>
+  <div class="col">
+
+    <div class="card">
+      <div class="card-h">
+        <h2>策略控制台</h2>
+        <span class="hint">当前自动模拟策略</span>
+        <span class="pill"><i></i>运行中</span>
+      </div>
+      <div class="card-b">
+        <div class="strategy">
+          <div class="select"><span>新闻阈值策略 · v1</span><span class="c">▾</span></div>
+          <div class="btn btn-sm">新闻源权重</div>
+          <div class="btn btn-sm">策略说明</div>
+          <div class="spacer"></div>
+          <div class="btn">重置模拟盘</div>
+          <div class="btn primary">暂停操盘</div>
+        </div>
+
+        <div class="group">
+          <div class="group-h"><span class="t">信号源</span><span class="hint" style="font-size:11px;color:var(--muted2)">12 个 · 已启用 9</span><span class="line"></span><span class="act">仅核心源</span><span class="act">全选</span></div>
+          <div class="sources">
+            <div class="src on core"><span class="tick">✓</span>TradingView</div>
+            <div class="src on core"><span class="tick">✓</span>金十</div>
+            <div class="src on core"><span class="tick">✓</span>Tree</div>
+            <div class="src on"><span class="tick">✓</span>深潮</div>
+            <div class="src on"><span class="tick">✓</span>东财</div>
+            <div class="src on"><span class="tick">✓</span>律动</div>
+            <div class="src on"><span class="tick">✓</span>FRED</div>
+            <div class="src on"><span class="tick">✓</span>Finnhub</div>
+            <div class="src on"><span class="tick">✓</span>飞书金十</div>
+            <div class="src off"><span class="tick">＋</span>Reuters</div>
+            <div class="src off"><span class="tick">＋</span>BLS</div>
+            <div class="src off"><span class="tick">＋</span>Yahoo</div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-h"><span class="t">风控与执行</span><span class="line"></span><span class="act">恢复默认</span></div>
+          <div class="params">
+            <div class="field">
+              <label>每日开仓上限 <em>条</em></label>
+              <div class="input"><span class="num">300</span><span class="u">条</span></div>
+            </div>
+            <div class="field">
+              <label>新闻时效窗口 <em>秒</em></label>
+              <div class="input"><span class="num">2,700</span><span class="u">45 分钟</span></div>
+            </div>
+            <div class="field">
+              <label>买 / 卖门槛</label>
+              <div class="input"><span class="num">0.4</span><span class="u">/</span><span class="num">0.3</span></div>
+            </div>
+            <div class="field">
+              <label>止盈 <em>ATR 倍数</em></label>
+              <div class="input"><span class="num">0.6</span><span class="u">ATR</span></div>
+            </div>
+            <div class="field">
+              <label>止损 <em>ATR 倍数</em></label>
+              <div class="track"><span class="rail"></span><span class="fill" style="width:46%"></span><span class="knob" style="left:46%"></span><span class="v num">1.5</span></div>
+            </div>
+            <div class="field">
+              <label>单笔仓位上限</label>
+              <div class="track"><span class="rail"></span><span class="fill" style="width:28%"></span><span class="knob" style="left:28%"></span><span class="v num">8%</span></div>
+            </div>
+            <div class="field">
+              <label>盘面结构过滤</label>
+              <div style="display:flex;align-items:center;gap:10px;height:32px"><span class="toggle"></span><span style="font-size:11.5px;color:var(--muted)">已开启</span></div>
+            </div>
+            <div class="field">
+              <label>AUTO PAPER</label>
+              <div style="display:flex;align-items:center;gap:10px;height:32px"><span class="toggle off"></span><span style="font-size:11.5px;color:var(--muted2)">手动确认</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="adv"><span>高级参数：品种权重 / 时间窗 / 新闻去重阈值 / 滑点模型</span><span class="c">展开 ▾</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="flex:1">
+      <div class="card-h">
+        <h2>持仓与成交</h2><span class="hint">PAPER · 不含滑点前的理论价</span>
+        <div class="spacer"></div>
+        <div class="btn btn-sm">导出八列数据</div>
+      </div>
+      <div class="card-b" style="flex:1;padding-top:0">
+        <div class="ptable">
+          <div class="phead"><span>品种</span><span>方向</span><span>开仓</span><span>现价</span><span>浮盈亏</span><span>跟踪剩余</span><span>状态</span></div>
+          <div class="prow"><span>BTC/USDT</span><span><i class="dir l">多</i></span><span class="num muted">67,250.0</span><span class="num">68,420.5</span><span class="num up">+116.60</span><span class="num muted">1h 12m</span><span class="st open">跟踪中</span></div>
+          <div class="prow"><span>ETH/USDT</span><span><i class="dir s">空</i></span><span class="num muted">3,480.0</span><span class="num">3,492.6</span><span class="num down">-12.60</span><span class="num muted">0h 38m</span><span class="st open">跟踪中</span></div>
+          <div class="prow"><span>XAU/USD</span><span><i class="dir l">多</i></span><span class="num muted">2,671.4</span><span class="num">2,684.2</span><span class="num up">+12.80</span><span class="num muted">已结算</span><span class="st done">已归档</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <div class="card-h"><h2>账户</h2><span class="hint">10,000 USDT 起始</span></div>
+      <div class="card-b">
+        <div class="equity">
+          <div class="top"><span class="big num">10,000.00</span><span class="muted" style="font-size:11px">USDT</span><span class="chg num" style="margin-left:auto">+0.00 (0.00%)</span></div>
+          <svg viewBox="0 0 340 60" preserveAspectRatio="none">
+            <defs><linearGradient id="e" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8cff" stop-opacity=".3"/><stop offset="1" stop-color="#5b8cff" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0 44 30 42 60 45 90 40 120 43 150 38 180 41 210 36 240 39 270 33 300 35 340 30 L340 60 L0 60Z" fill="url(#e)"/>
+            <path d="M0 44 30 42 60 45 90 40 120 43 150 38 180 41 210 36 240 39 270 33 300 35 340 30" stroke="#5b8cff" stroke-width="1.6" fill="none"/>
+          </svg>
+        </div>
+        <div class="stat">
+          <div class="cell"><div class="k">可用</div><div class="v num">10,000.00<small>USDT</small></div></div>
+          <div class="cell"><div class="k">占用保证金</div><div class="v num">0.00<small>USDT</small></div></div>
+          <div class="cell"><div class="k">已实现</div><div class="v num" style="color:#5ddc9b">+0.00<small>USDT</small></div></div>
+          <div class="cell"><div class="k">浮盈亏</div><div class="v num muted">—<small>待行情</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="flex:1">
+      <div class="card-h"><h2>最近动作</h2><span class="hint">实时</span></div>
+      <div class="card-b" style="flex:1">
+        <div class="log">
+          <div class="row"><span class="t num">22:14</span><span class="txt"><b>闸门</b> 通过 · BTC 多 · 置信 78%</span></div>
+          <div class="row"><span class="t num">22:09</span><span class="txt"><b>风控</b> 拒绝 · ETH 空 · 盘面结构冲突</span></div>
+          <div class="row"><span class="t num">22:03</span><span class="txt"><b>信号</b> 入库 3 条 · 去重后 2 条</span></div>
+          <div class="row"><span class="t num">21:58</span><span class="txt"><b>数据源</b> Reuters 延迟 4m，已降权</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span class="note">参数变更仅影响之后的开仓，不会重算历史持仓</span>
+  <div class="right">
+    <div class="btn btn-sm">参数说明</div>
+    <div class="btn btn-sm">Streamlit · 8501</div>
+    <div class="btn btn-sm primary" style="height:28px">应用并重启策略</div>
+  </div>
+</footer>
+</body>
+</html>

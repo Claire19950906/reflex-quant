@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>优化进展 v341 · 第二轮（作业层）</title>
+<style>
+  :root{--bg:#0e1116;--card:#171c24;--line:#242c38;--tx:#e6ebf2;--dim:#8b95a5;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--acc:#60a5fa}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;padding:40px 22px 70px}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:13.5px;margin-bottom:26px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+  .k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .k b{display:block;font-size:24px;line-height:1.2;margin-bottom:4px}
+  .k span{color:var(--dim);font-size:12.5px}
+  h2{font-size:17px;margin:30px 0 12px;padding-left:10px;border-left:3px solid var(--acc)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .fix{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .fix:last-child{border:0}
+  .tag{flex:0 0 auto;font-size:11.5px;padding:2px 8px;border-radius:20px;border:1px solid}
+  .t-ok{color:var(--ok);border-color:#2c5c3e;background:#12251a}
+  .t-bad{color:var(--bad);border-color:#5c2a2a;background:#251313}
+  .fix p{margin:0;font-size:14px}
+  .fix small{color:var(--dim);display:block;margin-top:3px;font-size:12.5px}
+  .bar{margin:9px 0}
+  .bar .lb{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+  .bar .tr{height:8px;background:#1d232c;border-radius:5px;overflow:hidden}
+  .bar .fl{height:100%;border-radius:5px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:500;font-size:12.5px}
+  .p0{color:var(--bad);font-weight:600}.p1{color:var(--warn);font-weight:600}.p2{color:var(--acc)}
+  code{background:#1d232c;padding:1px 6px;border-radius:5px;font-size:12.5px;color:#cbd5e1}
+  .foot{color:var(--dim);font-size:12px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>优化进展 v341 · 第二轮：作业层体检</h1>
+<div class="sub">2026-11-15 · 从"代码对不对"转向"每天到底有没有在干活" · 3 个提交</div>
+
+<div class="kpis">
+  <div class="k"><b>87</b><span>launchd 作业总数</b></span></div>
+  <div class="k"><b style="color:var(--bad)">2</b><span>长期 exit 1（已修好）</span></div>
+  <div class="k"><b style="color:var(--ok)">4</b><span>BLS 宏观恢复写入条数</span></div>
+  <div class="k"><b>41</b><span>体检出的可疑作业（多为锁竞争）</span></div>
+</div>
+
+<h2>这轮真正修掉的</h2>
+<div class="card">
+  <div class="fix"><span class="tag t-ok">已修</span><p>BLS 宏观三个月没数据：v2 端点被 403/SSL 挡，v1 正常
+    <small>实测 v2 → SSLError、v1 → 200 REQUEST_SUCCEEDED。改成有 key 走 v2、没 key 走 v1，互为备选。已写入 CPI 337.511 / 失业率 4.1 / 非农 159293 / CPI同比 3.91%（2026-10）</small></p></div>
+  <div class="fix"><span class="tag t-ok">已修</span><p>技术反思作业每天 <code>database is locked</code> 直接死
+    <small>只读连接不设 timeout + 3 次退避重试；90 天窗口夹到数据纪元（否则又把纪元前的断流算出来写库）；<code>feed_health.ts</code> 是 TEXT 却塞整数比较，等于没过滤。现在 500 候选 → 300 条（纪元后），不再锁死</small></p></div>
+  <div class="fix"><span class="tag t-ok">已加</span><p>一致性体检新增两项"停摆"检查
+    <small>异动回填 &gt;12h 未更新 / 注册表 &gt;26h 未重建。原来只查"两边对不对得上"，查不出"根本没人干活"。现在 7/7 OK</small></p></div>
+  <div class="fix"><span class="tag t-ok">已加</span><p><code>scripts/audit_jobs.py</code> 全量作业体检，并接进 <code>recheck_acceptance.sh</code>
+    <small>三条判据：退出码非 0 / 日志 mtime 超 2×周期 / 最近 20 行有致命行（只信 24h 内还在写的日志）</small></p></div>
+</div>
+
+<h2>体检结果：问题集中在一处</h2>
+<div class="card">
+  <div class="bar"><div class="lb"><span>database is locked（写路径丢数据）</span><span>≈33/41</span></div>
+    <div class="tr"><div class="fl" style="width:80%;background:linear-gradient(90deg,#f87171,#fb923c)"></div></div></div>
+  <div class="bar"><div class="lb"><span>日志停更 / 退出码非 0</span><span>2</span></div>
+    <div class="tr"><div class="fl" style="width:10%;background:#fbbf24"></div></div></div>
+  <div class="bar"><div class="lb"><span>取不到数据源（SKEW / 其他第三方）</span><span>2</span></div>
+    <div class="tr"><div class="fl" style="width:10%;background:#60a5fa"></div></div></div>
+  <p style="font-size:13.5px;color:var(--dim);margin:12px 0 0">实测拿写锁只要 0.2–5ms，说明锁不是常态占用，而是被**某个长事务/checkpoint** 周期性卡住 30 秒以上，撞上 timeout 的作业就丢一行（bybit ticker、cg_total_mcap、atom event_time 都这么丢的）。</p>
+</div>
+
+<h2>下一步值得做的（按性价比）</h2>
+<div class="card">
+<table>
+<tr><th>优先级</th><th>事项</th><th>为什么</th><th>成本</th></tr>
+<tr><td class="p0">P0</td><td>把写路径的锁等待统一治理<br><small>长事务拆小 + 批量写改成逐条/分片 commit</td><td>41 个可疑作业里 33 个是它；每天都在丢数据，且丢得无声</small></td><td>中</td></tr>
+<tr><td class="p0">P0</td><td>AI 通道（唯一总卡点）<br><small>两把 MiniMax key 都 2056 额度用尽，本地 3B 超时，.env 里 ARK/DeepSeek/XAI/Doubao 全空</small></td><td>ai_decisions 至今 0 行，归因只有 11 行；代码侧已就绪，只差通道</small></td><td>低（买额度/填 key）</td></tr>
+<tr><td class="p1">P1</td><td>慢异动窗口跨纪元<br><small>等 11-16 00:00 那根日线入库后复核验收第 7 项</small></td><td>目前 slow=0 是结构性的，不是坏了</small></td><td>低</td></tr>
+<tr><td class="p1">P1</td><td>SKHYNIX↔000660.KS、NVIDIA↔NVDA 两个别名挂起</small></td><td>合并等于选边站，需人工定语义</small></td><td>低（决策题）</td></tr>
+<tr><td class="p2">P2</td><td>真外键（149 张表仅 7 条 REFERENCES）</small></td><td>要重建表，1.4GB 且在跑引擎，风险高</small></td><td>高</td></tr>
+<tr><td class="p2">P2</td><td>bridge_server.py 9.8k 行 / db.py 5.5k 行拆分</small></td><td>纯工程债，不影响出数</small></td><td>高</td></tr>
+</table>
+</div>
+
+<div class="foot">
+提交：<code>c8a7fed</code> 反思作业修锁+纪元夹紧+停摆检查 ｜ <code>2f67987</code> BLS v1 端点 ｜ <code>f8837fa</code> audit_jobs<br>
+复检：<code>bash scripts/recheck_acceptance.sh</code>（作业体检 → 验收 → 纪元前残留 → 一致性 → 纪元年龄）<br>
+回归：3232 passed / 0 failed；一致性 7/7；验收 12 PASS / 0 FAIL / 14 SKIP
+</div>
+</div></body></html>

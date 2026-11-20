@@ -1,0 +1,80 @@
+{
+  "n_samples": 0,
+  "n_settled": 0,
+  "hit_rate": null,
+  "hit_ci": [
+    null,
+    null
+  ],
+  "baseline": {
+    "n": 0,
+    "up": 0,
+    "down": 0,
+    "flat": 0,
+    "always_sell": null,
+    "always_buy": null,
+    "mix_implied": null,
+    "p_buy": null,
+    "p_sell": null
+  },
+  "by_direction": {
+    "BUY": {
+      "n": 0,
+      "hit": 0,
+      "rate": null,
+      "ci": [
+        null,
+        null
+      ]
+    },
+    "SELL": {
+      "n": 0,
+      "hit": 0,
+      "rate": null,
+      "ci": [
+        null,
+        null
+      ]
+    }
+  },
+  "ba_label": {
+    "value": null,
+    "ci": [
+      null,
+      null
+    ]
+  },
+  "ba_pred": null,
+  "excess_vs_mix": null,
+  "excess_vs_always_sell": null,
+  "expectancy": {
+    "n": 0,
+    "gross_bps": null,
+    "net_bps": null,
+    "ci": [
+      null,
+      null
+    ],
+    "fee_bps": 12.0
+  },
+  "fee_bps": 12.0,
+  "gate": 200,
+  "by_asset": [],
+  "verdict": {
+    "code": "empty",
+    "headline": "没有可结算样本（样本不足）",
+    "detail": "影子层/反射层还没攒到已结算样本；等数据进来再读，不要当成能力为 0。"
+  },
+  "source": "ledger",
+  "throughput": {
+    "window_hours": 24,
+    "decisions": 15,
+    "directional": 4,
+    "directional_per_hour": 0.2,
+    "settleable": 3,
+    "settleable_per_hour": 0.1,
+    "settled_total": 0,
+    "remaining_to_gate": 200,
+    "eta_days": 83.3
+  }
+}

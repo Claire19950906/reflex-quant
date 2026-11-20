@@ -1,0 +1,605 @@
+{
+ "size": 60,
+ "cases": [
+  {
+   "news_id": 28540,
+   "decision_id": 11738,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28539,
+   "decision_id": 11735,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28513,
+   "decision_id": 11732,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28512,
+   "decision_id": 11729,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28511,
+   "decision_id": 11726,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28510,
+   "decision_id": 11725,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28509,
+   "decision_id": 11723,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28508,
+   "decision_id": 11720,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28507,
+   "decision_id": 11717,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28499,
+   "decision_id": 11716,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28455,
+   "decision_id": 11714,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28454,
+   "decision_id": 11713,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28453,
+   "decision_id": 11712,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28452,
+   "decision_id": 11711,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28451,
+   "decision_id": 11710,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28446,
+   "decision_id": 11709,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28368,
+   "decision_id": 11708,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28367,
+   "decision_id": 11707,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28366,
+   "decision_id": 11706,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28365,
+   "decision_id": 11705,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28364,
+   "decision_id": 11702,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28363,
+   "decision_id": 11701,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28362,
+   "decision_id": 11700,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28361,
+   "decision_id": 11696,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28360,
+   "decision_id": 11693,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28359,
+   "decision_id": 11692,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28358,
+   "decision_id": 11690,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28357,
+   "decision_id": 11683,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28356,
+   "decision_id": 11682,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28355,
+   "decision_id": 11681,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28354,
+   "decision_id": 11678,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28353,
+   "decision_id": 11689,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28352,
+   "decision_id": 11688,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28349,
+   "decision_id": 11697,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28348,
+   "decision_id": 11685,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28347,
+   "decision_id": 11684,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28346,
+   "decision_id": 11675,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28342,
+   "decision_id": 11674,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28341,
+   "decision_id": 11673,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28340,
+   "decision_id": 11672,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28339,
+   "decision_id": 11671,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28338,
+   "decision_id": 11668,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28337,
+   "decision_id": 11667,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28336,
+   "decision_id": 11660,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28335,
+   "decision_id": 11659,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28334,
+   "decision_id": 11664,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28333,
+   "decision_id": 11663,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28332,
+   "decision_id": 11658,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28331,
+   "decision_id": 11657,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28330,
+   "decision_id": 11656,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28329,
+   "decision_id": 11655,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28328,
+   "decision_id": 11652,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28327,
+   "decision_id": 11649,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28325,
+   "decision_id": 11648,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28324,
+   "decision_id": 11647,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28323,
+   "decision_id": 11646,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28322,
+   "decision_id": 11645,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28321,
+   "decision_id": 11642,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28320,
+   "decision_id": 11641,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  },
+  {
+   "news_id": 28319,
+   "decision_id": 11638,
+   "verdict": null,
+   "status": null,
+   "structured_check_mentioned": 0,
+   "structured_check_missing": 0,
+   "structured_check_fabricated": 0,
+   "has_reasoning": true
+  }
+ ]
+}

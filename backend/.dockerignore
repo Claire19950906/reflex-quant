@@ -1,0 +1,16 @@
+# 后端 .dockerignore：构建上下文只带源码与依赖清单，不带运行时数据与缓存。
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.mypy_cache/
+runtime/
+reports/
+logs/
+*.db
+*.db-wal
+*.db-shm
+*.db.*
+.env
+.env.bak*
+*.bak
+node_modules/

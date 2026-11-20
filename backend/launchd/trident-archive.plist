@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- v189: 回测每日重置 (UTC 00:00 = 北京时间 08:00)
+         - 归档前一日数据 + 生成新 run_id
+         - 自动启动方式: launchctl load -w ~/Library/LaunchAgents/com.trident.archive.plist -->
+    <key>Label</key>
+    <string>com.trident.archive</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Frameworks/Python.framework/Versions/3.12/bin/python3</string>
+        <string>/Users/yangyang/Desktop/套利交易系统/strategy_package_v170/backend/src_python/daily_archive.py</string>
+        <string>archive</string>
+    </array>
+
+    <!-- UTC 00:00 触发 (= 北京时间 08:00) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>0</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/yangyang/Desktop/套利交易系统/strategy_package_v170/backend/src_python</string>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/trident-archive.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/trident-archive.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

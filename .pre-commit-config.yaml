@@ -1,0 +1,17 @@
+# pre-commit — 只对「本次改动」的文件跑门禁
+#
+# 设计取舍：全库 130 条历史债已冻结在 ruff.toml 的 per-file-ignores 里，pre-commit
+# 只跑被修改的文件，所以老文件不会因为「碰到一下」就把旧债全爆出来，新代码则必须干净。
+#
+# 安装（每台开发机一次）：
+#   python3 -m pip install pre-commit && pre-commit install
+#
+# 手动跑全量：
+#   pre-commit run --all-files
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5
+    hooks:
+      - id: ruff
+        name: ruff（错误级：语法/未定义名/非法比较）
+        # 规则集见仓库根 ruff.toml（select = E9/F63/F7/F82）

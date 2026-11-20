@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>细节洞察能力评估 · 第三次复核 · 2026-11-18</title>
+<style>
+:root{
+  --bg:#0b0e14; --panel:#121722; --panel2:#0f1621; --line:#1f2735;
+  --txt:#e6ebf5; --sub:#8b97ad; --dim:#6b778c;
+  --ok:#2fbf8f; --warn:#e0a13a; --bad:#e05a5a; --mid:#5b8def;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.72 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Noto Sans SC",sans-serif}
+.wrap{max-width:1060px;margin:0 auto;padding:52px 28px 72px}
+.head{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+.eyebrow{font-size:12px;color:var(--dim);letter-spacing:2px}
+h1{font-size:27px;line-height:1.35;margin:10px 0 8px;letter-spacing:.3px}
+.sub{color:var(--sub);font-size:14px;max-width:74ch}
+.meta{color:var(--dim);font-size:12.5px;margin-top:14px;display:flex;gap:18px;flex-wrap:wrap}
+.meta span{border-left:1px solid var(--line);padding-left:12px}
+.meta span:first-child{border-left:0;padding-left:0}
+.verdict{background:linear-gradient(135deg,#141a26,#0e131c);border:1px solid var(--line);
+  border-radius:14px;padding:24px 26px;margin-bottom:34px}
+.verdict .lead{font-size:19px;font-weight:600;line-height:1.62;margin:0 0 14px}
+.verdict .lead em{font-style:normal;color:var(--ok)}
+.verdict p{margin:0;color:var(--sub);font-size:14px;max-width:82ch}
+.verdict p + p{margin-top:8px}
+.verdict b{color:var(--txt);font-weight:600}
+h2{font-size:17px;margin:46px 0 6px;padding-left:11px;border-left:3px solid var(--mid)}
+h2 .no{color:var(--dim);font-weight:400;font-size:12.5px;margin-right:8px;letter-spacing:1px}
+h2 + .h2note{color:var(--sub);font-size:13px;margin:0 0 16px;padding-left:14px}
+h3{font-size:14.5px;margin:28px 0 10px;color:#cfd8e8}
+p{margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:500;font-size:12.5px;letter-spacing:.4px;background:#0d121b}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.t-ok{background:rgba(47,191,143,.13);color:var(--ok);border:1px solid rgba(47,191,143,.32)}
+.t-warn{background:rgba(224,161,58,.13);color:var(--warn);border:1px solid rgba(224,161,58,.32)}
+.t-bad{background:rgba(224,90,90,.13);color:var(--bad);border:1px solid rgba(224,90,90,.32)}
+.t-dim{background:rgba(107,119,140,.15);color:#9aa6bb;border:1px solid rgba(107,119,140,.32)}
+.muted{color:var(--sub);font-size:12px}
+code{background:#0c1018;border:1px solid #1a2230;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#a8b6cf;word-break:break-all}
+.note{background:var(--panel2);border-left:3px solid var(--warn);padding:13px 17px;border-radius:5px;
+  font-size:13.5px;color:#d5dced;margin:16px 0}
+.note.bad{border-left-color:var(--bad)}
+.note.ok{border-left-color:var(--ok)}
+.note b{color:var(--txt)}
+.caption{color:var(--dim);font-size:12px;margin:8px 0 0}
+.grade{display:grid;grid-template-columns:112px 58px 1fr;border-top:1px solid var(--line);font-size:13.5px}
+.grade > div{padding:11px 10px;border-bottom:1px solid var(--line)}
+.grade .g-name{color:var(--sub);font-size:12.5px}
+.grade .g-mark{font-size:19px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.grade .g-why{color:#c9d3e4}
+.g-a{color:var(--ok)} .g-b{color:var(--mid)} .g-c{color:var(--warn)} .g-d{color:var(--bad)}
+.kv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 6px}
+.kv > div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.kv .k{color:var(--dim);font-size:12px}
+.kv .v{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;margin:4px 0 2px}
+.kv .d{color:var(--sub);font-size:12px}
+.foot{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div class="eyebrow">REFLEX QUANT 1.0 / 能力复核 · 第三次</div>
+  <h1>细节洞察能力评估（第三次）</h1>
+  <div class="sub">管道恢复后第一次全量复核：把「决策级归因」真正接进洞察闭环，并纠正上一版一处口径误读。</div>
+  <div class="meta">
+    <span>数据截至 2026-11-18 23:05 CST</span>
+    <span>线上库 1,069 决策 / 189 反思 / 106 洞察</span>
+    <span>基线：11-18 13:45 版</span>
+  </div>
+</div>
+
+<div class="verdict">
+  <p class="lead">通道 16:00 恢复后，系统第一次产出 <em>verified 洞察</em>（1 条，走决策级证据，不等成交笔数）。</p>
+  <p>但这 1 条不是“能力变强”，而是“链路终于接上”：<b>决策级归因模块写好了两个多月，从未被任何调度调用</b>。接上之后，门槛类洞察不必再等 12 笔成交就能被结账。</p>
+  <p>框架仍是 <b>A−</b>，落地从 <b>D</b> 抬到 <b>D+</b>：从 0 到 1 的 verified，分母仍然只有 5 条可执行洞察、11 笔成交。</p>
+</div>
+
+<div class="kv">
+  <div><div class="k">降级率（原始口径）</div><div class="v">69.4%</div><div class="d">884 / 1,274 · 其中越界 54.3%，真失败 25.4%</div></div>
+  <div><div class="k">硬数据覆盖（analysis 池）</div><div class="v">56.9%</div><div class="d">378 / 664 · 13:45 为 50.7%</div></div>
+  <div><div class="k">洞察可执行率</div><div class="v">7.0%</div><div class="d">5 / 71 · 观察型 66 条</div></div>
+  <div><div class="k">已验证洞察</div><div class="v">1</div><div class="d">首次非零 · 成交口径仍为 0</div></div>
+</div>
+
+<h2><span class="no">01</span>先纠正上一版的一处口径误读</h2>
+<p class="h2note">这条必须放在最前面：上一版据此得出“归因链没接上恢复”，是错的。</p>
+
+<p>13:45 版写的是“<code>decision_errors</code> 最后写入 14:00，16 点后 166 条决策一条错误码都没落”。复核发现：<b><code>decision_errors.created_at</code> 存的是 UTC，而 <code>ai_decisions.created_at</code> 存的是 +08:00</b>。</p>
+<p>把时区对齐之后，写入节奏完全正常：</p>
+
+<table>
+  <tr><th style="width:40%">本地小时（UTC+8 校正）</th><th style="width:20%" class="num">写入错误码</th><th>说明</th></tr>
+  <tr><td>16 点</td><td class="num">1</td><td>刚恢复，决策少</td></tr>
+  <tr><td>17 / 18 / 19 点</td><td class="num">18 / 10 / 4</td><td>随产出回升</td></tr>
+  <tr><td>21 点</td><td class="num">36</td><td>正常</td></tr>
+  <tr><td>22 点</td><td class="num">48</td><td>正常，仍在写</td></tr>
+</table>
+<p class="caption">口径：<code>substr(datetime(created_at,'+8 hours'),1,13)</code>。默认库内 672 行错误码全部是空格分隔的 UTC 串。</p>
+
+<div class="note bad"><b>教训：</b>同一个库里两张表用了两种时区口径，任何“多久没写入”的判断都必须先对齐时区。这条已记进本节，避免下一版再误判。</div>
+
+<h2><span class="no">02</span>本次真正修的三件事</h2>
+<p class="h2note">只动链路与口径，没有改策略参数，也没有回填停机期的陈旧决策。</p>
+
+<h3>2.1 把「决策级归因」接进闭环（0 → 1 条 verified）</h3>
+<p><code>insight_decision_attr.py</code>（v409.7）早就写好：用「门卫放行组 vs 拦截组」决策后 24h 的真实收益差给规则结账。全仓检索的结果是 —— <b>它没有任何调用方</b>。所以“已验证 0 条”不是算法缺，而是这条链一直悬空。</p>
+<p>接线时先修了两处语义，否则会产出 <b>假 verified</b>：</p>
+<table>
+  <tr><th style="width:28%">坑</th><th>实际情况</th><th style="width:26%">处置</th></tr>
+  <tr><td><code>insight_direction</code> 被当成看涨/看跌</td><td>它的真实含义是<b>参数调整方向</b>（提高 +1 / 降低 −1），由“提高/降低”这类词抽出</td><td>门槛类规则按参数键反推门卫方向（<code>score.buy_min_score</code>→BUY）</td></tr>
+  <tr><td>什么洞察都拿去跑两组</td><td>仓位类（<code>sizing.*</code>）与纯叙事类测不出门卫质量</td><td>只对门槛类（<code>score.*</code> / <code>filter.*</code>）开放</td></tr>
+  <tr><td>证据方向不跟建议对账</td><td>同一份证据，“提高门槛”成立、“降低门槛”就是反证</td><td>证据×建议方向双维判定</td></tr>
+</table>
+<p>跑出来的第一条（id 1215）：</p>
+<table>
+  <tr><th style="width:30%">项</th><th>读数</th></tr>
+  <tr><td>洞察</td><td><code>[score.buy_min_score]</code> 强势行情下 BUY 信号胜率低，应降低 BUY 信号分门槛</td></tr>
+  <tr><td>样本</td><td>放行组 8 条 / 拦截组 9 条（各 ≥5 才判）</td></tr>
+  <tr><td>收益差</td><td>放行均值 <b>−1.72%</b> vs 拦截均值 <b>−0.98%</b>（决策后 24h，方向调整）</td></tr>
+  <tr><td>结论</td><td><span class="tag t-ok">verified</span> 门卫拦下的反而更好 → 门槛确实过严 → “降低门槛”成立</td></tr>
+  <tr><td>留痕</td><td><code>verification_method='decision_attr'</code>，与成交口径区分，可追溯</td></tr>
+</table>
+
+<h3>2.2 两个常驻任务（此前都是“一次性”或“从没跑过”）</h3>
+<table>
+  <tr><th style="width:24%">任务</th><th style="width:18%">频率</th><th>作用</th><th style="width:18%">首次实跑</th></tr>
+  <tr><td><code>error-code-cron</code></td><td>每 10 分钟</td><td>只补最近 6h 内、尚未有错误码的非降级决策；不回填停机期</td><td>候选 36 条 → 产出 3 个码（E001b×2、E019×1）</td></tr>
+  <tr><td><code>insight-decision-attr</code></td><td>每 6 小时</td><td>门槛类洞察的决策级验证，写入 <code>verification_*</code></td><td>门槛类候选 17 条 → 判出 1 条，其余样本不足跳过</td></tr>
+</table>
+<p class="caption">两个 launchd 均已 <code>load</code>，exit 0；plist 归档在 <code>scripts/com.trident.error-code-cron.plist</code> 与 <code>scripts/com.trident.insight-decision-attr.plist</code>。</p>
+
+<h3>2.3 生成侧硬门槛：没数值的经验不再入库</h3>
+<p>提示词里的⑦⑧两条（数值区间 + 具体数值 + 窗口 + 参数键）挂了一个多月，模型照漏。原因是<b>提示词只是软约束</b>。v453 加了一道代码侧门槛 <code>insight_contract.py</code>：</p>
+<table>
+  <tr><th style="width:26%">环节</th><th>规则</th></tr>
+  <tr><td>体检四问</td><td>有没有数值（0.4 / 40% / 24h 算）、有没有方向（提高/降低 或 看涨/看跌）、有没有方括号参数键、有没有窗口</td></tr>
+  <tr><td>四档分级</td><td><span class="tag t-ok">actionable</span> 全齐 · <span class="tag t-warn">narrative</span> 有数值有方向无键 · <span class="tag t-dim">meta</span> 治理护栏（“绝不臆造数据”这类不误杀）· <span class="tag t-bad">reject</span> 策略判断却没数值/没方向</td></tr>
+  <tr><td>不合格处置</td><td>带着缺项清单让模型<b>重写一次</b>（只改形式、禁止引入原文没有的数据）；仍不合格 → <b>不入库</b>，写审计 <code>runtime/insight_contract.jsonl</code></td></tr>
+  <tr><td>覆盖范围</td><td>复盘生成（<code>_generate_insights_llm</code>）与快速评测生成（<code>_extract_from_quick_sim_llm</code>）两条链都过门槛</td></tr>
+</table>
+<p>用现有 71 条做体检，结果是：<b>4 条可执行、8 条元规则、59 条不合格</b>。这说明“93% 只能观察”不是入库判定写错了，而是<b>源头产出本来就不可验证</b>。存量不删、不重判、不编数字，只对新产出生效。</p>
+<p class="caption">单测 <code>backend/tests/test_v453_insight_contract.py</code> 8 条全绿，含接线测试（“谨慎一点，别追高”这类必须被拦下并重写）。</p>
+
+<h3>2.4 报告口径修正</h3>
+<p>即第 01 节。上一版“归因链停摆”的结论作废，改为“归因链持续在写，覆盖率低的原因是降级决策被设计性排除 + 校验器命中率有限”。</p>
+
+<h2><span class="no">03</span>13:45 → 23:05 的读数对照</h2>
+<table>
+  <tr><th style="width:36%">观测项</th><th style="width:14%" class="num">13:45</th><th style="width:14%" class="num">23:05</th><th>怎么读</th></tr>
+  <tr><td>决策总数</td><td class="num">903</td><td class="num">1,069</td><td>16:00 起恢复，22 点单小时 47 条</td></tr>
+  <tr><td>LLM 通道</td><td class="num">12 条全 error</td><td class="num">ok=9</td><td>已通则，仍有零星超时（21:05 / 21:31 / 21:55 / 22:22）</td></tr>
+  <tr><td>降级率（原始口径）</td><td class="num">73.4%</td><td class="num">69.4%</td><td>884 / 1,274；其中 480 条是越界（见 12 节），真失败 324</td></tr>
+  <tr><td>硬数据覆盖（analysis 池）</td><td class="num">50.7%</td><td class="num">56.9%</td><td>继续上行</td></tr>
+  <tr><td>无标的占比</td><td class="num">38.7%</td><td class="num">39.8%</td><td>没修，仍是最脏的分母</td></tr>
+  <tr><td>错误码覆盖（全库）</td><td class="num">38.0%</td><td class="num">36.3%</td><td>388 / 1,069；恢复后非降级 44 / 77 = 57.1%</td></tr>
+  <tr><td>洞察 active / 观察型</td><td class="num">69 / 64</td><td class="num">71 / 66</td><td>观察型 93.0%，几乎没动</td></tr>
+  <tr><td>可执行洞察</td><td class="num">5</td><td class="num">5</td><td>buy_min_score×2、max_position_pct×2、stop_loss_pct×1</td></tr>
+  <tr><td>已验证洞察</td><td class="num">0</td><td class="num">1</td><td>决策级口径；成交口径（≥12 笔）仍为 0</td></tr>
+  <tr><td>反思数 / depth 均值</td><td class="num">156 / 4.41</td><td class="num">189 / 4.44</td><td>仍停在“观察 + 一句话”</td></tr>
+  <tr><td>可判定对错的反思</td><td class="num">9 / 151</td><td class="num">15 / 189</td><td>7.9%，其余是“观望未成交 / 不适用”</td></tr>
+  <tr><td>归因一致率</td><td class="num">33.3%（n=9）</td><td class="num">20.0%（n=15）</td><td>3 验证 / 12 否证；39.7% 是 v412-G <b>修 P2 之前</b>的旧数</td></tr>
+</table>
+
+<h2><span class="no">04</span>五维评级（框架 A−，闭环 D+）</h2>
+<div class="grade">
+  <div class="g-name">洞察框架</div><div class="g-mark g-a">A−</div>
+  <div class="g-why">27+ 错误码、7 层反思、A/B/C 三维、结构因子、三量置信度。这轮没动，仍是全系统最扎实的部分。</div>
+  <div class="g-name">原料获取</div><div class="g-mark g-c">C+</div>
+  <div class="g-why">analysis 池 378/664 = 56.9%（13:45 为 50.7%）。个股整类仍为 0（本地无行情源）。</div>
+  <div class="g-name">细粒度计算</div><div class="g-mark g-b">B−</div>
+  <div class="g-why">结构因子、影响分阶梯都在；新批次 impact 走兜底 74.1%、market_confirmation 为 unknown 92.8% —— 机制在，进闸门时被稀释。</div>
+  <div class="g-name">错因归因</div><div class="g-mark g-c">C</div>
+  <div class="g-why">错误码 672 行 / 388 决策，A/B/C 维度 A128 / B58 / C3。v412-G 的方向自检确实生效了（“信息方向错误”已归零），但可判定样本只有 15 / 189 = 7.9%，一致率 20.0%（3 验证 / 12 否证）—— 结论是样本不够，不是反思写得差。</div>
+  <div class="g-name">洞察闭环</div><div class="g-mark g-d">D+</div>
+  <div class="g-why">从 0 到 1 条 verified、链路接上，是实质进步；但 93% 只能观察、成交口径仍 0、回灌 18 条 —— 分母没变。</div>
+</div>
+
+<h2><span class="no">05</span>孔径还在哪：三个卡点</h2>
+<table>
+  <tr><th style="width:26%">卡点</th><th style="width:16%" class="num">读数</th><th>为什么会卡 / 怎么解</th></tr>
+  <tr><td>洞察没有方向</td><td class="num">54 / 71</td><td><code>insight_direction=0</code> 的洞察连决策级都测不了。生成侧必须强制“提高/降低”或“看涨/看跌”二选一，否则入库就标 observe_only。</td></tr>
+  <tr><td>洞察没有参数键</td><td class="num">22 条</td><td>占观察池 34%，原文给了场景没给键。<b>新产出已被硬门槛拦住</b>（无键先重写、再拦）；这 22 条是历史存量，不编数字，仍按观察处理。</td></tr>
+  <tr><td>成交样本不足</td><td class="num">11 笔</td><td>成交口径门槛 12 笔，永远差一笔。门槛类规则已改走决策级（本次生效），仓位类仍只能等样本。</td></tr>
+</table>
+<p>另外两条不是“卡点”而是分母：原始降级 69.4%（其中真失败只占 25.4%，见 12 节）、无标的 39.8%。不修这两个，任何洞察指标的绝对值都先被稀释一遍。</p>
+
+<h2><span class="no">06</span>可复算</h2>
+<p>全部只读复算（未改表；本次写库仅限：3 条错误码 + 1 条 verification 记录）：</p>
+<pre style="background:#0c1018;border:1px solid #1a2230;border-radius:8px;padding:14px 16px;overflow:auto;font-size:12.5px;color:#a8b6cf">cd /Users/claire/Desktop/金融1.0/backend
+python3 - <<'PY'
+import sqlite3
+c = sqlite3.connect("file:trident_event_bus.db?mode=ro", uri=True)
+print("决策/降级", c.execute("select count(*), sum(analysis_degraded) from ai_decisions").fetchone())
+print("analysis 硬数据", c.execute("select count(*), sum(hard_data_status='ok') from ai_decisions where decision_kind='analysis'").fetchone())
+print("错误码覆盖面", c.execute("select (select count(distinct decision_id) from decision_errors),"
+                              " (select count(*) from ai_decisions)").fetchone())
+print("洞察", c.execute("select count(*), sum(active),"
+                       " sum(case when active=1 and coalesce(observe_only,0)=1 then 1 else 0 end),"
+                       " sum(case when verification_verdict='verified' then 1 else 0 end)"
+                       " from review_insights").fetchone())
+PY
+
+# 决策级验证（预演，不写库）
+python3 scripts/verify_insights_decision_level.py --days 7</pre>
+<p class="caption">时区提醒：<code>decision_errors.created_at</code> 为 UTC，<code>ai_decisions.created_at</code> 为 +08:00，比较前先 <code>datetime(created_at,'+8 hours')</code>。</p>
+
+<h2><span class="no">07</span>本次复核的局限</h2>
+<table>
+  <tr><th style="width:22%">项</th><th>说明</th></tr>
+  <tr><td>样本</td><td>决策级验证 n=8/9，刚过 5 条下限；收益差 −1.72% vs −0.98%，两组都是负收益，只能说明“门卫过严”，不能外推为“降低门槛就一定赚钱”。</td></tr>
+  <tr><td>结论等级</td><td>1 条 verified 不等于能力达标。分母是 5 条可执行洞察、11 笔成交。</td></tr>
+  <tr><td>一致率口径</td><td>20.0%（n=15）为本次现算；旧版引用的 39.7%（n=63）是 v412-G <b>P2 修复前</b>的数，已作废，不再跨版本比较。</td></tr>
+  <tr><td>未改动</td><td>策略参数、开仓闸阈值、交易白名单一律没动；验证只写 <code>verification_*</code> 字段。</td></tr>
+</table>
+
+<div class="note ok"><b>一句话结论：</b>这半天的进步是“链路接通 + 源头收紧”：决策级归因有了调用方，洞察生成有了硬门槛。下一步不再是改链路，而是<b>等分母</b> —— 成交样本、可执行洞察、非降级决策，这三样只能靠运行时间攒。</div>
+
+<h2><span class="no">08</span>全清单：做了 / 早就有 / 还没做</h2>
+<p class="h2note">回答“是不是都做好了”——链路层全部到位，能力层还差三项，且都卡在分母或外部源。</p>
+<table>
+  <tr><th style="width:34%">项</th><th style="width:14%">状态</th><th>证据</th></tr>
+  <tr><td>决策级归因接线</td><td><span class="tag t-ok">本轮完成</span></td><td>1 条 verified，n=8/9，<code>method='decision_attr'</code></td></tr>
+  <tr><td>归因链常驻（每 10 分钟）</td><td><span class="tag t-ok">本轮完成</span></td><td>首跑补 3 个码；只补最近 6h，不回填停机期</td></tr>
+  <tr><td>洞察验证常驻（每 6 小时）</td><td><span class="tag t-ok">本轮完成</span></td><td>launchd exit 0</td></tr>
+  <tr><td>生成侧硬门槛</td><td><span class="tag t-ok">本轮完成</span></td><td>8 条单测全绿，含接线测试</td></tr>
+  <tr><td>时区口径纠正</td><td><span class="tag t-ok">本轮完成</span></td><td>UTC vs +08:00，旧结论作废</td></tr>
+  <tr><td>归因“方向自检”（P2）</td><td><span class="tag t-dim">早就有</span></td><td><code>reflection_3layer_verifier</code>：<code>BIG_MOVE=1.0</code> 修量纲 + <code>_news_direction()</code> 前置判断；“信息方向错误”已归零</td></tr>
+  <tr><td>降级方向记账（shadow_degraded）</td><td><span class="tag t-dim">早就有</span></td><td>18 条已结算，命中率 55.6%（summary_only 66.7%）</td></tr>
+  <tr><td>洞察注入决策 prompt</td><td><span class="tag t-warn">本轮修排序</span></td><td>机制本来就有，但排序/去重/门槛三个 bug 让唯一 verified 都进不去；已修（见 09 节）</td></tr>
+  <tr><td>降级治理（target_none 380 / llm_empty 135）</td><td><span class="tag t-bad">未做</span></td><td>要改决策 prompt 与 out_of_scope 流转，属策略面，需拍板</td></tr>
+  <tr><td>个股行情源（CN_STOCK / US_STOCK 覆盖 0）</td><td><span class="tag t-bad">未做</span></td><td>本地无源，外部源被限流，属数据采购/接入</td></tr>
+  <tr><td>成交样本（11 笔，门槛 12）</td><td><span class="tag t-bad">只能等</span></td><td>动交易阈值才能加速，属风险参数</td></tr>
+  <tr><td>多周期结算 / 决策后 24h 全量打分</td><td><span class="tag t-bad">只能等</span></td><td>上游 <code>decision_outcomes_horizon</code> 仅 5 行</td></tr>
+</table>
+
+<h2><span class="no">09</span>经验注入：真正进 prompt 的那张清单是坏的</h2>
+<p class="h2note">真正拼进决策 prompt 的是 <code>build_active_insights_section</code>（不是 <code>load_active_insight_items</code>，后者只服务命中校验与页面）。在这条真实路径上查，问题比"洞察不够多"更硬。</p>
+<table>
+  <tr><th style="width:24%">问题</th><th>实情</th><th style="width:26%">后果</th></tr>
+  <tr><td>已验证经验进不了 prompt</td><td>准入是 <code>source_samples &gt;= 5</code>，但决策级归因的样本记在 <code>verification_sample_n</code>。1215 是 <code>source_samples=0 / verification_sample_n=34</code></td><td>唯一一条 verified 的洞察<b>从落地起就没进过 prompt</b>，进来的全是没判过的</td></tr>
+  <tr><td>反例字段是错误码堆叠</td><td><code>verifier_feedback</code> 把多段错误码说明<b>无分隔符</b>直接拼：71 条里 70 条成了 <code>E020_CONTAMINATED: 基于 1 个…E005_CONTAMINATED:…</code></td><td>原样写进 prompt 的"反例：…"，是机器日志，占字符预算还误导模型</td></tr>
+  <tr><td>同参数键不消解</td><td>库内 5 个参数键存在方向冲突（<code>sizing.stop_loss_pct</code> 上 10 条 active，+1/−1/0 混杂）</td><td>当前可注入的 3 个键恰好没冲突，所以还没炸；门槛一放宽就会把"提高/降低"同时塞进来</td></tr>
+  <tr><td>可用经验本身就少</td><td>active 软启发 71 条，但 <code>observe_only=0</code> 的只有 5 条、达标 4 条、去重后 3 个键</td><td>66 条被"不可测"挡在门外 —— 这才是"洞察没用上"的主因</td></tr>
+</table>
+
+<h3>修法（只动 prompt 装配，不动任何交易参数）</h3>
+<table>
+  <tr><th style="width:26%">改动</th><th>规则</th></tr>
+  <tr><td>准入改证据量</td><td>取 <code>max(source_samples, verification_sample_n)</code>；已判定（verified / partial）的直接放行</td></tr>
+  <tr><td>排序改强度</td><td>verified &gt; partial &gt; param_rule &gt; 未验证；同档比证据量、再比新旧；<code>failed</code> 永不注入</td></tr>
+  <tr><td>同键消解</td><td>同一 <code>insight_param_key</code> 只留最强一条，方向不再打架</td></tr>
+  <tr><td>反例结构化</td><td>按"段头"切分错误码段，聚合成带例数的短句：<code>E005×4/E014×2/E020×5（共 11 例事故，可信度已削弱）</code>；同批重复的写「反例同第 k 条」；写入侧补分隔符并限 200 字</td></tr>
+  <tr><td>品种标注</td><td>经验带 <code>asset</code> 的注入时标「· WTI 专用」。选标注而非硬过滤：不硬删规则，但模型看得出哪条不适用</td></tr>
+  <tr><td>可回退</td><td><code>REVIEW_INSIGHTS_RANK=0</code> 回到旧的纯样本数排序</td></tr>
+</table>
+<p>改完实测（真实调用 <code>build_active_insights_section()</code>）：<b>1215 排到第 1 条</b>，注入块 <b>980 → 785 字符</b>（含新增的例数信息），参数键无重复，<code>CONTAMINATED</code> 字样绝迹。单测补 8 条，总计 16 条全绿。</p>
+
+<h2><span class="no">10</span>窗口实验：放宽到 48h / 72h 反而更差</h2>
+<p class="h2note">想靠"拉长观察窗口"多攒样本 —— 实测证明这条思路不成立，反而归零。</p>
+<table>
+  <tr><th>观察窗口</th><th>门槛类候选</th><th>判出结论</th><th>说明</th></tr>
+  <tr><td>24h（现用）</td><td>17</td><td class="num">1</td><td>1215：放行 −1.79% vs 拦截 −1.26%，score 0.11</td></tr>
+  <tr><td>48h</td><td>17</td><td class="num">0</td><td>窗口变长 → 满足"决策后满窗有价"的决策变少</td></tr>
+  <tr><td>72h</td><td>17</td><td class="num">0</td><td>同上，更少</td></tr>
+</table>
+<p><b>为什么反着来：</b>窗口越长，能凑齐"决策后完整持有到窗口末端"价格的决策越少。24h 是当前数据跨度下最优，不是拍脑袋定的。</p>
+<p><b>真正的墙：</b>归因要求放行组 / 拦截组<b>各 ≥5 条</b>，即同一个参数键至少 10 条决策。唯一过关的 <code>score.buy_min_score</code> 是 8 / 11 条；其余键连 5 条都凑不齐。这不是算法问题，是决策条数问题 —— 恢复后累计 166 条决策，摊到每个键就不够了。</p>
+<p class="caption">为此加了 <code>INSIGHT_ATTR_HORIZON_H</code> 环境变量，便于日后换窗口复测；默认仍是 24，未改口径。</p>
+
+<h2><span class="no">11</span>归因模块的防呆：直接调用会产出假 verified</h2>
+<p class="h2note">绕开脚本直接调 <code>insight_decision_attr.attribute_insight()</code> 跑全库，看看会发生什么 —— 结果是一批假的"已验证"。</p>
+<table>
+  <tr><th style="width:26%">问题</th><th>实情</th><th style="width:26%">后果</th></tr>
+  <tr><td>方向口径混用</td><td>模块把 <code>insight_direction</code>（提高/降低 = ±1）直接映射成 BUY/SELL</td><td>"降低买入门槛"被拿去测卖出信号，同一份证据得出相反结论</td></tr>
+  <tr><td>无门槛白名单</td><td><code>sizing.stop_loss_pct</code> 这类仓位规则也能进归因</td><td>直接调用时 49 条里产出一批 score 0.981 的"verified"，全是假的</td></tr>
+  <tr><td>对账留在调用方</td><td>"建议方向 vs 证据方向"的翻转写在脚本里</td><td>换一个调用方（或有人写个新脚本）就会读到相反结论</td></tr>
+</table>
+<p><b>修法：</b>把三道约束搬进模块自身 —— ①门卫方向由参数键决定（<code>GATE_SIDE</code>，<code>buy_min_score→BUY</code>）；②非门槛类直接 <code>not_applicable</code>；③方向对账在模块内一次算清（<code>verdict_basis='evidence+direction'</code>）。</p>
+<p>改完，模块与脚本对同一条 1215 给出<b>完全一致</b>的结论：<code>verified</code>、score 0.116、n=8/11。单测补 3 条，总计 19 条全绿。</p>
+
+<h2><span class="no">12</span>降级率 70% 是假的：一半根本不是失败</h2>
+<p class="h2note">用 <code>analysis/contract.py::derive_state</code> 把 1,274 条决策逐条还原成终态，才知道"降级"里混了什么。</p>
+<table>
+  <tr><th>终态</th><th>条数</th><th>占全库</th><th>含义</th></tr>
+  <tr><td><span class="tag t-ok">complete</span></td><td class="num">390</td><td class="num">30.6%</td><td>分析完整</td></tr>
+  <tr><td><span class="tag t-warn">compressed</span></td><td class="num">80</td><td class="num">6.3%</td><td>只给摘要但带方向 —— 可用、低质量</td></tr>
+  <tr><td><span class="tag t-dim">out_of_scope</span></td><td class="num">480</td><td class="num">37.7%</td><td><b>本来就不该进主分析</b>（无标的 / 个股 / 桶标签）</td></tr>
+  <tr><td><span class="tag t-bad">failed</span></td><td class="num">324</td><td class="num">25.4%</td><td>真失败：llm_empty 200 + asset_late_bound 122 + 其余</td></tr>
+</table>
+<p><b>三套口径：</b>原始降级率 69.4%（含越界，没有意义）→ 有效分析率 36.9%（complete + compressed）→ 该分析样本里的失败率 40.8%。<b>只有最后一个数值得拿去优化。</b></p>
+
+<h3>顺带修掉一个真 bug</h3>
+<p>A股/港股数字代码（<code>600519</code> / <code>000001.SZ</code> / <code>00700.HK</code>）此前被判成 <code>unknown</code>，于是"越界"落进 <code>parse_failed</code>，被记成模型失败。已在 <code>scope_of()</code> 补数字代码识别。影响面小（当前 3 条），但口径要正。</p>
+
+<h3>接口层：两套口径都给</h3>
+<p><code>/replay</code> 的 overall 新增 <code>analysis_states</code>、<code>raw_degraded_rate</code>、<code>effective_analysis_rate</code>、<code>failure_rate_in_scope</code>，原有 <code>degraded</code>/<code>analyzed</code> 不动 —— 前端不会因为这次改动炸掉。</p>
+<p class="caption">单测补 3 条，总计 22 条全绿。</p>
+
+<h2><span class="no">13</span>数据状态：库已随算法换代被主动重置</h2>
+<p class="h2note">本节是这份报告的口径前提 —— 前面所有数字都是"重置前的历史样本"，不能当成现状读。</p>
+<table>
+  <tr><th>项</th><th>数值</th><th>说明</th></tr>
+  <tr><td>报告主数据时点</td><td class="num">11-19 07:43</td><td>决策 1,274 / 降级 884 / 洞察 187，即 <code>backups/…080307_before_f1_null.db</code> 的快照内容</td></tr>
+  <tr><td>线上库现况</td><td class="num">11-19 08:31 起</td><td>决策 23 条（重置后新产）、洞察 17 条；历史已按计划清空</td></tr>
+  <tr><td>重置动因</td><td class="num">主动</td><td>算法换代，旧样本与新版不可比 —— 清空是让指标从干净基线起算，不是故障</td></tr>
+  <tr><td>代价</td><td class="num">基线段</td><td>11-17 至 11-19 的历史只能以快照留档，不再进入实时统计</td></tr>
+</table>
+<p><b>为什么值得这么做：</b>如果不删，同一条指标里会混着 v412 / v425 / v432 / v453 四代算法的产出 —— 一致率、降级率、注入命中都会被不同代的样本互相稀释，得出"改了也没变化"的假结论。分层查是更严谨的做法，但要先有可靠的版本戳（见下），复杂度高一个量级。</p>
+
+<h3>分层的前提现在还不可靠</h3>
+<p><code>ai_decisions</code> 有 <code>strategy_version_id</code>，但重置前 1,274 条里 1,234 条是 <code>1</code>、40 条为空 —— 它跟的是策略参数版本，不是代码代次。也就是说：<b>即使不删库，也分不出"哪条是旧算法产的"</b>。这正是"删库重来"在当下比"分层"更省事的原因。</p>
+
+<h3>已加护栏</h3>
+<p>既然重置变成常规动作，<code>api_maintenance._clear_trading_traces()</code> 在 <code>DELETE FROM ai_decisions</code> 前强制 <code>VACUUM INTO</code> 快照到 <code>backups/</code>，并打印"即将删除 N 条 + 快照路径"；快照失败直接抛错、拒绝删除。单测覆盖（临时库 20 行 → 快照可读回 20 行）。</p>
+<h3>已落地：代码指纹（换代可分层，不必删库）</h3>
+<p>新增 <code>code_fingerprint.py</code>，格式 <code>&lt;git短哈希&gt;/&lt;参数哈希&gt;</code>（工作区有未提交改动时哈希带 <code>+</code>）。决策落库后写进 <code>ai_decisions.code_fingerprint</code>：</p>
+<table>
+  <tr><th>维度</th><th>取值示例</th><th>作用</th></tr>
+  <tr><td>代码代次</td><td><code>1d76c77+</code></td><td>同一代 = 指标可合并；不同代 = 必须分层</td></tr>
+  <tr><td>关键参数</td><td><code>p1bff9471</code> → <code>p46ef439b</code></td><td><code>REVIEW_INSIGHTS_RANK</code> 等 9 个开关变动即换指纹</td></tr>
+</table>
+<p>只读、带缓存、失败返回 <code>unknown</code> 不影响落库；线上库已补列（存量 59 条为空，不回填）。<b>需要重启引擎后新决策才带指纹</b>，重启由你决定时机。</p>
+<p class="caption">单测补 2 条（指纹含双维度、参数变动必换指纹、无 git 时退化），总计 25 条全绿。</p>
+
+<div class="foot">
+  数据来源：线上库 <code>backend/trident_event_bus.db</code>（只读，截至 2026-11-18 23:05 CST）·
+  上一版 <code>docs/细节洞察能力评估-2026-11-18.html</code> ·
+  运行日志 <code>~/.trident/log/error_code_cron.out.log</code>、<code>~/.trident/log/insight_decision_attr.out.log</code>
+</div>
+
+</div>
+</body>
+</html>

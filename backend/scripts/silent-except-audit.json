@@ -1,0 +1,2596 @@
+{
+  "scope": "all",
+  "write_path_hits": 0,
+  "silent_total": 895,
+  "by_file": [
+    {
+      "file": "src_python/engine/ai_worker.py",
+      "silent": 138,
+      "write_path_hits": 0,
+      "lines": [
+        258,
+        314,
+        762,
+        876,
+        885,
+        931,
+        1010,
+        1191,
+        1499,
+        1620,
+        1810,
+        1840,
+        1981,
+        2160,
+        2187,
+        2217,
+        2542,
+        2564,
+        2579,
+        2780,
+        2791,
+        2920,
+        3022,
+        3038,
+        3093,
+        3186,
+        3259,
+        3282,
+        3291,
+        3615,
+        3739,
+        3754,
+        3758,
+        3764,
+        3787,
+        3796,
+        3801,
+        3824,
+        3868,
+        3994,
+        4304,
+        4420,
+        4597,
+        4624,
+        4910,
+        5123,
+        5856,
+        6118,
+        6220,
+        6241,
+        6264,
+        6293,
+        6381,
+        6400,
+        6453,
+        6479,
+        6511,
+        6648,
+        6655,
+        6662,
+        6683,
+        6703,
+        6697,
+        6792,
+        6809,
+        7008,
+        7056,
+        7074,
+        7133,
+        7139,
+        7160,
+        7214,
+        7255,
+        7422,
+        7437,
+        7484,
+        7497,
+        7506,
+        7660,
+        7931,
+        7980,
+        7978,
+        8291,
+        8308,
+        8326,
+        8347,
+        8364,
+        8400,
+        8440,
+        8494,
+        8518,
+        8544,
+        8674,
+        8729,
+        8982,
+        9084,
+        9153,
+        9361,
+        9415,
+        9453,
+        9481,
+        9479,
+        9489,
+        9575,
+        9598,
+        9616,
+        9711,
+        9745,
+        9759,
+        9808,
+        9821,
+        10093,
+        10142,
+        10150,
+        10243,
+        10394,
+        10404,
+        10475,
+        10454,
+        10473,
+        10518,
+        10568,
+        10576,
+        10606,
+        10640,
+        10707,
+        10872,
+        10921,
+        11424,
+        11467,
+        11584,
+        12007,
+        12123,
+        12388,
+        12455,
+        12615,
+        12706,
+        12725
+      ]
+    },
+    {
+      "file": "src_python/api_server.py",
+      "silent": 33,
+      "write_path_hits": 0,
+      "lines": [
+        18,
+        52,
+        66,
+        641,
+        1135,
+        1147,
+        1316,
+        1395,
+        1429,
+        1487,
+        1537,
+        1642,
+        1913,
+        2569,
+        3299,
+        3422,
+        3950,
+        4081,
+        4418,
+        4465,
+        4573,
+        4617,
+        6073,
+        6048,
+        6065,
+        6302,
+        6328,
+        6340,
+        6349,
+        7614,
+        7627,
+        8572,
+        8803
+      ]
+    },
+    {
+      "file": "src_python/db.py",
+      "silent": 29,
+      "write_path_hits": 0,
+      "lines": [
+        72,
+        114,
+        189,
+        185,
+        273,
+        303,
+        319,
+        412,
+        414,
+        410,
+        575,
+        776,
+        780,
+        793,
+        1362,
+        1379,
+        1848,
+        1846,
+        1911,
+        3022,
+        3119,
+        3303,
+        3311,
+        3629,
+        4673,
+        4679,
+        4685,
+        4721,
+        4781
+      ]
+    },
+    {
+      "file": "src_python/bridge_server.py",
+      "silent": 20,
+      "write_path_hits": 0,
+      "lines": [
+        153,
+        172,
+        176,
+        230,
+        367,
+        376,
+        436,
+        1847,
+        2887,
+        3018,
+        3297,
+        3388,
+        3845,
+        3856,
+        4297,
+        4315,
+        4321,
+        5225,
+        5660,
+        5963
+      ]
+    },
+    {
+      "file": "src_python/discovery.py",
+      "silent": 20,
+      "write_path_hits": 0,
+      "lines": [
+        107,
+        121,
+        305,
+        364,
+        517,
+        706,
+        825,
+        821,
+        1189,
+        1100,
+        1118,
+        1373,
+        1848,
+        1871,
+        1904,
+        1914,
+        1928,
+        1941,
+        1952,
+        1961
+      ]
+    },
+    {
+      "file": "src_python/llm_budget.py",
+      "silent": 17,
+      "write_path_hits": 0,
+      "lines": [
+        57,
+        149,
+        206,
+        283,
+        287,
+        367,
+        377,
+        381,
+        399,
+        470,
+        502,
+        538,
+        639,
+        683,
+        698,
+        794,
+        827
+      ]
+    },
+    {
+      "file": "src_python/realtime_filter.py",
+      "silent": 15,
+      "write_path_hits": 0,
+      "lines": [
+        283,
+        578,
+        629,
+        1129,
+        1146,
+        1159,
+        1295,
+        1301,
+        1322,
+        1474,
+        1494,
+        1800,
+        1878,
+        1883,
+        1893
+      ]
+    },
+    {
+      "file": "src_python/routers/discovery.py",
+      "silent": 14,
+      "write_path_hits": 0,
+      "lines": [
+        104,
+        195,
+        209,
+        273,
+        316,
+        355,
+        370,
+        388,
+        455,
+        486,
+        519,
+        555,
+        596,
+        817
+      ]
+    },
+    {
+      "file": "src_python/market_snapshot.py",
+      "silent": 12,
+      "write_path_hits": 0,
+      "lines": [
+        387,
+        416,
+        509,
+        538,
+        985,
+        1090,
+        1165,
+        1897,
+        1963,
+        1961,
+        2021,
+        2210
+      ]
+    },
+    {
+      "file": "src_python/belief_store.py",
+      "silent": 11,
+      "write_path_hits": 0,
+      "lines": [
+        131,
+        256,
+        306,
+        472,
+        476,
+        627,
+        660,
+        706,
+        1135,
+        1141,
+        1310
+      ]
+    },
+    {
+      "file": "src_python/review/review_agent.py",
+      "silent": 11,
+      "write_path_hits": 0,
+      "lines": [
+        1587,
+        1647,
+        2922,
+        3093,
+        3259,
+        3300,
+        3353,
+        3411,
+        3876,
+        4126,
+        5061
+      ]
+    },
+    {
+      "file": "src_python/causal_graph.py",
+      "silent": 10,
+      "write_path_hits": 0,
+      "lines": [
+        327,
+        338,
+        352,
+        363,
+        597,
+        2102,
+        2143,
+        2192,
+        2559,
+        3766
+      ]
+    },
+    {
+      "file": "src_python/cron_discovery_digest.py",
+      "silent": 10,
+      "write_path_hits": 0,
+      "lines": [
+        78,
+        136,
+        187,
+        233,
+        262,
+        292,
+        436,
+        446,
+        492,
+        514
+      ]
+    },
+    {
+      "file": "src_python/missed_signal_reflection.py",
+      "silent": 9,
+      "write_path_hits": 0,
+      "lines": [
+        171,
+        180,
+        420,
+        440,
+        512,
+        563,
+        595,
+        607,
+        622
+      ]
+    },
+    {
+      "file": "src_python/capability_acceptance.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        91,
+        186,
+        803,
+        1573,
+        1661,
+        1702,
+        1714,
+        2157
+      ]
+    },
+    {
+      "file": "src_python/db_write_guard.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        76,
+        83,
+        129,
+        162,
+        192,
+        197,
+        201,
+        232
+      ]
+    },
+    {
+      "file": "src_python/event_impact_curve.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        127,
+        194,
+        368,
+        417,
+        424,
+        552,
+        595,
+        602
+      ]
+    },
+    {
+      "file": "src_python/frozen_ruler_full.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        251,
+        810,
+        826,
+        834,
+        846,
+        853,
+        859,
+        864
+      ]
+    },
+    {
+      "file": "src_python/news_score_worker.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        108,
+        113,
+        369,
+        379,
+        386,
+        408,
+        649,
+        771
+      ]
+    },
+    {
+      "file": "src_python/engine/ingest.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        63,
+        98,
+        184,
+        195,
+        370,
+        403,
+        482,
+        533
+      ]
+    },
+    {
+      "file": "src_python/engine/worker_helpers.py",
+      "silent": 8,
+      "write_path_hits": 0,
+      "lines": [
+        146,
+        695,
+        1046,
+        1439,
+        1921,
+        1934,
+        2602,
+        2613
+      ]
+    },
+    {
+      "file": "src_python/fed_watch.py",
+      "silent": 7,
+      "write_path_hits": 0,
+      "lines": [
+        151,
+        187,
+        207,
+        273,
+        347,
+        402,
+        444
+      ]
+    },
+    {
+      "file": "src_python/paper_reflection_worker.py",
+      "silent": 7,
+      "write_path_hits": 0,
+      "lines": [
+        172,
+        263,
+        261,
+        286,
+        284,
+        775,
+        796
+      ]
+    },
+    {
+      "file": "src_python/binance_flow.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        138,
+        148,
+        159,
+        169,
+        180,
+        189
+      ]
+    },
+    {
+      "file": "src_python/calc_event_move_attribution.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        775,
+        913,
+        921,
+        945,
+        1370,
+        1482
+      ]
+    },
+    {
+      "file": "src_python/circuit_breaker.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        113,
+        175,
+        189,
+        409,
+        423,
+        421
+      ]
+    },
+    {
+      "file": "src_python/fed_rate_expectation.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        183,
+        212,
+        452,
+        549,
+        548,
+        703
+      ]
+    },
+    {
+      "file": "src_python/insight_hypothesis.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        150,
+        234,
+        242,
+        256,
+        311,
+        332
+      ]
+    },
+    {
+      "file": "src_python/meta_reflection_loop.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        69,
+        547,
+        710,
+        815,
+        820,
+        953
+      ]
+    },
+    {
+      "file": "src_python/feeds/source_status.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        174,
+        182,
+        363,
+        410,
+        432,
+        504
+      ]
+    },
+    {
+      "file": "src_python/engine/event_kline_impact_worker.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        218,
+        225,
+        575,
+        602,
+        610,
+        623
+      ]
+    },
+    {
+      "file": "src_python/engine/gate_replay_guard.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        195,
+        244,
+        258,
+        353,
+        454,
+        465
+      ]
+    },
+    {
+      "file": "src_python/engine/prices.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        55,
+        83,
+        99,
+        191,
+        217,
+        243
+      ]
+    },
+    {
+      "file": "src_python/engine/structured_reflection.py",
+      "silent": 6,
+      "write_path_hits": 0,
+      "lines": [
+        218,
+        222,
+        350,
+        419,
+        431,
+        466
+      ]
+    },
+    {
+      "file": "src_python/blindspot_reflector.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        81,
+        97,
+        179,
+        266,
+        278
+      ]
+    },
+    {
+      "file": "src_python/causal_chain_evaluator.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        255,
+        274,
+        653,
+        1311,
+        1329
+      ]
+    },
+    {
+      "file": "src_python/engine.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        25,
+        60,
+        124,
+        197,
+        244
+      ]
+    },
+    {
+      "file": "src_python/fundamental_shadow.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        345,
+        392,
+        400,
+        407,
+        601
+      ]
+    },
+    {
+      "file": "src_python/insight_loop_audit.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        73,
+        240,
+        251,
+        279,
+        286
+      ]
+    },
+    {
+      "file": "src_python/kb_facade.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        102,
+        426,
+        555,
+        635,
+        870
+      ]
+    },
+    {
+      "file": "src_python/model_probe.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        173,
+        271,
+        304,
+        417,
+        433
+      ]
+    },
+    {
+      "file": "src_python/trade_reflection_llm.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        174,
+        183,
+        243,
+        267,
+        601
+      ]
+    },
+    {
+      "file": "src_python/routers/reflection.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        151,
+        339,
+        783,
+        909,
+        942
+      ]
+    },
+    {
+      "file": "src_python/signals/signal_weight_cron.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        72,
+        79,
+        111,
+        250,
+        343
+      ]
+    },
+    {
+      "file": "src_python/feeds/quote_sources.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        326,
+        589,
+        891,
+        980,
+        1003
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_logic_analysis.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        679,
+        775,
+        830,
+        866,
+        878
+      ]
+    },
+    {
+      "file": "src_python/engine/webhook.py",
+      "silent": 5,
+      "write_path_hits": 0,
+      "lines": [
+        280,
+        409,
+        427,
+        575,
+        580
+      ]
+    },
+    {
+      "file": "src_python/cron_atom_backfill.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        54,
+        110,
+        122,
+        128
+      ]
+    },
+    {
+      "file": "src_python/fd_guard.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        109,
+        113,
+        134,
+        139
+      ]
+    },
+    {
+      "file": "src_python/macro_calendar_ff.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        270,
+        282,
+        291,
+        297
+      ]
+    },
+    {
+      "file": "src_python/peer_valuation.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        109,
+        163,
+        245,
+        296
+      ]
+    },
+    {
+      "file": "src_python/quick_sim.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        67,
+        295,
+        1877,
+        1885
+      ]
+    },
+    {
+      "file": "src_python/seed_restore.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        92,
+        100,
+        186,
+        194
+      ]
+    },
+    {
+      "file": "src_python/server_verdict.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        236,
+        442,
+        555,
+        551
+      ]
+    },
+    {
+      "file": "src_python/routers/meta.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        101,
+        105,
+        121,
+        174
+      ]
+    },
+    {
+      "file": "src_python/trident2/store.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        263,
+        364,
+        383,
+        628
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_deep.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        309,
+        712,
+        718,
+        881
+      ]
+    },
+    {
+      "file": "src_python/engine/alerts.py",
+      "silent": 4,
+      "write_path_hits": 0,
+      "lines": [
+        119,
+        235,
+        244,
+        604
+      ]
+    },
+    {
+      "file": "src_python/api_maintenance.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        192,
+        198,
+        472
+      ]
+    },
+    {
+      "file": "src_python/attribution_ai_verify.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        221,
+        335,
+        439
+      ]
+    },
+    {
+      "file": "src_python/batch_lane.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        47,
+        89,
+        96
+      ]
+    },
+    {
+      "file": "src_python/check_integrity.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        72,
+        77,
+        90
+      ]
+    },
+    {
+      "file": "src_python/cn_etf_flow.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        141,
+        175,
+        346
+      ]
+    },
+    {
+      "file": "src_python/config.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        91,
+        905,
+        2078
+      ]
+    },
+    {
+      "file": "src_python/daily_archive.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        107,
+        114,
+        122
+      ]
+    },
+    {
+      "file": "src_python/equity_mktcap.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        65,
+        127,
+        307
+      ]
+    },
+    {
+      "file": "src_python/extra_sources.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        181,
+        254,
+        267
+      ]
+    },
+    {
+      "file": "src_python/fast_move_detector.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        82,
+        437,
+        453
+      ]
+    },
+    {
+      "file": "src_python/fed_pre_event_notifier.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        120,
+        155,
+        206
+      ]
+    },
+    {
+      "file": "src_python/feishu_listener.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        233,
+        280,
+        298
+      ]
+    },
+    {
+      "file": "src_python/fomc_minutes_upgrade.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        130,
+        151,
+        157
+      ]
+    },
+    {
+      "file": "src_python/history_review.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        73,
+        130,
+        755
+      ]
+    },
+    {
+      "file": "src_python/intraday_store.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        201,
+        346,
+        1094
+      ]
+    },
+    {
+      "file": "src_python/llm_degrade_probe.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        93,
+        137,
+        193
+      ]
+    },
+    {
+      "file": "src_python/llm_schema.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        420,
+        492,
+        589
+      ]
+    },
+    {
+      "file": "src_python/observability.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        87,
+        122,
+        193
+      ]
+    },
+    {
+      "file": "src_python/sec_fundamentals.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        74,
+        81,
+        258
+      ]
+    },
+    {
+      "file": "src_python/sitecustomize.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        140,
+        47,
+        134
+      ]
+    },
+    {
+      "file": "src_python/structured_check.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        257,
+        226,
+        255
+      ]
+    },
+    {
+      "file": "src_python/timeseries.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        95,
+        100,
+        138
+      ]
+    },
+    {
+      "file": "src_python/weekly_insight_apply.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        253,
+        260,
+        336
+      ]
+    },
+    {
+      "file": "src_python/routers/exchange.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        116,
+        182,
+        323
+      ]
+    },
+    {
+      "file": "src_python/routers/health.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        163,
+        220,
+        234
+      ]
+    },
+    {
+      "file": "src_python/routers/market.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        120,
+        216,
+        249
+      ]
+    },
+    {
+      "file": "src_python/routers/policy.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        97,
+        144,
+        231
+      ]
+    },
+    {
+      "file": "src_python/signals/decision_id_space.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        86,
+        141,
+        346
+      ]
+    },
+    {
+      "file": "src_python/feeds/domestic_quotes.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        279,
+        450,
+        611
+      ]
+    },
+    {
+      "file": "src_python/feeds/news_organizer.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        294,
+        321,
+        461
+      ]
+    },
+    {
+      "file": "src_python/feeds/us10y_feed.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        85,
+        110,
+        174
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_core.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        588,
+        594,
+        677
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_ontology.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        194,
+        301,
+        474
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_policy_updater.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        330,
+        572,
+        597
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_scheduler.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        74,
+        102,
+        314
+      ]
+    },
+    {
+      "file": "src_python/engine/main.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        143,
+        149,
+        173
+      ]
+    },
+    {
+      "file": "src_python/engine/ws_client.py",
+      "silent": 3,
+      "write_path_hits": 0,
+      "lines": [
+        145,
+        150,
+        312
+      ]
+    },
+    {
+      "file": "src_python/build_series_registry.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        86,
+        92
+      ]
+    },
+    {
+      "file": "src_python/causal_chain_first_principles.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        105,
+        138
+      ]
+    },
+    {
+      "file": "src_python/code_fingerprint.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        72,
+        98
+      ]
+    },
+    {
+      "file": "src_python/cron_kline_aggregate.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        209,
+        224
+      ]
+    },
+    {
+      "file": "src_python/cron_tech_signals.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        56,
+        86
+      ]
+    },
+    {
+      "file": "src_python/crowd_sources.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        106,
+        403
+      ]
+    },
+    {
+      "file": "src_python/cycle_reversal_watcher.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        72,
+        95
+      ]
+    },
+    {
+      "file": "src_python/db_maintenance.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        278,
+        287
+      ]
+    },
+    {
+      "file": "src_python/equity_fundamentals.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        100,
+        1553
+      ]
+    },
+    {
+      "file": "src_python/event_atom.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        621,
+        630
+      ]
+    },
+    {
+      "file": "src_python/event_reverse_lookup.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        148,
+        160
+      ]
+    },
+    {
+      "file": "src_python/experience_distiller.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        145,
+        282
+      ]
+    },
+    {
+      "file": "src_python/experience_reflector.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        214,
+        226
+      ]
+    },
+    {
+      "file": "src_python/frozen_ruler_r6.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        610,
+        624
+      ]
+    },
+    {
+      "file": "src_python/impact_curve_fill.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        110,
+        171
+      ]
+    },
+    {
+      "file": "src_python/insight_contract.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        168,
+        187
+      ]
+    },
+    {
+      "file": "src_python/key_health_probe.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        45,
+        91
+      ]
+    },
+    {
+      "file": "src_python/macro_context.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        691,
+        1211
+      ]
+    },
+    {
+      "file": "src_python/missed_signal_taxonomy.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        152,
+        330
+      ]
+    },
+    {
+      "file": "src_python/multi_source_fetcher.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        144,
+        472
+      ]
+    },
+    {
+      "file": "src_python/news_cutoff.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        98,
+        239
+      ]
+    },
+    {
+      "file": "src_python/news_funnel.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        83,
+        135
+      ]
+    },
+    {
+      "file": "src_python/paper_trading.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        142,
+        449
+      ]
+    },
+    {
+      "file": "src_python/pipeline_health.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        96,
+        133
+      ]
+    },
+    {
+      "file": "src_python/quick_sim_cycle.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        54,
+        63
+      ]
+    },
+    {
+      "file": "src_python/risk_guard.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        47,
+        54
+      ]
+    },
+    {
+      "file": "src_python/runtime_metrics.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        199,
+        296
+      ]
+    },
+    {
+      "file": "src_python/stops.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        32,
+        191
+      ]
+    },
+    {
+      "file": "src_python/structured_input.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        509,
+        541
+      ]
+    },
+    {
+      "file": "src_python/trade_decisions.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        78,
+        251
+      ]
+    },
+    {
+      "file": "src_python/verifier_feedback.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        60,
+        111
+      ]
+    },
+    {
+      "file": "src_python/routers/causal.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        58,
+        235
+      ]
+    },
+    {
+      "file": "src_python/routers/events.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        415,
+        420
+      ]
+    },
+    {
+      "file": "src_python/routers/macro.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        82,
+        224
+      ]
+    },
+    {
+      "file": "src_python/routers/obs.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        101,
+        241
+      ]
+    },
+    {
+      "file": "src_python/routers/trading_v201.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        347,
+        412
+      ]
+    },
+    {
+      "file": "src_python/signals/decision_provenance.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        91,
+        101
+      ]
+    },
+    {
+      "file": "src_python/signals/signal_weight_evaluator.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        768,
+        1195
+      ]
+    },
+    {
+      "file": "src_python/feeds/causal_weight_feedback.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        246,
+        535
+      ]
+    },
+    {
+      "file": "src_python/feeds/jin10_mcp.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        118,
+        238
+      ]
+    },
+    {
+      "file": "src_python/review/reflection_checkers.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        123,
+        1493
+      ]
+    },
+    {
+      "file": "src_python/review/review_snapshot.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        188,
+        199
+      ]
+    },
+    {
+      "file": "src_python/engine/strategy_reflection.py",
+      "silent": 2,
+      "write_path_hits": 0,
+      "lines": [
+        388,
+        416
+      ]
+    },
+    {
+      "file": "src_python/ai_prompts.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        590
+      ]
+    },
+    {
+      "file": "src_python/analysis_process.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        88
+      ]
+    },
+    {
+      "file": "src_python/attribution_ai_queue.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        104
+      ]
+    },
+    {
+      "file": "src_python/attribution_rule_verify.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        257
+      ]
+    },
+    {
+      "file": "src_python/audit_gate_hook.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        58
+      ]
+    },
+    {
+      "file": "src_python/backfill_critical_moves.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        89
+      ]
+    },
+    {
+      "file": "src_python/backfill_ohlcv_local.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        146
+      ]
+    },
+    {
+      "file": "src_python/bridge_news.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        417
+      ]
+    },
+    {
+      "file": "src_python/bridge_panels.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        49
+      ]
+    },
+    {
+      "file": "src_python/c_technical_reflections.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        315
+      ]
+    },
+    {
+      "file": "src_python/capabilities.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        52
+      ]
+    },
+    {
+      "file": "src_python/capability_scorecard.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        644
+      ]
+    },
+    {
+      "file": "src_python/causal_chain_expander.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        446
+      ]
+    },
+    {
+      "file": "src_python/causal_chains.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        51
+      ]
+    },
+    {
+      "file": "src_python/cboe_vix.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        95
+      ]
+    },
+    {
+      "file": "src_python/chain_prior.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        51
+      ]
+    },
+    {
+      "file": "src_python/cn_fundamentals.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        828
+      ]
+    },
+    {
+      "file": "src_python/cost_ledger.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        99
+      ]
+    },
+    {
+      "file": "src_python/cron_causal_expand.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        44
+      ]
+    },
+    {
+      "file": "src_python/cron_causal_graph_refresh.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        76
+      ]
+    },
+    {
+      "file": "src_python/cron_causal_outcome_eval.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        98
+      ]
+    },
+    {
+      "file": "src_python/cron_persist_evidence.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        85
+      ]
+    },
+    {
+      "file": "src_python/crowd_subjects.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        766
+      ]
+    },
+    {
+      "file": "src_python/crowd_worker.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        46
+      ]
+    },
+    {
+      "file": "src_python/crypto_vol.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        55
+      ]
+    },
+    {
+      "file": "src_python/db_retry.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        122
+      ]
+    },
+    {
+      "file": "src_python/decision_engine.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        250
+      ]
+    },
+    {
+      "file": "src_python/decision_guard.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        59
+      ]
+    },
+    {
+      "file": "src_python/event_playbook.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        81
+      ]
+    },
+    {
+      "file": "src_python/expire_unlandable_adjustments.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        81
+      ]
+    },
+    {
+      "file": "src_python/external_data.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        311
+      ]
+    },
+    {
+      "file": "src_python/factor_ontology.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        274
+      ]
+    },
+    {
+      "file": "src_python/fed_h41.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        50
+      ]
+    },
+    {
+      "file": "src_python/fix_polluted_outcome_pct.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        166
+      ]
+    },
+    {
+      "file": "src_python/frozen_ruler.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        174
+      ]
+    },
+    {
+      "file": "src_python/id_reconcile.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        576
+      ]
+    },
+    {
+      "file": "src_python/impact_statistics.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        106
+      ]
+    },
+    {
+      "file": "src_python/insight_decision_attr.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        219
+      ]
+    },
+    {
+      "file": "src_python/judge_worker.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        148
+      ]
+    },
+    {
+      "file": "src_python/judgment_benchmark.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        594
+      ]
+    },
+    {
+      "file": "src_python/knowledge_base.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        72
+      ]
+    },
+    {
+      "file": "src_python/l2_batcher.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        162
+      ]
+    },
+    {
+      "file": "src_python/ledger.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        75
+      ]
+    },
+    {
+      "file": "src_python/license_auth.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        176
+      ]
+    },
+    {
+      "file": "src_python/link_causal_chain_decisions.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        267
+      ]
+    },
+    {
+      "file": "src_python/master_keeper.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        39
+      ]
+    },
+    {
+      "file": "src_python/net_path_probe.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        106
+      ]
+    },
+    {
+      "file": "src_python/nlq.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        275
+      ]
+    },
+    {
+      "file": "src_python/notification_channels.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        296
+      ]
+    },
+    {
+      "file": "src_python/param_adjust_apply.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        260
+      ]
+    },
+    {
+      "file": "src_python/pipeline_guard.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        293
+      ]
+    },
+    {
+      "file": "src_python/reflection_ab.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        121
+      ]
+    },
+    {
+      "file": "src_python/reuters_news.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        88
+      ]
+    },
+    {
+      "file": "src_python/role_intraday_flow.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        43
+      ]
+    },
+    {
+      "file": "src_python/sample_quality_filter.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        630
+      ]
+    },
+    {
+      "file": "src_python/sec_insider.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        55
+      ]
+    },
+    {
+      "file": "src_python/semantic_memory.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        265
+      ]
+    },
+    {
+      "file": "src_python/shadow_ledger.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        373
+      ]
+    },
+    {
+      "file": "src_python/silent_ledger.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        84
+      ]
+    },
+    {
+      "file": "src_python/structural_edge.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        40
+      ]
+    },
+    {
+      "file": "src_python/target_resolver.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        113
+      ]
+    },
+    {
+      "file": "src_python/trade_executor.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        518
+      ]
+    },
+    {
+      "file": "src_python/trade_preflight.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        81
+      ]
+    },
+    {
+      "file": "src_python/us_earnings.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        45
+      ]
+    },
+    {
+      "file": "src_python/ust_curve_treasury.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        94
+      ]
+    },
+    {
+      "file": "src_python/ust_yields.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        98
+      ]
+    },
+    {
+      "file": "src_python/variant_arena.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        185
+      ]
+    },
+    {
+      "file": "src_python/yf_fd_guard.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        89
+      ]
+    },
+    {
+      "file": "src_python/routers/agent_chat.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        300
+      ]
+    },
+    {
+      "file": "src_python/routers/ai.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        97
+      ]
+    },
+    {
+      "file": "src_python/routers/backups.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        57
+      ]
+    },
+    {
+      "file": "src_python/routers/connectivity.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        184
+      ]
+    },
+    {
+      "file": "src_python/routers/divergence.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        268
+      ]
+    },
+    {
+      "file": "src_python/routers/ops.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        141
+      ]
+    },
+    {
+      "file": "src_python/routers/portal.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        76
+      ]
+    },
+    {
+      "file": "src_python/routers/replay.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        179
+      ]
+    },
+    {
+      "file": "src_python/routers/trident2.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        40
+      ]
+    },
+    {
+      "file": "src_python/migrations/backfill_event_time_utc.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        176
+      ]
+    },
+    {
+      "file": "src_python/analysis/confidence.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        167
+      ]
+    },
+    {
+      "file": "src_python/analysis/contract.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        263
+      ]
+    },
+    {
+      "file": "src_python/analysis/route.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        124
+      ]
+    },
+    {
+      "file": "src_python/signals/confidence_shadow.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        263
+      ]
+    },
+    {
+      "file": "src_python/signals/decision_actions.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        157
+      ]
+    },
+    {
+      "file": "src_python/signals/decision_ref_archive.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        67
+      ]
+    },
+    {
+      "file": "src_python/trident2/context.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        586
+      ]
+    },
+    {
+      "file": "src_python/feeds/dollar_index_feed.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        77
+      ]
+    },
+    {
+      "file": "src_python/feeds/domestic_runner.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        55
+      ]
+    },
+    {
+      "file": "src_python/feeds/equity_feed.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        274
+      ]
+    },
+    {
+      "file": "src_python/feeds/es_feed.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        78
+      ]
+    },
+    {
+      "file": "src_python/feeds/news_sources.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        117
+      ]
+    },
+    {
+      "file": "src_python/feeds/nq_feed.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        75
+      ]
+    },
+    {
+      "file": "src_python/review/gate_audit.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        217
+      ]
+    },
+    {
+      "file": "src_python/review/gate_calibrator.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        50
+      ]
+    },
+    {
+      "file": "src_python/review/review_excel_export.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        256
+      ]
+    },
+    {
+      "file": "src_python/market/market_data_fallback.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        139
+      ]
+    },
+    {
+      "file": "src_python/market/market_pulse.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        250
+      ]
+    },
+    {
+      "file": "src_python/market/price_structure.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        181
+      ]
+    },
+    {
+      "file": "src_python/engine/attribute_multi_factor.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        237
+      ]
+    },
+    {
+      "file": "src_python/engine/cross_asset_anomaly_notifier.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        66
+      ]
+    },
+    {
+      "file": "src_python/engine/data_source_alert.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        203
+      ]
+    },
+    {
+      "file": "src_python/engine/fed_rate_notifier.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        69
+      ]
+    },
+    {
+      "file": "src_python/engine/macro_calendar_notifier.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        156
+      ]
+    },
+    {
+      "file": "src_python/engine/net_guard.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        94
+      ]
+    },
+    {
+      "file": "src_python/engine/reflection.py",
+      "silent": 1,
+      "write_path_hits": 0,
+      "lines": [
+        274
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+# ruff.toml — 只拦「真错误」，不拦风格
+#
+# 背景：backend/src_python 有 420 个平铺模块、2 万行的 api_server.py，历史上没有
+# 任何 lint 门禁。一次性打开全部规则会产生上万条噪音，结果一定是全体 ignore ——
+# 等于没有门禁。所以这里只选「无论什么风格都必须修」的一类：
+#
+#   E9  → 语法错误（连 pyflakes 都跑不下去的那种）
+#   F63 → 无效的 ==/!= 比较、非法的转义序列
+#   F7  → __future__ 导入位置错误、无用 import 等致命写法
+#   F82 → 未定义名字（真·运行时 NameError）/ __all__ 里导出不存在的名字
+#
+# 风格类（行长、引号、import 排序）先不开，交给 ruff format / 人工。
+# 升级严格度请按目录逐步加规则，不要全局加。
+
+target-version = "py311"
+line-length = 120
+
+exclude = [
+    ".git",
+    ".shots",
+    ".pytest_cache",
+    "frontend",
+    "node_modules",
+    "docs",
+    "ui-redesign",
+    # 一次性运维脚本：跑完即弃，不做长期规范约束
+    "backend/scripts/oneoff",
+    # 迁移态目录
+    "backend/src_python/migrations",
+]
+
+[lint]
+select = ["E9", "F63", "F7", "F82"]
+
+# ── 历史债基线：已清零（2026-11-18）────────────────────────────────────
+# 2026-11-16 曾按文件冻结 129 条 F821/F822（主要是注解里的 typing 名未 import，
+# 模块有 `from __future__ import annotations` 所以运行时不报错）。
+# 2026-11-18 逐条处理干净：
+#   · 真·运行时 NameError 全修（_rc / 三处"复制残影" / ingest 的 _dig+parts）
+#   · 注解里的 typing 名补齐 import（15 个文件）
+#   · api_server 的 pathlib / PaperTradingBody 走 TYPE_CHECKING（不引入循环导入）
+# 现在 `ruff check --select F821` 对全仓 0 命中，per-file 豁免已全部删除。
+# 规矩不变：此段不得再添加豁免，新代码必须当场绿。
+
+[lint.isort]
+known-first-party = ["engine", "config", "db"]

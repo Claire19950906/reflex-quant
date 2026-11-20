@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 追加型表保留策略【真删】班次。与 com.trident.retention-prune（dry-run 出报告）分工。
+         窗口/口径以 scripts/retention_prune.py 为准；RETENTION_APPLY=0 可临时退回 dry-run。 -->
+    <key>Label</key>
+    <string>com.trident.retention</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/Desktop/金融1.0/backend/cron/run_retention.sh</string>
+    </array>
+
+    <!-- 每天 03:45（早于 05:20 的 dry-run 报告班次） -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>45</integer>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/Desktop/金融1.0/backend</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+        <key>RETENTION_APPLY</key>
+        <string>1</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/claire/.trident/log/retention.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/claire/.trident/log/retention.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

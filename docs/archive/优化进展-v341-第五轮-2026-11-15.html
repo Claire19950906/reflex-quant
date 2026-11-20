@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>优化进展 v341 · 第五轮 · 2026-11-15</title>
+<style>
+:root{
+  --bg:#0b0f14; --card:#141a22; --card2:#1a222c; --line:#233040;
+  --txt:#e6edf3; --dim:#8fa3b8; --ok:#35d07f; --warn:#ffb84d; --bad:#ff6b6b; --acc:#4d9fff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  line-height:1.65;padding:48px 24px 80px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:30px;margin:0 0 8px;letter-spacing:.4px}
+h2{font-size:19px;margin:44px 0 14px;padding-left:12px;border-left:3px solid var(--acc)}
+h3{font-size:15px;color:var(--acc);margin:22px 0 8px;font-weight:600}
+.sub{color:var(--dim);font-size:13px;margin-bottom:26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:.5px}
+.kpi .l{color:var(--dim);font-size:12px;margin-top:4px}
+.muted{color:var(--dim);font-size:12px}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .acc{color:var(--acc)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+th{text-align:left;color:var(--dim);font-weight:500;padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid #1b2431;vertical-align:top}
+tr:last-child td{border-bottom:none}
+code{background:#0d131a;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:#9ecbff}
+.bars{margin-top:14px}
+.bar{display:grid;grid-template-columns:110px 1fr 92px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.track{height:9px;background:#0d131a;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;border-radius:6px}
+.num{text-align:right;color:var(--dim);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+.tag.ok{color:var(--ok);border-color:#1f4a35}
+.tag.bad{color:var(--bad);border-color:#4a2529}
+.tag.warn{color:var(--warn);border-color:#4a3a1e}
+.note{font-size:12.5px;color:var(--dim);margin-top:10px}
+ul{margin:8px 0 0 18px;padding:0}
+li{margin:6px 0;font-size:13.5px}
+.foot{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>优化进展 · 第五轮</h1>
+  <div class="sub">Reflex Quant v341 · 2026-11-15 · 本轮 6 个提交 · 主题：把"能算"变成"真会用"</div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n ok">25</div><div class="l">回测与阈值覆盖品种（原 22）</div></div>
+    <div class="kpi"><div class="n ok">13,030</div><div class="l">tech_signals 首次真落库</div></div>
+    <div class="kpi"><div class="n ok">0</div><div class="l">清洗后残留跳变（AAPL/NVDA/TSLA）</div></div>
+    <div class="kpi"><div class="n warn">0</div><div class="l">ai_decisions 行数（仍卡通道）</div></div>
+  </div>
+
+  <h2>一、阈值政策真正接进运行时</h2>
+  <div class="card">
+    <p>上一轮只产出了"哪个品种该用几 % 阈值"的报告，本轮把它接进异动检测，并定下一条硬规则：</p>
+    <p><code>最终阈值 = max(政策阈值, 3% × 逐点波动率 scale)</code> —— <b>只收紧，绝不放松</b>，
+       <code>TRIDENT_THRESH_POLICY=off</code> 可整体关掉，矩阵缺失/判定 insufficient 自动回落。</p>
+    <div class="bars">
+      <div class="bar"><span>BTC</span><div class="track"><div class="fill" style="width:89%;background:#4d9fff"></div></div><span class="num">292 → 261</span></div>
+      <div class="bar"><span>SOL</span><div class="track"><div class="fill" style="width:90%;background:#4d9fff"></div></div><span class="num">383 → 346</span></div>
+      <div class="bar"><span>DOGE</span><div class="track"><div class="fill" style="width:91%;background:#4d9fff"></div></div><span class="num">351 → 319</span></div>
+      <div class="bar"><span>XRP</span><div class="track"><div class="fill" style="width:97%;background:#4d9fff"></div></div><span class="num">370 → 360</span></div>
+      <div class="bar"><span>TSLA</span><div class="track"><div class="fill" style="width:51%;background:#35d07f"></div></div><span class="num">511 → 260</span></div>
+      <div class="bar"><span>AAPL</span><div class="track"><div class="fill" style="width:12%;background:#35d07f"></div></div><span class="num">689 → 84</span></div>
+    </div>
+    <div class="note">ETH / XAU / NDX 判定 blocked（阈值 2% 比自适应更松）→ 条数不变，符合"只收紧"设计，不是没生效。</div>
+  </div>
+
+  <h2>二、四个真 bug，都是"数据被改写/被丢掉"</h2>
+  <table>
+    <tr><th style="width:150px">问题</th><th>实测证据</th><th style="width:200px">处理</th></tr>
+    <tr>
+      <td><b>加密被当成拆股</b><br><span class="tag bad">擦掉历史</span></td>
+      <td>DOGE 0.0057→0.0105、0.0074→0.0363、0.18→0.37 被按 ×1.86 / ×4.9 / ×2.0 归平，
+          把真实牛市从序列里抹掉；+128%、+323% 的单日行情被判"量纲污染"丢弃。</td>
+      <td>新增 <code>has_splits()</code>：加密无拆股→不归平（打 <code>[REAL-MOVE]</code>）；
+          量纲上限按市场分档：有拆股 90%、加密 500%。</td>
+    </tr>
+    <tr>
+      <td><b>空洞被当成拆股</b><br><span class="tag bad">篡改历史价</span></td>
+      <td>AAPL 32.20→91.13 跨 <b>808 天</b>、NVDA 7.86→15.96 跨 <b>1,720 天</b>，
+          被当成 1:2.8 拆股，把前面 1,053 / 1,495 根价格整段改写。</td>
+      <td>拆股归平只认<b>相邻交易日</b>（间隔 ≤6 天）。改后假调整全消失，真实拆股照旧，
+          残留跳变 0 处。</td>
+    </tr>
+    <tr>
+      <td><b>60 个点就算完</b><br><span class="tag bad">覆盖漏 90%</span></td>
+      <td>DOGE / XRP 的"价格"指标只有最近 60 个快照，检测只覆盖两个月；
+          日线表里明明有 2,320 / 2,506 根。</td>
+      <td>回退判据从"少于 30 根"改成"少于 250 根且日线明显更长"。</td>
+    </tr>
+    <tr>
+      <td><b>闸门挡掉派生缓存</b><br><span class="tag bad">表长期 0 行</span></td>
+      <td><code>tech_signals</code> 每轮算出 25 品种各几百条信号，写入 0 条 ——
+          纪元闸门按 K 线时间过滤，而日线最新早于纪元。</td>
+      <td>新增 <code>--history</code> 显式回填（仍限每品种 1,200 根），
+          已写入 <b>13,030 行</b>；污染探针改看 <code>created_ts</code>，残留仍 0。</td>
+    </tr>
+  </table>
+
+  <h2>三、补上美股三只的行情（yfinance 本地不可用）</h2>
+  <div class="card">
+    <p>AMZN / META / GOOGL 早就在回填名单里，但 yfinance 在本机对三只<b>全部返回 0 行</b>，
+       <code>ohlcv_daily</code> 一直是 0。实测新浪美股日 K 无需代理也无需 key：</p>
+    <div class="bars">
+      <div class="bar"><span>AMZN</span><div class="track"><div class="fill" style="width:100%;background:#35d07f"></div></div><span class="num">6,859 根</span></div>
+      <div class="bar"><span>META</span><div class="track"><div class="fill" style="width:53%;background:#35d07f"></div></div><span class="num">3,644 根</span></div>
+      <div class="bar"><span>GOOGL</span><div class="track"><div class="fill" style="width:72%;background:#35d07f"></div></div><span class="num">4,947 根</span></div>
+    </div>
+    <div class="note">META 的老历史挂在 <code>FB</code> 名下（只查 META 只有 2022 起 1,113 根，合并后回到 2012 上市）；
+      <code>backfill_ohlcv</code> 已加新浪兜底。回测判定：AMZN 薄利勿用（5%，净 +0.11），META / GOOGL 禁追涨（各 −0.22）。</div>
+  </div>
+
+  <h2>四、两条不再靠人盯的自动化</h2>
+  <table>
+    <tr><th style="width:210px">作业</th><th>做什么</th><th style="width:130px">状态</th></tr>
+    <tr><td><code>threshold-sweep</code><br><span class="tag">周一 02:17</span></td>
+        <td>重算 25 品种阈值矩阵 → 立刻跑政策自检（矩阵是否过期 / use-weak 是否真收紧）</td>
+        <td><span class="tag ok">已装并实测 rc=0</span></td></tr>
+    <tr><td><code>recheck_acceptance</code><br><span class="tag">复检脚本 2.6/4 步</span></td>
+        <td>把"政策是否在生效"变成一条可检查结论，避免矩阵换版后静默回落</td>
+        <td><span class="tag ok">已接进</span></td></tr>
+  </table>
+  <div class="note">安装时踩到 macOS 权限：launchd 执行 <code>~/Desktop</code> 里的脚本会被 TCC 拒（exit 126），
+    wrapper 必须放 <code>~/.trident/wrappers/</code>。</div>
+
+  <h2>五、写锁：找到了被误判的真因</h2>
+  <div class="card">
+    <p>快讯脚本明明设了 <code>busy_timeout=20000</code>，锁错误却立即返回。真因是
+      <b>读事务升级成写事务</b>：SELECT 已开启读事务，随后 INSERT 要升级，
+      而别的进程刚提交过写 → SQLite 直接返回 SQLITE_BUSY，busy handler 在这条路上不生效。</p>
+    <p>修法：<code>db_retry.py</code> 提供自动提交连接 + 退避重试（2s / 4s / 6s），
+      两个快讯脚本已改走它。</p>
+    <div class="note">另外三个高频报错点（宏观日历 FF、K 线影响、AI 调用统计）经查
+      <b>早就有重试</b>，日志里的失败是"重试耗尽后的真丢失"，属突发窗口过长，要继续降只能缩小事务粒度。</div>
+  </div>
+
+  <h2>六、空表盘点：11 个"写了代码没挂调度"</h2>
+  <table>
+    <tr><th style="width:250px">类别</th><th>张数</th><th>说明</th></tr>
+    <tr><td>有写函数但无定时作业</td><td class="acc">11</td>
+        <td>tech_signals（本轮已补数据）、anomaly_history、causal_chain_outcomes、event_impact_stat、
+            decision_ref_archive、gate_evaluations、event_attribution_t1、reflection_3layer、
+            shadow_ledger、event_swing_ledger、strategy_param_adjustments</td></tr>
+    <tr><td>只有存储层、<b>检测层没实现</b></td><td class="bad">1</td>
+        <td>anomaly_history：<code>save_anomalies()</code> 已写好但全项目无人调用，
+            没有任何代码计算异常点 —— 属功能缺口，需你决定是否补检测逻辑</td></tr>
+    <tr><td>完全没有写入代码</td><td class="bad">4</td>
+        <td>judgment_calibration、ai_decisions_impact_backfill、
+            ai_decisions_sentiment_backfill、signal_weight_replay_backfill</td></tr>
+    <tr><td>我自己留下的探针空表</td><td class="warn">2</td>
+        <td><code>_lockprobe2</code>、<code>_ec</code> —— 已删除，生产库不该有</td></tr>
+  </table>
+  <div class="note">实测 event_swing 可跑通，但近 40 天只有 1 个事件（CPI）、样本 0，
+    记账 0 条 —— 纪元重置后样本基数还没长回来，现在挂调度也是空转，等事件积累后再接。</div>
+
+  <h2>六点五、ai_decisions 为什么是 0：输入侧是通的，卡在 gate 这一步</h2>
+  <div class="card">
+    <p>逐段打通了链路，结论很清楚——<b>不是没数据，也不是输入侧断了</b>：</p>
+    <table>
+      <tr><th style="width:210px">环节</th><th style="width:120px">实测</th><th>判断</th></tr>
+      <tr><td>新闻入库（纪元后）</td><td class="ok">661 条</td><td>正常：PENDING 32 + FILTERED 629</td></tr>
+      <tr><td>新闻 → 事件结构化</td><td class="ok">409 条</td><td>正常，抽取链路工作</td></tr>
+      <tr><td>gate（是否值得决策）</td><td class="bad">近 12h 全失败</td><td class="bad">MiniMax 429/额度 + 本地通道 connection refused</td></tr>
+      <tr><td>ai_decisions</td><td class="bad">0 行</td><td>gate 不出结果 → 不产生决策，逻辑上正确</td></tr>
+      <tr><td>gate_evaluations</td><td class="bad">0 行</td><td>另一个"写了代码没挂调度"的表</td></tr>
+    </table>
+    <p style="margin-top:14px"><b>本地通道为什么起不来</b>（三层叠加）：</p>
+    <ul>
+      <li><code>com.trident.ollama</code> 这个 launchd 作业<b>根本没加载</b>（服务不存在），
+          <code>Ollama.app</code> 在 10-09 装过但二进制不在 PATH —— 所以引擎调本地模型是
+          <code>connection refused</code>，不是"模型太慢"。</li>
+      <li>就算加载：这台机器 8.0 GB 内存、空闲页仅 ~17 MB、swap 已用 3.77/4.00 GB，
+          跑 3B 模型会严重换页（早前实测 8 个 token 要 120 s）。</li>
+      <li>MiniMax 两条通道都是 2056 额度上限 → 云端也接不上。</li>
+    </ul>
+    <div class="note">代码侧不需要再改：配的是"云端优先 + 本地兜底"，两条通道都断时就是 0 决策，
+      这属于外部资源问题，不是程序缺陷。可选解法只有两个：① 给一把可用 key（DeepSeek / 方舟 / MiniMax 充值）；
+      ② 把 ollama 作业加载起来（要接受这台 8 GB 机器明显变卡）。</div>
+  </div>
+
+  <h2>六点七、清了两个"挂错名字"的资产，TENCENT 从 1 根补到 997 根</h2>
+  <div class="card">
+    <p><b>① A50 / CN-SZC 是假数据</b>（不是猜，是价格量级对不上）：</p>
+    <table>
+      <tr><th style="width:120px">资产</th><th style="width:140px">最后一根 close</th><th>真实身份</th></tr>
+      <tr><td>A50</td><td class="bad">3,634.35</td><td>上证指数量级 —— 富时中国 A50 期货在 1.3 万以上</td></tr>
+      <tr><td>CN-SZC</td><td class="bad">10,968.79</td><td>深证成指量级 —— 不是中证系列</td></tr>
+    </table>
+    <p style="margin-top:10px">两者各只有 1 根 K 线，且 <code>ohlcv_refresh_cn.SKIP_ASSETS</code> 早已把它们排除，
+      永远不会再增长。已按"先导出后删除"处理：删除前写
+      <code>runtime/backup/mislabel_assets_*.json</code>（可回滚），再删掉这 2 行。</p>
+
+    <p style="margin-top:16px"><b>② TENCENT 补齐港股日线</b>：原来只有 1 根快照价（src=kline_bars_1d），
+      技术上等于没有序列。新写 <code>hk_daily_gtimg.py</code> 走腾讯行情接口
+      （<code>hkfqkline</code>，前复权全历史，不要 key、不要代理），补到
+      <b>997 根</b>（2022-10-24 → 2026-11-13），相邻跳变 >15% 为 <b>0 处</b>。</p>
+    <div class="note">交叉验证：接口返回的末根 close=386.6，与库里原本那根快照价**完全一致** ——
+      说明两边口径对得上，不是拼接出来的假历史。同时挂了 <code>com.trident.hk-daily</code>
+      每日 17:10 的作业，避免数据又停在补数那天（手动跑一次 rc=0，幂等）。</div>
+
+    <p style="margin-top:14px"><b>遗留</b>：<code>000660.KS</code>（SK海力士）仍 33 根。Yahoo chart 接口本身能取到，
+      但这台机器连续请求被限流（429 / SSL EOF），本轮没取下来；
+      <code>yahoo_chart_daily.py</code> 已带 2/5/10 秒退避，等风控松开再跑一次即可。</p>
+  </div>
+
+  <h2>六点八、000660.KS 补到 4,158 根；慢异动为 0 是时间边界，不是 bug</h2>
+  <div class="card">
+    <p><b>① SK海力士补齐历史</b>：原来的 33 根（yfinance）；Yahoo chart 接口持续 429（限流 9 小时未恢复），
+      改走韩国本土 <b>Naver Finance</b> 接口（不要 key、不要代理），补到
+      <b>4,158 根</b>（2010-01-04 → 2026-11-13）。全库已无"不足 50 根"的品种。</p>
+    <div class="note">这里做了一件克制的事：新源与旧 33 根在重叠的 26 天上<b>平均相差 5.14%、最大 12.92%</b>
+      （两个都自称"收盘价"却对不上）。所以脚本默认 <code>keep_existing=True</code>——
+      <b>只补空缺日期，不覆盖既有行</b>。补历史是净收益，改现值则可能把一份能用的数据换成有问题的一份。</div>
+
+    <p style="margin-top:14px"><b>② 慢异动仍 0 条，但这是时间边界，不是检测器坏了</b>。实测证据：</p>
+    <ul>
+      <li>检测本身完全正常：XAU 180 条、WTI 140 条、XRP 362 条、XAG 293 条慢异动都算出来了；</li>
+      <li>但闸门只认 <code>ts >= 纪元</code>：<b>7,824 条 → 9 条</b>（剔除历史 7,815 条），留下来的全是 60 分钟级快异动；</li>
+      <li>原因是加密日线的报价时间戳是 <b>每天 08:00</b>，而纪元起点是 11-15 <b>09:10</b>——
+          最新一根 11-15 08:00 仍早于纪元，所以被正确地挡掉。</li>
+    </ul>
+    <p>也就是说，第一根能过闸门的日线是 <b>11-16 08:00</b>。检查时点 07:20，这根还没成交。
+      如果 11-16 08:00 入库后慢异动仍为 0，那才是真 bug。</p>
+  </div>
+
+  <h2>六点九、写锁再调查：不是"长事务占着不放"，而是高频短撞 + 饥饿</h2>
+  <div class="card">
+    <p>跑了一遍作业体检，<code>database is locked</code> 在多个作业里又出现，
+      而且 <code>wscn-flash</code> 的日志是"重试 4 次后放弃"——不是偶发，是真丢数据。
+      先做了三轮调查，结论被<b>实测推翻了一次</b>，记录如下：</p>
+
+    <table>
+      <tr><th style="width:200px">调查</th><th style="width:220px">结果</th><th>推论</th></tr>
+      <tr><td>journal 模式</td><td>已是 <b>WAL</b>，page_size 4096</td><td class="ok">不是模式问题</td></tr>
+      <tr><td>日历撞车</td><td>95 个作业里仅 18 条日历触发，同分钟最多 2 个</td><td class="ok">不是"都定在 9:00"</td></tr>
+      <tr><td>周期作业密度</td><td class="bad">74 个固定周期作业（120s～330s）；1 小时内 70 个作业活跃</td><td>写压力是<b>持续</b>的</td></tr>
+      <tr><td>锁占用率探针（60 秒实测）</td><td>抢锁 75 次成功 51 次（<b>68%</b>）；平均 <b>41 ms</b>，最长 <b>758 ms</b></td>
+          <td class="bad">锁从不长时间被占 —— 是<b>亚秒级高频互撞</b></td></tr>
+      <tr><td>24h 锁错误统计</td><td class="bad">54 个作业、13,160 行；其中 <b>10 个作业真放弃</b></td><td>真丢数据集中在少数写入点</td></tr>
+    </table>
+
+    <p style="margin-top:14px"><b>因此上一版改法是错的</b>：我先按"引擎长事务占锁几十秒"的假设，
+      把退避改成 2/4/8/16/20 秒（累计约 60 秒）。实测证明锁只占零点几秒，
+      于是"先睡 2 秒"反而更抢不到，还拖慢抓取节奏。</p>
+
+    <table>
+      <tr><th style="width:180px">项</th><th style="width:200px">第一版（已推翻）</th><th>当前版（按实测）</th></tr>
+      <tr><td>重试次数</td><td>6</td><td class="ok">10</td></tr>
+      <tr><td>首次等待</td><td>2 秒</td><td class="ok">0.15 秒</td></tr>
+      <tr><td>退避节奏</td><td>2/4/8/16/20s</td><td class="ok">0.15/0.3/0.6/1.2/2.0s 后封顶</td></tr>
+      <tr><td>抖动</td><td>±20%</td><td>±20%</td></tr>
+    </table>
+    <div class="note">验证：改完直接跑 <code>sina_flash</code>，<b>新增 1 条 / 跳过重复 49 条，全程无锁告警</b>。
+      这也说明"拥挤"本身不是致命问题，<b>退避节奏选错才是</b>。</div>
+
+    <p style="margin-top:14px"><b>真丢数据集中在哪</b>（24h 内"重试后放弃"的计数）：</p>
+    <ul>
+      <li><code>tencent_quotes</code> 188 次、<code>sina_flash</code> 110 次、<code>okx_flow</code> 97 次、<code>atom_backfill</code> 96 次、<code>news_score</code> 32 次；</li>
+      <li>另外 <code>bridge</code> 3,882 行、<code>engine</code> 3,715 行、<code>event_kline_impact</code> 3,203 行 —— 这三处是<b>重试成功</b>的（刷屏但不丢数据），说明它们只是吵，不是伤。</li>
+    </ul>
+    <div class="note">结构上的解法仍有三条，本轮都没动手：① 拉长高频作业周期；
+      ② 写入改单写入者队列；③ 引擎批量提交分批。这些要改调度/架构，需要你拍方向。</div>
+
+    <p style="margin-top:16px"><b>但继续往下挖，找到了一处真正的代码缺陷（不是"拥挤"，是这个写法本身就必炸）</b></p>
+    <p>真丢数据最多的 <code>tencent_quotes</code>（24h 放弃 188 次）走的是
+      <code>external_data.ingest_external</code>。它的写法是：</p>
+    <ul>
+      <li>连接用<b>默认隔离级别</b>；</li>
+      <li>先 <code>SELECT 1 ... WHERE asset=? AND indicator=? AND ts=?</code> 查重 → 这一步已经<b>开启了一个读事务</b>；</li>
+      <li>紧接着 <code>INSERT</code> 需要把这个读事务<b>升级成写事务</b>；</li>
+      <li>只要别的进程刚提交过写，SQLite 立刻返回 <code>SQLITE_BUSY</code> —— 而且
+          <b>busy_timeout 在这里完全不生效</b>（busy handler 只处理"拿不到锁"，不处理快照升级冲突）。</li>
+    </ul>
+    <p>所以每条行情都是"必炸"的，PRAGMA busy_timeout=30000 形同虚设。修法：</p>
+    <table>
+      <tr><th style="width:220px">改法</th><th>说明</th></tr>
+      <tr><td><code>isolation_level=None</code></td><td>每条语句自带事务，不再有"读事务升级"这条路</td></tr>
+      <tr><td>INSERT 走 <code>db_retry.insert_with_retry</code></td><td>真撞上别人才退避重试（按实测的密集快试节奏）</td></tr>
+    </table>
+    <div class="note">实测验证（改完立刻跑）：
+      <code>tencent_quotes</code> 写入 <b>38 条 / 9 标的全覆盖、零锁告警</b>（原来 24h 放弃 188 次）；
+      <code>okx_flow</code> 写入 <b>9 条 / 3 标的、零锁告警</b>（原来 97 次放弃）；
+      <code>news_score_worker</code> 扫 40 条正常。这条修复对所有调用
+      <code>ingest_external</code> 的采集脚本一起生效，不止这三个。</div>
+  </div>
+
+    <p style="margin-top:16px"><b>接着查了"是不是时间撞车"——结论是：撞车不在日历上</b></p>
+    <table>
+      <tr><th style="width:220px">检查项</th><th>实测</th></tr>
+      <tr><td>作业总数</td><td>95 个</td></tr>
+      <tr><td>按日历触发的</td><td>18 条 —— 同一分钟最多只有 <b>2 个</b>撞在一起，不严重</td></tr>
+      <tr><td>按固定周期触发的</td><td class="bad">74 个，周期 120s～330s，全天任意时刻插入</td></tr>
+      <tr><td>最近 1 小时活跃作业</td><td class="bad">70 个；最近 5 分钟内就有 59 条日志写入</td></tr>
+    </table>
+    <p style="margin-top:10px">所以写锁争抢不是"大家都定了 9:00"造成的，而是 <b>74 个 2～6 分钟周期作业在持续随机重叠</b>：
+      任何一刻都有十几个短写入者排队，退避再长也只是排队更久，吞吐不会变好。</p>
+    <div class="note">真正的解法只有三条，本轮都没动手（都要改调度或架构，不该由我单方面决定）：
+      ① 把高频作业周期拉长（比如 120s → 300s）；② 写入走单写入者队列，读走 WAL 快照；
+      ③ 压小事务粒度（引擎批量提交改分批）。</div>
+  </div>
+
+  <h2>六点十、决策链自己恢复了：MiniMax 额度重置，ai_decisions 0 → 284</h2>
+  <div class="card">
+    <p>这轮全量体检时，AI 通道体检第一次报出"<b>1 条通道可用</b>"。查下来是
+      <b>MiniMax 的 Token Plan 额度在 11-16 00:00 重置了</b>——不是给 key、也不是加载本地模型，
+      是额度回来了。于是整条决策链自己开始跑了：</p>
+    <table>
+      <tr><th style="width:220px">指标</th><th style="width:160px">此前</th><th>现在</th></tr>
+      <tr><td><code>ai_decisions</code></td><td class="bad">0 行</td><td class="ok"><b>284 行</b>（全部在 11-16 00:00 之后）</td></tr>
+      <tr><td>gate 通道（近 1 小时）</td><td class="bad">全部 429</td><td class="ok">成功 <b>112 次</b>，失败仅 1 次</td></tr>
+      <tr><td><code>gate_evaluations</code></td><td class="bad">0 行</td><td class="ok"><b>284 行</b>（自动补上了）</td></tr>
+      <tr><td><code>raw_news</code> PENDING</td><td>32 条</td><td class="ok">15 条（在消化）</td></tr>
+      <tr><td><code>trade_decisions</code></td><td>0 行</td><td class="ok">2 行，entry_price 已落库（WTI 88.98）</td></tr>
+    </table>
+
+    <p style="margin-top:14px"><b>但要如实说清楚两件事</b>：</p>
+    <ul>
+      <li><b>282/284 是 HOLD</b>，只有 2 笔 BUY（都是 WTI，置信度 25.8 / 27.3）。这不是故障：
+          254 条置信度为 0.0，reasoning 明确写"该新闻不足以给出明确方向"，属于被交易闸门
+          （阈值 20）正确挡下。目录里本来就是"噪音多、信号少"。</li>
+      <li><b>验收 FAIL 从 0 变成 11</b>，乍看是退步，其实是"有数据了但还没结算"。
+          例如 C3 结算率：2 笔决策 entry_price 已写，但离结算窗口还差 5 天 →
+          按 0/2 算出 0% → 判 FAIL。这种<b>假失败</b>会把真失败淹掉，已修：
+          一条都没结算、且没有任何一条超过 5 天时记 <b>SKIP</b>（实测 C3 已从 FAIL 转 SKIP）。</li>
+    </ul>
+    <div class="note">另外 10 个 FAIL（1/2/6/8/10/12/13/15/C4/C7）同属一类：
+      评估类检查需要"已结算的样本"，而现在样本刚产生几小时。需要你定一个统一口径——
+      是逐项加"样本年轻就 SKIP"的规则，还是让它们继续亮红当作待办提醒。</div>
+  </div>
+
+  <h2>六点十一、为什么 282 条都是 HOLD：门卫没有排序力（实测七个乘子四个僵死）</h2>
+  <div class="card">
+    <p>决策链虽然跑起来了，但几乎不产出方向结论。项目自己的权重诊断脚本给出了答案：</p>
+    <table>
+      <tr><th>乘子</th><th>取值种类</th><th>与|幅度|相关性 ρ</th><th>判定</th></tr>
+      <tr><td>base（信号强度）</td><td>13</td><td>+0.094</td><td class="ok">active</td></tr>
+      <tr><td>impact（影响力）</td><td>8</td><td class="bad">−0.631（方向相反）</td><td class="ok">active</td></tr>
+      <tr><td>source（信源历史）</td><td>5</td><td>+0.557</td><td class="ok">active</td></tr>
+      <tr><td>consensus（多模型共识）</td><td class="bad">1</td><td>—</td><td class="bad">dead</td></tr>
+      <tr><td>reaction（市场反应）</td><td class="bad">1</td><td>—</td><td class="bad">dead</td></tr>
+      <tr><td>regime（市场状态）</td><td class="bad">2</td><td>−0.601</td><td class="bad">dead</td></tr>
+      <tr><td>time（时效衰减）</td><td class="bad">1</td><td>—</td><td class="bad">dead</td></tr>
+    </table>
+    <p style="margin-top:12px">七个乘子里<b>四个只有唯一取值</b>，等于完全不影响排序；
+      真正有区分力的只剩 base / impact / source，而 impact 的 ρ 是<b>负的</b>
+      （影响力越大、实际波动越小），说明它现在是在反向指路。</p>
+    <div class="note">但要克制：<b>配对样本只有 23 条</b>（诊断脚本自己写着"需 ≥ 50 / ≥ 200"）。
+      在 23 条上下结论会重演我上轮"凭假设改退避"的错误。所以这一轮只<b>记录诊断</b>，
+      不改乘子权重——等结算样本攒到 50 条以上再动。<br>
+      另外 consensus/reaction 僵死有一部分是客观原因：当前只有 MiniMax 一条通道可用，
+      多模型共识无从产生（取值必然恒等于 1）。</div>
+  </div>
+
+  <h2>六点十二、慢异动 0 条：08:15 一次性判定作业的实测结论</h2>
+  <div class="card">
+    <p>08:15 那个一次性作业按时跑了，日志在 <code>~/.trident/log/slowmove_check.log</code>（11 行，已留档）。结论：</p>
+    <table>
+      <tr><th style="width:200px">观测</th><th>结果</th></tr>
+      <tr><td>BTC / ETH / SOL 最新日线</td><td>11-15 08:00（不是 11-16）</td></tr>
+      <tr><td>慢异动总行数</td><td class="bad">0</td></tr>
+    </table>
+
+    <p style="margin-top:12px"><b>继续往下查，发现两处采集脚本在锁上崩过，这才是"日线停在 11-15"的原因</b>：</p>
+    <ul>
+      <li><code>daily_bars.py</code>：写 kline_bars 时 <code>database is locked</code> 抛栈中断，
+          这一轮补数只写了一半。已把退避重试放进游标层（<code>_RetryCursor</code>，8 次退避封顶 5s），
+          重跑后 <b>11-16 那根日线成功入库</b>。</li>
+      <li><code>ohlcv_refresh_cn.py</code>：launchd 退出码 <b>2122</b>，崩在 commit 之后的
+          <code>SELECT MAX(ts)</code> 读操作上 —— WAL 下读遇到 checkpoint 同样会 BUSY。
+          已加 <code>_max_ts()</code> 读重试，重跑后 BTC / SOL / XRP <b>都拿到了 11-16</b>。</li>
+      <li>顺手把日线采集间隔从 <b>每 24 小时</b>（每天 18:59 才跑一次）改成 <b>每 2 小时</b>，
+          否则当天这根日线要等到晚上 19:00 才进库。</li>
+    </ul>
+
+    <p style="margin-top:12px"><b>但慢异动仍然是 0，而且这个 0 是对的。</b>把检测器内部序列打出来看：</p>
+    <table>
+      <tr><th>品种</th><th>最后一条 slow 的窗口终点</th><th>纪元</th><th>是否放行</th></tr>
+      <tr><td>BTC</td><td>11-15 08:00（5d −14.9%）</td><td>11-15 10:30</td><td class="bad">不放行</td></tr>
+      <tr><td>SOL</td><td>11-15 08:00（5d −19.0%）</td><td>11-15 10:30</td><td class="bad">不放行</td></tr>
+    </table>
+    <div class="note">慢异动的窗口终点是 11-15 08:00，比纪元起点还早 <b>2 小时 22 分</b>。
+      也就是说：检测器算出了 −14.9% / −19.0% 这种真实的大幅慢跌，但它们整个窗口都在纪元之前，
+      按"只看纪元后"的规则必须剔除 —— <b>这不是 bug，是数据边界</b>。<br>
+      修正我上一轮的判断：第一根能过闸门的日线不是 11-16 08:00，而是<b>今天这根收盘之后</b>
+      （crypto 日线 11-17 08:00 北京时间定型）。所以慢异动的首次出现时间应记为
+      <b>11-17 08:00 之后</b>，而不是今天早上。</div>
+  </div>
+
+  <h2>六点十三、锁压实测：从 68% 到 97.4%（今天所有改动的合并效果）</h2>
+  <div class="card">
+    <p>同样的 60 秒探针，同一台机器、同一个库，只是修了几处写路径：</p>
+    <table>
+      <tr><th>指标</th><th>修复前</th><th>修复后</th></tr>
+      <tr><td>抢锁成功率</td><td class="bad">68%（51/75）</td><td class="ok"><b>97.4%（111/114）</b></td></tr>
+      <tr><td>拿锁平均耗时</td><td class="bad">41 ms</td><td class="ok"><b>2 ms</b></td></tr>
+      <tr><td>最长占用</td><td class="bad">758 ms</td><td class="ok"><b>112 ms</b></td></tr>
+    </table>
+    <div class="note">这不是"运气好"，是那几处读事务升级写事务的写法被拆掉之后的必然结果。
+      <code>event_kline_impact</code> 单独复跑也不再报锁失败（本轮 seen=160 / written=3）。
+      剩下 157 条 skip 不是失败，是<b>这些事件根本没有可用行情源</b>：
+      NVDA 377 条、个股 552 条、MACRO 131 条 —— 属于数据覆盖问题，与锁无关。</div>
+  </div>
+
+  <h2>六点十四、验收基线：11 PASS / 11 FAIL → 12 PASS / 9 FAIL / 5 SKIP</h2>
+  <div class="card">
+    <table>
+      <tr><th>检查</th><th>此前</th><th>现在</th><th>原因</th></tr>
+      <tr><td>C7 回填就绪度</td><td class="bad">FAIL（11.3%）</td><td class="ok"><b>PASS（100%）</b></td><td>补齐 C 维本体三元组</td></tr>
+      <tr><td>C3 决策结算率</td><td class="bad">FAIL</td><td class="ok">SKIP</td><td>样本未进结算窗口</td></tr>
+      <tr><td>其余 9 项</td><td class="bad">FAIL</td><td class="bad">FAIL</td><td>等结算样本 / 阈值政策冲突</td></tr>
+      <tr><td>ai_decisions（验收内部统计时刻）</td><td>284</td><td class="ok"><b>293 且在涨</b></td><td>决策链持续产出</td></tr>
+      <tr><td>epoch 之前残留</td><td>0</td><td class="ok">0</td><td>清空仍然有效</td></tr>
+    </table>
+  </div>
+
+  <h2>六点十五、三处"看起来是空的/报错的"其实都不是问题</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:240px">表面现象</th><th>实测</th><th>结论</th></tr>
+      <tr><td><code>gate_evaluations</code> 0 行</td><td>现在是 <b>310+ 行</b>，最新一行 08:31，随 <code>ai_decisions</code> 自动写</td><td class="ok">不是空表，没有独立 cron 也不需要</td></tr>
+      <tr><td><code>event_kline_impact</code> 377 条 NVDA "无行情源"</td><td>NVDA 有 1m/5m（619/614 根），但起点就在纪元；那批事件比行情覆盖更早</td><td class="ok">随时间自愈，不是 bug</td></tr>
+      <tr><td>日志里成百上千次 <code>database is locked</code></td><td>日志从不轮转，计数是全生命周期的；当前 tail 已无锁报错</td><td class="ok">历史账，不是现状</td></tr>
+    </table>
+    <div class="note">顺带把 552 条"个股"事件定性了：用户不做 A 股，这类事件本就不该进归因队列，
+      属于设计上的排除，而不是漏数据。</div>
+  </div>
+
+  <h2>六点十六、事件积压：不是队列堵，是状态没同步（C4 FAIL → PASS）</h2>
+  <div class="card">
+    <p>C4 一直报"真积压 524 条 + 孤儿 1251 条"。逐层查下去，是<b>两次状态没同步</b>，一次 LLM 调用都没花：</p>
+    <table>
+      <tr><th>现象</th><th>根因</th><th>处理</th></tr>
+      <tr><td>10,399 条事件找不到源新闻</td><td>journal 类是 13 位合成 id，从来没落过 raw_news；且<b>全部在纪元之前</b>（post=0）</td><td>标 <code>ORPHAN_PRE_EPOCH</code>，行保留</td></tr>
+      <tr><td>1,524 条事件源已判噪音、自己还挂 PENDING</td><td>闸门把 raw_news 判成 <code>FILTERED</code>（不需要 LLM），但事件行没人收尾</td><td>同步为 <code>FILTERED / NOISE_FILTERED</code></td></tr>
+    </table>
+    <div class="note">结果：<code>PENDING 1775 → 109</code>（0.33%）、<b>真积压 0</b>、孤儿占比 3.82% → <b>0.33%</b>。
+      C4 从 FAIL 直接转 <b>PASS</b>。全量验收随之为 <b>13 PASS / 8 FAIL / 5 SKIP</b>。</div>
+  </div>
+
+  <h2>六点十七、回测跑起来了（顺手修掉一个"重跑必崩"的写入）</h2>
+  <div class="card">
+    <p>一直以为 <code>backtest_runs = 0 行</code> 是"缺策略注册"造成的。实际查下来：</p>
+    <ul>
+      <li><code>strategies</code> 表<b>本来就有 3 条</b>（新闻阈值 / 保守过滤 / 进攻追踪，9-23 建好的），不缺。</li>
+      <li><code>backtest_runs</code> 为 0 是<b>代码里的设计</b>：回测只写聚合表
+          <code>backtest_event_outcomes</code> + 明细 JSON，注释明确写着"不在里面造策略行"。</li>
+      <li>真正拦住它的是一个写入 bug：<code>backtest_event_outcomes</code> 有
+          <code>UNIQUE(type_code, asset)</code>，而插入语句是裸 INSERT —— <b>同一个阈值跑第二遍必崩</b>
+          （实测报 <code>UNIQUE constraint failed</code>）。</li>
+    </ul>
+    <p>改成 <code>ON CONFLICT DO UPDATE</code> 后跑全量：<b>写入 27 行</b>，明细落
+      <code>runtime/backtest/run_1794789760.json</code>。样本量最大的是 NVDA 854 条、
+      AMZN 796 条、WTI 623 条、TSLA 589 条。</p>
+    <div class="note">阈值政策没被改动：仍读旧的矩阵
+      <code>threshold_map_1794766621.json</code>，blocked 仍是 ETH/XAU/AAPL/NVDA/SPX/NDX 六个，
+      BTC 仍是 use。新的矩阵要等周一 02:17 的 threshold-sweep 作业生成。</div>
+  </div>
+
+  <h2>六点十八、检查 13 的成本核算：降闸门救不了它</h2>
+  <div class="card">
+    <p>检查 13 要求 HOLD 占比 ≤ 70%。把 314 条决策的置信度分档摊开看：</p>
+    <table>
+      <tr><th>置信度区间</th><th>决策数</th><th>把闸门降到该区间下界能多出多少方向结论</th></tr>
+      <tr><td class="bad">恰好 0.0</td><td class="bad">283</td><td class="bad">0（0 永远小于任何闸门）</td></tr>
+      <tr><td>(0, 10)</td><td>17</td><td>+17</td></tr>
+      <tr><td>[10, 20)</td><td>12</td><td>+29（累计）</td></tr>
+      <tr><td>[20, 30)</td><td>2</td><td>+31（累计）</td></tr>
+    </table>
+    <div class="note"><b>结论：闸门降到 0 也只能把 HOLD 从 98.4% 降到 ~89%</b>，
+      离 70% 还差一大截。所以这不是"阈值定太高"，而是<b>283 条决策的置信度本身就是 0</b> ——
+      模型对这批新闻直接给出"无方向"。要么改上游（模型/乘子/信源），要么承认这个口径对
+      "事件驱动 + 噪音为主"的语料不成立、把验收阈值改成"BUY/SELL 各自出现且 HOLD ≤ 95%"。
+      这一项需要你拍，我不擅自动验收口径。</div>
+  </div>
+
+  <h2>六点十九、两张"永远为空"的表，原因是没人定时去调它们</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:190px">表</th><th>之前</th><th>根因</th><th>现在</th></tr>
+      <tr><td><code>anomaly_history</code></td><td class="bad">0 行</td>
+        <td>归档只有 HTTP 接口能触发（<code>/api/tech/anomaly?persist=1</code>），无任何定时作业调用</td>
+        <td class="ok">新作业每 6h 归档（默认只归档纪元后）</td></tr>
+      <tr><td><code>reflection_3layer</code></td><td class="bad">0 行</td>
+        <td><code>reflection_3layer_verifier.py</code> 只能手动跑</td>
+        <td class="ok"><b>362 行</b>，且已挂每日 03:23</td></tr>
+    </table>
+    <p style="margin-top:12px">校验器的输出很说明问题：</p>
+    <ul>
+      <li>错因标注覆盖率 <b>100%</b>（改造前 error_layer 只有 4% 被标）</li>
+      <li>错因验证一致率 <b>96.2%</b>（n=53）</li>
+      <li>分层结构：技术错误 360 条（99.4%）、买卖判断失误 2 条；其中 <b>309 条</b>
+          标注为"当日库内有行情、仍没结算出来 → 结算链路漏算"</li>
+    </ul>
+    <div class="note">那个 309 条要谨慎看：<code>trade_decisions</code> 的自动结算按设计要等
+      <b>决策满 5 天</b>（<code>DECISION_SETTLE_DAYS=5</code>），今天那 2 笔 BUY 必须留到
+      5 天后才结算。所以现在 <code>status='open'</code> 是对的，C3 判 SKIP 也是对的 ——
+      不是"结算坏了"，是"还没到结算时间"。这条口径已经写进报告，免得下一轮又当成 bug。</div>
+  </div>
+
+  <h2>六点二十、"11 张有写函数没调度"的表，逐张定性后的结论</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:200px">表</th><th>定性</th><th>处理</th></tr>
+      <tr><td><code>anomaly_history</code></td><td>只有 HTTP 能触发</td><td class="ok">已接 6h 归档</td></tr>
+      <tr><td><code>reflection_3layer</code></td><td>只能手动跑</td><td class="ok">已接每日 03:23（已产 362 行）</td></tr>
+      <tr><td><code>event_attribution_t1</code></td><td>要等归因行满 1 天，现在打标 0 条</td><td class="ok">已接每日 04:11（到时会自动出标签）</td></tr>
+      <tr><td><code>decision_ref_archive</code></td><td><b>不是 cron，是库函数</b>：重置前用来存决策引用，防止死指针</td><td>不调度（本来就不该有定时）</td></tr>
+      <tr><td><code>event_swing_ledger</code></td><td>需要"有确定公布时间的宏观事件"（CPI/非农/FOMC），当前没有这样的日历源</td><td>暂不接（缺上游，不是缺调度）</td></tr>
+      <tr><td>其余（<code>shadow_ledger</code> 27 行 / <code>event_impact_stat</code> 20 行 / <code>causal_chain_outcomes</code> 6 行）</td>
+          <td>都有数据，由引擎内循环在跑</td><td>不需要额外 cron</td></tr>
+    </table>
+    <div class="note">所以那"11 张"里，真正属于"漏了调度"的只有 <b>3 张</b>：
+      anomaly_history、reflection_3layer、event_attribution_t1 —— 三张已全部接上。
+      剩下的是"库函数"和"缺上游数据"，不该用 cron 去补。</div>
+  </div>
+
+  <h2>六点二十一、到期清单：8 个 FAIL 各自卡在哪、什么时候可能转绿</h2>
+  <div class="card">
+    <p>验收只给 PASS/FAIL，不告诉你"是在等时间还是真坏了"，所以每轮都要重算一遍。新增
+      <code>scripts/acceptance_eta.py</code> 把这件事固化下来（<code>--json</code> 可机读）：</p>
+    <table>
+      <tr><th style="width:210px">检查</th><th>现在</th><th>卡点</th><th>最早转绿</th></tr>
+      <tr><td>1 / 6 / 10 / 15<br><span class="muted">结算样本类</span></td>
+          <td>决策 314 · 已结算 2</td>
+          <td>最早未结算那笔要满 5 天</td>
+          <td class="ok"><b>11-21 00:45</b>（约 112 小时后）</td></tr>
+      <tr><td>8 三维反思</td><td>A=54 · B=0 · C=308</td>
+          <td>B 维要"方向决策 + 60 分钟验证"才能产出</td>
+          <td>同上（第一批方向决策结算后）</td></tr>
+      <tr><td>2 权重学习</td><td>权重记录 314 条（够）· 能配真值仅 2 条</td>
+          <td>真值来自结算结果；四乘子仍僵死</td>
+          <td>11-21 起才可能凑到 50 条配对</td></tr>
+      <tr><td>6 / 10 因果图谱</td><td>outcomes 6 · 已评估 0（门槛 50）</td>
+          <td>差 50 条已评估</td><td>随 T+1 评估累积，无固定时点</td></tr>
+      <tr><td>12 归因统计</td><td>归因 8 行（门槛 20，真因果占比已 90.9%）</td>
+          <td>只差 12 行</td><td>随异动+新闻匹配累积</td></tr>
+      <tr><td>13 HOLD ≤ 70%</td><td class="bad">HOLD 99.36% · 置信度恰 0 的 283 条</td>
+          <td>降闸门最多到 ~89%</td><td>需要改上游或改口径（待你拍）</td></tr>
+    </table>
+    <div class="note">一句话：<b>8 个 FAIL 里 7 个在等同一个东西 —— 11-21 00:45 的第一次 5 天结算。</b>
+      只有 13 是真需要决策的。这也解释了为什么"修代码"这两天能让 FAIL 从 11 降到 8，
+      但再往下修不动了：剩下的堵在时间上，不是堵在代码上。</div>
+  </div>
+
+  <h2>六点二十二、数据新鲜度体检：81 组"停更"里只有 24 组是真断</h2>
+  <div class="card">
+    <p>176 个 (source, indicator) 组里，随时有一批超 30 分钟没更新。但"没更新"有三种性质，
+      混在一起看只会误判。新增 <code>scripts/audit_indicator_freshness.py</code> 按
+      <b>每个指标自己的历史采样节奏</b>算容差（日频指标用 30 分钟阈值去判必然误报）：</p>
+    <table>
+      <tr><th style="width:120px">类别</th><th style="width:70px">组数</th><th>说明</th></tr>
+      <tr><td class="ok">休市正常</td><td>13</td>
+          <td>yfinance / sina_etf 的股票 ETF，周末或隔夜停更（GDX 81h、000660.KS 82h）</td></tr>
+      <tr><td class="muted">遗留死路径</td><td>9</td>
+          <td>旧写入器停了，但同名指标另有新鲜源；读端一律
+              <code>ORDER BY ts DESC LIMIT 1</code> 跨源取最新，<b>不影响结果</b></td></tr>
+      <tr><td class="bad">真断粮</td><td><b>24</b></td>
+          <td>唯一源死了且没有替代 —— 只有这批需要修</td></tr>
+    </table>
+    <p style="margin-top:12px">真断的头部几条：</p>
+    <ul>
+      <li><code>fred</code> 的 <code>UST2Y / UST5Y / UST30Y</code> 停在 10-06（<b>993 小时</b>）</li>
+      <li><code>fed_h41</code> 三项持仓数据停在 11-11（129h）</li>
+      <li><code>derived_ratio</code> 的 <code>xau_hg_ratio / xau_spx_ratio</code>（97h）</li>
+    </ul>
+    <div class="note"><b>顺带修好一个能力：</b><code>discovery.py</code> 是<b>按裸名</b>读
+      <code>UST2Y</code> 算"收益率 vs 各品种"相关性的，而这个名字只有 fred 直连在写、
+      已死 41 天 —— 那条相关性一直是空的。已在 <code>alias_bridge</code> 补两条别名
+      （<code>UST2Y ← us_dgs2</code>、<code>UST10Y ← us_dgs10</code>），实测已写入今天的值。
+      <code>UST5Y / UST30Y</code> 补不了：上游 fred_csv 只出 2Y/10Y，缺就是缺。</div>
+    <div class="note">另外把 <code>alias_bridge</code> 自己的裸 INSERT 也包了重试，并改成
+      "单条失败不中断整轮"（它是 5 分钟一次的作业，漏一条下一轮补上）。之前它撞上引擎长事务
+      会整轮崩掉。</div>
+  </div>
+
+  <h2>六点二十三、四个跨品种比值天天"无共同交易日"——不是没数据，是读错了表</h2>
+  <div class="card">
+    <p>体检里有 4 个比值（金银比 / 金铜比 / 金油比 / 金股比）断了 97 小时。跑
+      <code>cross_ratios.py</code> 时的报错是：</p>
+    <blockquote>“xau_hg_ratio 无共同交易日，跳过（不编数）”</blockquote>
+    <p>顺手查了输入：它读 <code>kline_bars.timeframe='1d'</code>。而那张表里：</p>
+    <table>
+      <tr><th>品种</th><th>kline_bars 1d 最新</th><th>ohlcv_daily 最新</th></tr>
+      <tr><td>XAU</td><td class="bad">05-29（停更 5 个月）</td><td class="ok">11-16 08:00（2625 根，2016 至今）</td></tr>
+      <tr><td>XAG</td><td>11-16</td><td class="ok">11-16</td></tr>
+      <tr><td>HG</td><td>11-13</td><td>11-13</td></tr>
+      <tr><td>WTI</td><td>11-16</td><td class="ok">11-16</td></tr>
+      <tr><td>SPX</td><td>11-13</td><td>11-13</td></tr>
+    </table>
+    <p style="margin-top:12px">所以根因是：<b>黄金的日线只写进了 <code>ohlcv_daily</code>，没写进 <code>kline_bars</code></b>，
+      而比值计算读的是后者 → 分子永远缺 → 四个比值一直算不出来，日志看起来像"没数据"。</p>
+    <p>修法：<code>load_series</code> 改为<b>优先读 <code>ohlcv_daily</code></b>（日线正表），
+      <code>kline_bars</code> 只做兜底。重跑结果：</p>
+    <ul>
+      <li>xau_xag_ratio：604 个交易日，最新 <b>79.92</b>（金银比偏高，避险/白银弱）</li>
+      <li>xau_wti_ratio：467 个交易日，最新 <b>43.97</b>（金油比 &gt;30，需求端偏弱）</li>
+      <li>xau_hg_ratio：562 天，最新 6.31；xau_spx_ratio：554 天，最新 0.514</li>
+      <li>一次写入 <b>2187 行</b>，四个比值全部恢复为日更</li>
+    </ul>
+    <div class="note">另外把新鲜度审计的两处误报修了：① <code>fed_h41</code> 是<b>周报</b>（下次 11-19 发布），
+      129 小时属正常；② 代码把它的小时常量当秒用了（<code>240</code> 而不是 <code>240*3600</code>），
+      导致周报仍被判成断粮。修完后"真断粮"从 24 组降到 <b>20 组</b>。</div>
+  </div>
+
+  <h2>六点二十四、美债曲线：HTML 错误页冒充 CSV，抓取一直被算作"成功"</h2>
+  <div class="card">
+    <p>体检里 8 个国债期限全断（73 小时）。顺着 <code>com.trident.treasury-curve-cron</code> 的日志往下查，
+      发现是两层问题叠在一起：</p>
+    <ol>
+      <li><b>传输层</b>：本机 Python 到 <code>home.treasury.gov</code> 必报
+          <code>SSLEOFError: UNEXPECTED_EOF_WHILE_READING</code>（requests 重试 4 次全灭，curl 也时常被掐）。</li>
+      <li><b>校验层（更要命）</b>：抓到内容后的判据是 <code>"Date" in text[:200]</code>。
+          而 <b>HTML 错误页的响应头里就有 <code>Date: Mon, 16 Nov 2026…</code></b> —— 所以错误页
+          一路被当成"抓取成功"，解析出 0 个点，日志只写"入库 15 条序列, 共 0 个点"，
+          <b>看起来像没数据，实际是抓取逻辑自己在骗自己</b>。</li>
+    </ol>
+    <p>修法两条：① 判据改成"首行必须是以 <code>Date,</code> 开头的 CSV"；
+      ② TLS 失败时降级用 <code>curl</code> 再试一次（同机 curl 常能过）。</p>
+    <p>修完实测：抓到 <b>219 行、13 条期限序列、218 个交易日</b>，最新数据 <b>11-13</b>（周五收盘）。
+      今天（11-16）的数据要等美东日终才发布，所以"73 小时"本身就是周末滞后，不是断粮 ——
+      审计里已把国债源按"美东日终发布"给到 4 天容差下限。</p>
+    <p>顺带修掉审计脚本一个单位 bug：已知节奏常量写的是<b>小时</b>，代码却当<b>秒</b>用
+      （<code>240</code> vs <code>240*3600</code>），导致周报数据被一直判成断粮。
+      修完后"真断粮"从 24 组降到 <b>7 组</b>。</p>
+    <div class="note">剩下 7 组逐条都有解释：<br>
+      · <code>UST5Y / UST30Y</code> —— 上游确实没有（fred_csv 只出 2Y/10Y），要么新增源、要么放弃<br>
+      · <code>stable_supply_30d_pct</code> —— 要 30 天样本，现在只有 28 天，<b>2 天后自动出现</b><br>
+      · <code>xau_hg / xau_spx</code> —— 等今天美盘收盘（11-17）自然恢复<br>
+      · <code>us_earnings_*</code> —— 财报日历周末正常</div>
+  </div>
+
+  <h2>六点二十五、收益率曲线补齐：真断粮从 24 组降到 3 组</h2>
+  <div class="card">
+    <p>美债曲线抓取修好后，顺手把四个"裸名"收益率序列全部接上了真实来源，
+      <b>没有用插值、没有造数</b>：</p>
+    <table>
+      <tr><th style="width:110px">序列</th><th>接的来源</th><th>最新值</th></tr>
+      <tr><td><code>UST2Y</code></td><td>FRED CSV 的 <code>us_dgs2</code></td><td>11-16 06:25</td></tr>
+      <tr><td><code>UST10Y</code></td><td>FRED CSV 的 <code>us_dgs10</code></td><td>11-16 09:40</td></tr>
+      <tr><td><code>UST5Y</code></td><td>财政部日终曲线 <code>us_t_5y</code></td><td>11-13（周五收盘）</td></tr>
+      <tr><td><code>UST30Y</code></td><td>财政部日终曲线 <code>us_t_30y</code></td><td>11-13（周五收盘）</td></tr>
+    </table>
+    <p style="margin-top:12px">之所以能给 5Y/30Y 接上，是因为前一节刚把财政部曲线抓通了 ——
+      这两个期限 FRED 那条源确实没有，但官方一手源里有。</p>
+    <div class="note">体检口径也顺势校准了两处：① <code>alias</code> 源镜像的是日终官方数据，
+      周末天然滞后 3–4 天，给它 4 天宽限；② 判断"某指标是否另有源在写"时按日终口径给 4 天，
+      否则周五的数据到周一必被误判成断粮。<br><br>
+      <b>结果：真断粮 24 组 → 3 组</b>，且这 3 组全在等时间：<br>
+      · <code>stable_supply_30d_pct</code>：需 30 天样本，现有 28 天，<b>2 天后自动出现</b><br>
+      · <code>xau_hg / xau_spx</code>：等今天美盘收盘（11-17）自然恢复</div>
+  </div>
+
+  <h2>六点二十六、反思接口"总体命中率 3.2%"是个口径错误，真实值 32.7%</h2>
+  <div class="card">
+    <p>调 <code>/api/v291/reflections/summary</code> 时看到 <code>overall_hit_rate = 0.032</code>，
+      第一反应是"系统几乎全错"。查下去发现不是：</p>
+    <table>
+      <tr><th style="width:90px">维度</th><th style="width:100px">条数</th><th>hit=1 的含义</th><th>命中率</th></tr>
+      <tr><td>A</td><td>54</td><td>判断被市场证实（越高越好）</td><td class="ok">32.7%</td></tr>
+      <tr><td>C</td><td>506</td><td class="bad">错因被证实（断流/迟到真造成错过，越高越糟）</td><td>0.0%</td></tr>
+    </table>
+    <p style="margin-top:12px">接口把两个<b>语义相反</b>的维度混在一起做分子/分母平均：
+      506 条 C 维全是 hit=0，把本来 32.7% 的 A 维稀释成 3.2%。</p>
+    <p>修法：<code>overall_hit_rate</code> 只统计预测类维度（A/B），并新增
+      <code>overall_hit_scope</code>、<code>hit_rate_by_dimension</code>、
+      <code>hit_semantics</code> 三个字段把口径写在返回值里。重启后端后实测：</p>
+    <blockquote>overall_hit_rate = <b>0.327</b>，scope = "A,B（预测命中口径）"，
+      A=0.327 / B=0 / C=0.0</blockquote>
+    <div class="note">另一个值得注意的点：<b>C 维 506 条一次"错因成立"都没记录到</b>（全 hit=0）。
+      按定义这意味着"每次断流/迟到期间都没有发生强异动"。在纪元初期样本少的情况下说得通，
+      但也可能是判定阈值过严 —— 这条留到有更多行情后再验，先不下结论。</div>
+  </div>
+
+  <h2>六点二十七、C 维"错因成立率"永远 0% 的两层原因</h2>
+  <div class="card">
+    <p><b>第一层：判定依据找错了表。</b>写 C 维时判"断流期间有没有强异动"，只查了
+      <code>critical_price_moves</code> —— 那张表全库只有 <b>34 行</b>（只有被判成"关键异动"的
+      事件才进）。用它回答这个问题，几乎必然全是"无强异动"。而库里其实躺着
+      <b>28 万根分钟线</b>（<code>ohlcv_intraday</code>）。</p>
+    <p>已改为直接从行情序列算窗口内最大涨跌幅（<code>_max_move_in_window</code>），
+      <code>critical_price_moves</code> 降为兜底。</p>
+    <p style="margin-top:12px"><b>第二层：这 498 条根本不是"断流"。</b>回溯历史记录发现：</p>
+    <ul>
+      <li>498 条全部集中在 <b>11-15 16:09 – 23:22</b> 这 7 小时内</li>
+      <li>文本是"binance 抓取失败（时间）：…"，<b>没有"断流 Nh"窗口</b></li>
+      <li>全库 <code>reflection_text LIKE '%断流%'</code> 的记录数 = <b>0</b></li>
+    </ul>
+    <p>它们是"<b>单次抓取失败</b>"的流水（一次失败记一条），不是"数据断流导致的错过"。
+      这类记录没有可测窗口，hit 恒为 0 —— 算进分母，C 维命中率就永远是 0%。</p>
+    <p>修法：接口里把 <code>data_feed_timeout</code> 标为<b>不可判</b>并排除出分母，
+      新增 <code>unmeasurable_count</code> / <code>unmeasurable_note</code> 如实说明。
+      重启后实测：<code>unmeasurable_count = 498</code>，C 维可判样本只剩 <b>8 条</b>。</p>
+    <div class="note">结论：C 维现在只能说明"<b>可判样本 8 条、成立 0 条</b>"，样本量根本不足以判断
+      "断流有没有造成错过"。要让这一维真正有意义，得先解决"记录什么"——
+      应记<b>行情序列的真实缺口</b>（<code>collect_feed_gaps</code> 已在做，按 market_ticks 间隔判定），
+      而不是每条抓取失败都记一条。<b>这条要不要动，等你定。</b></div>
+  </div>
+
+  <h2>六点二十八、C 维写入端已改：498 条流水 → 1 条真实断流</h2>
+  <div class="card">
+    <p>按上一条的判断，把写入端重写了。新规则：</p>
+    <ul>
+      <li>同一资产<b>连续失败</b>（相邻间隔 ≤ 20 分钟）且跨度 ≥ <b>60 分钟</b>，才认定一次"真断流"</li>
+      <li>hit 一律用 <code>ohlcv_intraday</code>（兜底 <code>kline_bars</code> 1m）实测窗口内最大涨跌幅</li>
+      <li>测不到行情时写"<b>无法判定是否错过</b>"，而不是伪装成"没出事"</li>
+    </ul>
+    <p style="margin-top:12px">实测对比：</p>
+    <table>
+      <tr><th style="width:150px">口径</th><th style="width:110px">候选条数</th><th>说明</th></tr>
+      <tr><td>旧（一次失败一条）</td><td class="bad">506</td><td>498 条全是 7 小时内的抓取失败流水，hit 恒 0</td></tr>
+      <tr><td>新（连续失败窗口）</td><td class="ok">1</td><td>SKHYNIX 断流 3.3h（11-15 18:08 → 21:24）</td></tr>
+    </table>
+    <p style="margin-top:12px">唯一被识别出的那条也没法判定：<b>该时段没有 SKHYNIX 的行情序列</b>
+      （这个品种本来就取不到价，只有 1 根 k 线）。所以它如实写"无法判定"，hit=0。</p>
+    <div class="note">这条链路现在的逻辑是自洽的：<b>先有行情、才谈"断流有没有造成错过"</b>。
+      取不到价的品种，C 维不会再凭空报数，也不会用 498 条流水把命中率钉死在 0%。</div>
+  </div>
+
+  <h2>六点二十九、反思表"559 条"其实只有 215 个事件点</h2>
+  <div class="card">
+    <p>查 A 维"BTC 13 条全错"时发现更根本的问题：同一时点、同一资产被写进了<b>多行</b>。
+      最重的一组（XAU 11-16 07:17）写了 <b>7 行</b>。</p>
+    <table>
+      <tr><th>指标</th><th>实测值</th></tr>
+      <tr><td>反思表总行数</td><td><b>559</b></td></tr>
+      <tr><td>唯一事件点（asset + created_at）</td><td class="bad"><b>215</b></td></tr>
+      <tr><td>重复率</td><td><b>61.5%</b></td></tr>
+      <tr><td>同一时点 hit 互相矛盾的点</td><td class="bad"><b>5 处</b></td></tr>
+    </table>
+    <p style="margin-top:12px">矛盾长这样：XAU 11-16 03:57 写了 5 行，其中 3 行
+      <code>pct=1.461 → hit=1</code>、2 行 <code>pct=0.0363 → hit=0</code>。
+      同一个时点同一资产，同一个"错没错"的问题，给出了相反答案 —— 因为各行取了不同的结果窗口。</p>
+    <p>影响：所有"条数"类指标都被放大 2.6 倍。A 维 54 条实际约 22 个事件点，
+      所谓"BTC 13 条全错"真实是 <b>7 个时点全错</b>。</p>
+    <p>修法：接口新增 <code>data_quality</code> 块，如实报行数、唯一事件点、重复率、
+      矛盾点数，并注明"行数不等于事件数"。<b>不改写库、不动命中率算法</b>。</p>
+    <div class="note">下一步要你拍板：是<b>在写入端做「一事一行」</b>（同一 asset+时间只保留一条、
+      统一结果窗口），还是<b>保留多行、但把统计口径改成按唯一事件点算</b>。
+      前者动数据、后者只动读数。我倾向后者先上，因为不会破坏已有的历史行。</div>
+  </div>
+
+  <h2>六点三十、A 维真实命中率是 6.7%，不是 32.7%</h2>
+  <div class="card">
+    <p>把读法换成"<b>一个事件只算一次</b>"（同一 asset、同一分钟归并；组内 hit 不一致一律判不可判），
+      结论直接反转：</p>
+    <table>
+      <tr><th>口径</th><th>样本</th><th>命中率</th></tr>
+      <tr><td>行级（原口径，未去重）</td><td>54 条</td><td>32.7%</td></tr>
+      <tr><td class="bad">事件点级（新口径）</td><td>19 个点 / 可判 15</td><td class="bad">6.7%（仅 1 次命中）</td></tr>
+    </table>
+    <p style="margin-top:12px">逐点看得很清楚：A 维共 19 个事件点，
+      <b>16 个干净未命中</b>、<b>1 个干净命中</b>（XAU 07:51）、<b>4 个组内矛盾</b>
+      （XAU 的行里同时有 hit=1 和 hit=0）。原来那 18 次"命中"，
+      是一个 XAU 事件点被重复写成 3~7 行撑出来的。</p>
+    <p>也就是说：前面"32.7% 才是真值"这句话本身也还偏乐观 —— <b>32.7% 是行级数，
+      点级只有 6.7%</b>。目前样本仅 15 个可判点，还不足以断言模型真实水平，
+      但方向明确：<b>重复行一直在替系统"刷高"命中率</b>。</p>
+    <div class="note">接口已同时返回三套数：<code>overall_hit_rate</code>（行级，0.327）、
+      <code>point_level.hit_rate</code>（点级，0.067）、<code>data_quality</code>（重复率 61.5%）。
+      以后看这个面板，应当以 <b>point_level</b> 为准。</div>
+  </div>
+
+  <h2>六点三十一、追到根：两处结算都在"拿相邻 K 线冒充 5 天结果"</h2>
+  <div class="card">
+    <p>那 4 个"hit 自相矛盾"的点，继续往下查，发现不是窗口设置不同，而是
+      <b>两处结算代码都有同一个 bug</b>：把"决策后第一根 K 线"当成了"5 天后的结果"。</p>
+    <table>
+      <tr><th style="width:220px">位置</th><th>原实现</th><th>后果</th></tr>
+      <tr><td><code>missed_signal_taxonomy.compute_outcome</code></td>
+        <td>取 ts+5d ±2 天内的"最近一根"</td>
+        <td>纪元初期只有 1 根日线 → 退化成相邻几小时相减</td></tr>
+      <tr><td><code>missed_signal_reflection._forward_move</code></td>
+        <td>取 <code>ts&gt;=? ORDER BY ts ASC LIMIT 1</code>，即<b>紧接决策后的第一根</b></td>
+        <td>测的是几分钟的波动，且不同时点落到同一对 K 线</td></tr>
+    </table>
+    <p style="margin-top:12px">结果就是<b>几十个不同事件算出同一个数</b>：XAU 18 行跨 6 个时点全是
+      <code>1.461</code>（后来又被重算成 <code>1.1172</code>），BTC 7 行跨 5 个时点全是
+      <code>-0.5185</code>。系统据此把一批"漏检"判成 hit=1 —— <b>等于凭空造出了命中</b>。</p>
+    <p>修法（两处都改）：锁到 <code>ts + N 天</code> 附近那根，并校验<b>真实跨度
+      ≥ max(N-1 天, N/2 天)</b>；不够就返回 None（=还没到能评判的时候），不再给数。</p>
+    <p>另写 <code>fix_degenerate_outcomes.py</code> 清理历史：同一数值跨 ≥3 个不同时间点即判为伪结果，
+      重算仍拿不到 → 置 NULL / hit=NULL / settled=0。</p>
+    <p style="margin-top:12px"><b>清理后 A 维归零：</b></p>
+    <blockquote>row-level 0.0 · point_level 0.0（21 个事件点，21 个可判，<b>0 命中</b>）</blockquote>
+    <div class="note">诚实结论：<b>A 维此前所有的"命中"都来自那个伪常数</b>。
+      去掉之后，19~21 个事件点里没有一次被市场证实。这不代表模型一定差 ——
+      5 天窗口还没走完（要等 11-21），现在本来就"没有任何事件该被评判"。
+      但它说明：之前那个 32.7% / 6.7% 都不是能力指标，只是结算兜底的产物。</div>
+  </div>
+
+  <h2>六点三十二、全库扫过一遍，并把这类假数做成每日体检</h2>
+  <div class="card">
+    <p>把"算远期收益"的地方逐个检查了一遍，结论：</p>
+    <table>
+      <tr><th style="width:250px">位置</th><th>取值方式</th><th>判定</th></tr>
+      <tr><td><code>db.forward_price</code></td><td>target 之后第一根（分钟线→日线）</td><td class="ok">正确</td></tr>
+      <tr><td><code>multi_horizon_settle</code></td><td>已预先算 target_ts，再取窗口内</td><td class="ok">正确</td></tr>
+      <tr><td><code>evaluate_missed_signals</code></td><td>传入 <code>ts + 5/20 天</code> 再取 after</td><td class="ok">正确</td></tr>
+      <tr><td><code>bridge_server</code> 校准回算</td><td>target = ts+5d 之后取</td><td class="ok">正确</td></tr>
+      <tr><td><code>missed_signal_taxonomy</code></td><td>±2 天"最近一根"</td><td class="bad">已修</td></tr>
+      <tr><td><code>missed_signal_reflection</code></td><td>"决策后第一根"</td><td class="bad">已修</td></tr>
+    </table>
+    <p style="margin-top:12px">也就是说：<b>只有那两处坏了，其余取值口径是对的</b>。坏事的是这两处恰好都在
+      "漏检判定"这条链上，所以整条链的命中率全被污染。</p>
+    <p>新增每日体检作业 <code>com.trident.degenerate-audit</code>（05:17，只读不写库）：
+      扫描"同一数值跨 ≥3 个不同时间点"的伪结算，有就留痕。<b>首次运行结果：0 组可疑</b>。</p>
+    <blockquote>当前 A 维：58 行 / 24 个事件点 / 有结果的 12 行 / <b>hit=1 的数量 = 0</b></blockquote>
+    <div class="note">现在的状态是"干净的零"：不是模型被测出差，而是<b>还没到能评判的时候</b>——
+      5 天窗口要 11-21 才走完。这比之前那个虚高的 32.7% 可信得多。</div>
+  </div>
+
+  <h2>六点三十三、evidence_confidence 基本没被填过，且值域与阈值对不上</h2>
+  <div class="card">
+    <p>283 条"置信度恰为 0"这件事查清了。实测 <code>ai_decisions</code> 327 行：</p>
+    <table>
+      <tr><th>区间</th><th>行数</th><th>说明</th></tr>
+      <tr><td><code>= 0 / NULL</code></td><td class="bad">296（90.5%）</td><td>且这些行的 <code>sentiment_score</code> <b>也全是 0</b></td></tr>
+      <tr><td><code>0 ~ 1</code> 有效区间</td><td class="bad">0</td><td><b>一条都没有</b></td></tr>
+      <tr><td><code>&gt; 1</code>（0~100 口径）</td><td>31</td><td>范围 2.55 ~ 27.29</td></tr>
+    </table>
+    <p style="margin-top:12px">关键证据：那 296 行的 <code>evidence_confidence</code> 为 0 与 <code>sentiment_score</code>
+      为 0 <b>完全重合</b> —— 说明不是"模型判断没把握"，而是<b>模型根本没填这两个结构化字段</b>
+      （reasoning 里只有自然语言结论，例如"就业数据边际利好但仅为温和改善，不追单"）。</p>
+    <p>而下游是按 0~1 理解的：<code>POSITION_SIZING_TIERS</code> 用 0 / 0.3 / 0.7 分档，
+      <code>REQUIRE_CONFIDENCE</code> 阈值 0.6。于是：</p>
+    <ul>
+      <li>296 行的 0.0 → 落到<b>最低档 0.5x</b>，等于对 90% 的信号<b>系统性砍半仓位</b></li>
+      <li>31 行的 18.24 → 越过 1.0，按既有契约（含单测）算"无效"→ fallback 1.0x，<b>没有被放大</b></li>
+    </ul>
+    <p><b>没有改成"归一化"</b>：我先试了把 0 当缺失、&gt;1 当 /100，结果撞上
+      <code>test_position_sizing</code> 三条既有单测（它们明确锁着"越界→基础规模""0.0→低档"）。
+      契约是有意的，不擅自改。</p>
+    <p>改为落地一个只读体检 <code>scripts/audit_confidence_field.py</code>，把这条风险常驻可见。</p>
+    <div class="note">当前实际影响很小：<code>quick_sim_trades</code> 只有 2 笔，且都走了 fallback 1.0x。
+      但这是一个<b>latent 风险</b> —— 一旦成交变多，90% 的单子会被无声地砍半。
+      要修得动上游：让模型/解析必填 0~1 的 <code>evidence_confidence</code>，
+      或者干脆把"没填"写成 NULL 而不是 0.0。<b>这需要你定。</b></div>
+  </div>
+
+  <h2>六点三十四、纠正一条旧结论，并找到"没填"为什么没被发现</h2>
+  <div class="card">
+    <p><b>先纠正自己：</b>此前记录里写过"<code>llm_field_count</code> / <code>rule_field_count</code>
+      全表 0、两列从未被写"。实测是<b>错的</b> —— 这两列都有数据：</p>
+    <table>
+      <tr><th>列</th><th>实际分布</th></tr>
+      <tr><td><code>llm_field_count</code></td><td>1:3 / 2:115 / 5:92 / 6:48 / 7:69（均值 <b>4.48</b>）</td></tr>
+      <tr><td><code>rule_field_count</code></td><td>2:191 / 3:18 / 4:87 / 5:31</td></tr>
+      <tr><td><code>business_kb_field_count</code></td><td>0:166 / 1:161</td></tr>
+    </table>
+    <p style="margin-top:12px">这条旧结论已作废，别再拿它当待办。</p>
+    <p><b>但顺着它查出了真问题：</b><code>evidence_confidence</code> 在
+      <code>missing_fields</code> 里出现 <b>0 次</b> —— 也就是说，它<b>根本不在必填清单里</b>。
+      模型不回它，系统既不记录"缺了这个字段"，也不会扣完整度，只是<b>静默塞一个 0.0</b>；
+      而下游把 0.0 当"低置信度"用。</p>
+    <p>再看它与输出完整度的关系：</p>
+    <table>
+      <tr><th>llm 字段数</th><th>行数</th><th>置信度非零</th><th>平均完整度</th></tr>
+      <tr><td>2</td><td>115</td><td>9</td><td>0.744</td></tr>
+      <tr><td>5</td><td>92</td><td class="bad">0</td><td>0.700</td></tr>
+      <tr><td>6</td><td>48</td><td class="bad">0</td><td>0.904</td></tr>
+      <tr><td>7</td><td>69</td><td class="ok">22</td><td>0.920</td></tr>
+    </table>
+    <div class="note">分布很反常：<b>字段数 5、6 的组里一次都没有置信度，字段数 2 的组反而有 9 条</b>。
+      说明不是"输出越全越容易带上置信度"，而是<b>这批数据来自不同批次的提示词/模型版本</b>。
+      下一步该去核对提示词模板的版本差异，而不是继续在数据层找原因。</div>
+  </div>
+
+  <h2>六点三十五、真正的瓶颈：闸门卡在一个"没人填"的字段上</h2>
+  <div class="card">
+    <p>顺着字段清单查下去，发现 <code>evidence_confidence</code> 是个<b>孤儿字段</b>：
+      既不在 <code>_LLM_TRACKED_FIELDS</code>（13 个跟踪字段），也不在
+      <code>FIELD_WEIGHTS</code>（权重合计 1.0 的那张表），<code>missing_fields</code> 里
+      一次都没出现过。也就是说 <b>没有生产者，只有消费者</b>。</p>
+    <p>而它恰好是选股 SQL 的硬闸门：<code>COALESCE(ad.evidence_confidence,0) &gt;= GATE</code>，
+      实测 <code>GATE = 20</code>。于是：</p>
+    <table>
+      <tr><th>环节</th><th>数量</th><th>占比</th></tr>
+      <tr><td>决策总数</td><td>327</td><td>100%</td></tr>
+      <tr><td><code>evidence_confidence = 0</code></td><td class="bad">296</td><td>90.5%</td></tr>
+      <tr><td><b>通过闸门</b></td><td class="bad"><b>2</b></td><td><b>0.6%</b></td></tr>
+      <tr><td>模拟成交</td><td>2</td><td>与闸门通过数完全一致</td></tr>
+    </table>
+    <p style="margin-top:12px">结论：<b>"成交率 0.6%"不是策略挑剔，也不是信号不够，
+      而是闸门卡在一个 99% 的决策根本没填的字段上</b>。整个交易链路实际只由 2 条
+      偶然带了 0-100 分值的记录驱动。</p>
+    <div class="note"><b>同时纠正我上一轮的推断：</b>我以为"0.0 会走最低档 0.5x、把仓位砍半"。
+      实际不会 —— 0.0 的 296 条<b>在闸门处就被拦掉了</b>，根本进不到仓位分层。
+      而 <code>position_sizing</code> 的 MAX_MULT 是 1.0，1.5 档被夹平，
+      能进场的 2 条都拿 1.0x。<b>所以仓位分层在此数据上从未产生过区分度</b>。</div>
+    <p>新增 <code>scripts/audit_trade_gate.py</code> 把这条漏斗固化，随时可复算。</p>
+    <div class="note">这里有三条路，需要你拍板（我不擅自改闸门）：
+      <br>① <b>补上游</b>：把 <code>evidence_confidence</code> 加进必填清单，让模型真填 0~100；
+      <br>② <b>换代理</b>：无值时用已有的 <code>completeness_score</code> / <code>impact_score</code> 派生（需明确公式，不能拍脑袋）；
+      <br>③ <b>降闸门</b>：把 20 调到能被真实分布覆盖的档位（当前 ≥10 也只有 14 条）。
+      <br>我更倾向 ①——因为 ②③ 都是在给一个"设计上该有却没人产"的字段找补。</div>
+  </div>
+
+  <h2>六点三十六、动手补上生产者（①）：schema 里原本压根没这个字段</h2>
+  <div class="card">
+    <p>查 <code>llm_schema.py</code> 的 <code>AI_DECISION_SCHEMA</code>，
+      <b><code>evidence_confidence</code> 既不在 <code>required</code>、也不在
+      <code>properties</code> 里</b> —— 模型拿到的那份 schema 里<b>根本没有它</b>，
+      自然没有任何理由输出。这就是"孤儿字段"的源头。</p>
+    <p>按 ① 做了两处最小改动：</p>
+    <table>
+      <tr><th>改动</th><th>内容</th><th>为什么不这么办</th></tr>
+      <tr><td><code>llm_schema.py</code></td>
+          <td>新增 <code>evidence_confidence</code> 为<b>可选</b>属性：0~100，
+              描述明确"仅当新闻含可核验硬证据时才给，没有就省略，不要猜"</td>
+          <td><b>不进 required</b> —— v323 的教训写在那儿：必填字段模型不产出，
+              会导致整条分析 schema 失败、目标资产退化成 NONE、一天上万条进
+              unclassified_events</td></tr>
+      <tr><td><code>engine/ai_worker.py</code></td>
+          <td>把它加进 <code>_LLM_TRACKED_FIELDS</code>（13 → 14），
+              这样"模型到底填没填"会记进 <code>field_sources</code></td>
+          <td>不加进 <code>FIELD_WEIGHTS</code> —— 加权重会改
+              <code>completeness_score</code>，牵动反思过滤口径，风险太大</td></tr>
+    </table>
+    <div class="note">口径选择："没有硬证据就<b>省略</b>"而不是"填 0"。这样"缺失"和
+      "有证据但很弱"能区分开，闸门将来才有条件改成"无值不拦、有值才校验"。</div>
+  </div>
+
+  <h2>六点三十七、顺手修掉两个卡了很久的红灯</h2>
+  <div class="card">
+    <p><b>1) <code>key_health_probe.py</code> 裸探活</b>：这个探活函数直接
+      <code>requests.post</code> 打 LLM 端点，<b>没过额度/速率闸门</b> ——
+      被 <code>audit_llm_gates.py</code> 判为"未受保护的 LLM 调用点"，
+      <code>test_gate_deferred_v320</code> 因此长期红。已补
+      <code>llm_budget.consume_rate_slot(purpose="probe")</code>，
+      与 <code>api_server._probe_channel</code> 对齐。复跑审计：
+      <b>13 个调用点 · 受保护 13 · 未保护 0</b>。</p>
+    <p><b>2) 一条过时的断言</b>：<code>test_gate_unavailable_not_treated_as_noise</code>
+      断言 <code>gate_unavailable == 1</code>（冻结待回放）。但 v342 加了"规则兜底"：
+      关键词命中的高价值新闻不再无条件冻结，改为 <b>降级放行、标 2</b>
+      （否则配额打满时数据永久积压）。这条用例的输入正是命中了"美联储"的 CORE 新闻，
+      所以实跑是 2。</p>
+    <div class="note">处理方式：<b>没有为了让测试变绿而放宽代码，而是把断言更新到新契约</b> ——
+      允许 1 或 2，但走 2 时必须同时有 <code>gate_rule_approved=1</code>（否则分不清
+      "规则放行"和"鉴权失效放行"）。原有关键不变量（<code>is_noise=0</code>、
+      不清零 L1 打分、不标 FILTERED、判定必须写"未判定"）<b>一字未动</b>。
+      复跑：<b>20 passed</b>。</div>
+  </div>
+
+  <h2>六点三十八、引擎日志里的 3733 次"database is locked"：配置没跟上代码</h2>
+  <div class="card">
+    <p>顺手翻引擎日志时发现 <code>engine.err.log</code> 里累计
+      <b>3733 条 <code>database is locked</code></b>，其中
+      <code>[source_status] DB persist skipped (will not retry log)</code>
+      意味着<b>写入直接放弃了</b>（不重试、只告警一次）。另有
+      <code>[BATCH] 归档超龄新闻失败</code>、<code>[unclassified] record failed</code>。</p>
+    <p><b>根因不是锁太多，是超时值没生效：</b><code>db.py</code> 注释里明确写着
+      （v323）"engine 用 20 秒（批处理可以等），api 保持 5 秒"，但
+      <code>com.trident.engine.plist</code> 里 <code>TRIDENT_BUSY_TIMEOUT_MS</code>
+      一直是 <b>5000</b> —— 这条修正从未真正上线。</p>
+    <table>
+      <tr><th>进程</th><th>改前</th><th>改后</th></tr>
+      <tr><td>engine（批处理，可等）</td><td class="bad">5000</td><td class="ok">20000</td></tr>
+      <tr><td>api / bridge（要响应前端）</td><td>30000</td><td>不动</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>实测前后对比（同一探针：15 次小写）：</b></p>
+    <table>
+      <tr><th>时点</th><th>失败</th><th>中位</th><th>最长阻塞</th></tr>
+      <tr><td>改前（10s 超时）</td><td class="bad">2/12</td><td>10ms</td><td class="bad">10422ms</td></tr>
+      <tr><td>改后（20s 超时）</td><td class="ok">0/15</td><td>9ms</td><td>3761ms</td></tr>
+    </table>
+    <div class="note">仍有 P90≈503ms、最坏 3.7s 的周期性持锁窗口 —— 说明存在偶发的长事务
+      （日志注释里 <code>forward_tracker</code> 曾持锁 30~49s）。这次先把"配置没生效"
+      这个确定性 bug 修掉；长事务本身是下一层的活。plist 已同步进
+      <code>scripts/com.trident.engine.plist</code> 便于复现。</div>
+  </div>
+
+  <h2>六点三十九、新功能：signal_performance 终于有数据了（表建好一年，没人写）</h2>
+  <div class="card">
+    <p><code>signal_performance</code> 字段齐全（<code>is_correct</code> /
+      <code>forward_pnl</code> / <code>mfe_pct</code> / <code>mae_pct</code>），
+      <code>db.py</code> 的 baseline 聚合一直在读它 —— 但全表 <b>0 行，从来没有写入者</b>。
+      于是系统只有"命中率"这种非黑即白的指标，<b>完全没有 MFE/MAE</b>，
+      而这正是"止盈止损该设几个点"的唯一依据。</p>
+    <p><b>关键设计：不只结算 BUY/SELL。</b>实测 327 条决策里 <b>325 条是 HOLD</b>，
+      只结算那 2 笔等于没做。所以 HOLD 也落行：<code>is_correct</code> 写
+      <code>'HOLD'</code> 占位（下游 baseline 显式排除，不污染胜率），
+      但 <code>forward_pnl</code> / MFE / MAE <b>照算</b> ——
+      这样才能回答"HOLD 是稳健，还是错过了一波"。</p>
+    <table>
+      <tr><th>环节</th><th>口径</th></tr>
+      <tr><td>窗口</td><td>4 小时（与下游 <code>_agg(4)</code> 对齐）</td></tr>
+      <tr><td>入场 / 出场</td><td>决策后第一根 / <code>ts+4h</code> ±30 分钟内那根</td></tr>
+      <tr><td>跨度闸门</td><td>真实跨度必须 ≥ 85% 窗口，否则<b>测不到就不写</b></td></tr>
+    </table>
+    <p style="margin-top:12px"><b>首次结算结果：</b>候选 234 条 → <b>可结算 59 条</b>
+      （87 条窗口未到、84 条因行情缺口测不到、12 条无数据）。</p>
+    <div class="note"><b>HOLD 到底错过了多少（4 小时口径）：</b><br>
+      n=58 · 平均位移 <b>0.604%</b> · 最大 1.04% ·
+      <b>36/58 条位移 ≥0.5%</b> · 仅 3 条 ≥1%<br>
+      分资产：XAU（31 条）平均 0.65%、MFE 0.93% / MAE −0.20%（偏上行，HOLD 确实错过一些）；
+      BTC（8 条）平均 0.83%、MFE 1.06% / MAE −0.18%；WTI（15 条）平均 0.51%，
+      MFE≈0（窗口内下跌，错过的是跌不是涨）。</div>
+    <p><b>这批数据给出的第一个可操作结论：</b>4 小时内的典型波动量级不到 1%
+      （全局最大有利 1.42% / 最大不利 −0.88%）。所以<b>止盈 1.5%、止损 0.9%</b>
+      是这个样本的合理起点 —— 但样本只有 59 条，得靠每天累积再收窄。</p>
+    <div class="note"><b>过程中修掉两个自己写出来的 bug：</b>
+      ① 拿 <code>strftime</code> 去切 <code>ai_decisions.ts</code>（它其实是整型 unix 秒），
+      234 条全判 <code>bad_ts</code>；
+      ② HOLD 的方向乘子是 0，直接相乘把位移算成了 <b>0.0</b>，
+      正好毁掉"错过多少"这个核心指标 —— 改成 HOLD 保留原始位移。</div>
+    <p>已挂 <code>com.trident.signal-perf-settle</code>（每小时，RunAtLoad），
+      wrapper 走 <code>~/.trident/wrappers/run_signal_perf_settle.sh</code>，
+      日志 <code>~/.trident/log/signal_perf_settle.log</code>。</p>
+  </div>
+
+  <h2>六点四十、新功能：risk_manager 写好了却从未被调用（现在接上了）</h2>
+  <div class="card">
+    <p><code>risk_manager.py</code> 有完整实现：白名单、单笔名义上限、最大持仓数、
+      同标的笔数上限、kill switch。<b>但全库只有 <code>reflection_policy_updater</code>
+      提到过它 —— 下单链路 <code>quick_sim</code> 一次都没调用。</b>
+      等于风控写了、上线裸奔。</p>
+    <p><b>为什么不只是"加一行调用"：</b><code>RiskManager</code> 的计数是<b>内存态</b>
+      （<code>_open_position_count</code> / <code>_per_asset_count</code>），
+      而 quick_sim 是批处理、每次新进程 —— 直接调 <code>evaluate</code>，
+      计数永远是 0，"最大持仓 5 笔"这条防压根不生效。</p>
+    <table>
+      <tr><th>新增</th><th>内容</th></tr>
+      <tr><td><code>risk_guard.py</code></td>
+          <td>适配层：每次从库里把未平仓的模拟单<b>种回计数</b>，再接
+              <code>RiskManager.evaluate</code>；kill switch 支持
+              <code>~/.trident/state/risk_kill_switch</code> 文件开关，
+              不重启也能熔断；<code>RISK_GUARD_ENABLED=0</code> 可整体旁路</td></tr>
+      <tr><td><code>quick_sim.py</code></td>
+          <td>下单前调用风控闸；<b>被拒必留痕</b>（写 <code>trade_decisions</code>，
+              guard 字段记原因），并汇总 <code>risk_rejected_count</code>。
+              原来"为什么没成交"是黑箱，现在有账</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>实测行为（未改任何阈值，只做接入）：</b></p>
+    <table>
+      <tr><th>输入</th><th>结果</th></tr>
+      <tr><td>WTI BUY 100</td><td class="ok">放行 100，reason=ok</td></tr>
+      <tr><td>BTC BUY 6000</td><td>放行但<b>封顶到 5000</b>，reason=size_capped_to_max</td></tr>
+      <tr><td>资产 <code>NONE</code> BUY 50</td><td class="bad">拒绝，reason=empty_asset</td></tr>
+      <tr><td>XAU HOLD</td><td class="bad">拒绝，reason=action=HOLD_not_executable</td></tr>
+    </table>
+    <div class="note">最后一行尤其重要：<b>95 条决策的 <code>target_asset</code> 就是
+      <code>'NONE'</code></b>（未归类标的）。这些决策哪怕过了闸门，也会被风控
+      以 <code>empty_asset</code> 拦掉 —— 那是上游"资产识别失败"的问题，不是风控的问题。</div>
+  </div>
+
+  <h2>六点四十一、新功能：纸面净值曲线（第一次知道自己是赚是亏）</h2>
+  <div class="card">
+    <p>系统有 <code>quick_sim_trades</code>（含 <code>pnl_usdt</code>/<code>settled</code>/<code>verdict</code>），
+      但<b>没有任何净值表</b>——"赚了还是亏了"只能手工把几行相加，看不到回撤、看不出退化。</p>
+    <p>新增 <code>sim_equity.py</code> 和 <code>sim_equity_snapshots</code> 表
+      （<code>equity / realized_pnl / peak_equity / drawdown_pct / n_settled / n_open</code>）。
+      初始资金用 <code>SIM_INITIAL_CAPITAL</code>（默认 10000，库里确实没这个字段）。</p>
+    <table>
+      <tr><th>时点</th><th>权益</th><th>累计盈亏</th><th>回撤</th><th>备注</th></tr>
+      <tr><td>第 1 笔结算后</td><td>9996.83</td><td>−3.17</td><td>−0.032%</td><td>WTI BUY LOSS</td></tr>
+      <tr><td>第 2 笔结算后</td><td>9993.66</td><td>−6.34</td><td>−0.063%</td><td>WTI BUY LOSS</td></tr>
+    </table>
+    <p style="margin-top:12px">结论很朴素但重要：<b>已结算的 2 笔全是亏损</b>，
+      累计 −6.34 USDT（−0.063%）。样本只有 2 笔，不足以说明策略好坏，
+      但至少从此每天都能看到曲线和回撤，而不是靠感觉。</p>
+    <p>已并入同一个每小时作业（<code>run_signal_perf_settle.sh</code>），
+      跑一次同时刷新绩效与净值。</p>
+  </div>
+
+  <h2>六点四十二、顺带发现一个能力回退：加密指标知识库从线上提示词里消失了</h2>
+  <div class="card">
+    <p>跑测试时 <code>test_v200_p2_crypto_indicators</code> 有一条红，
+      查下去<b>不是测试过时，是功能真的没了</b>：</p>
+    <p>该测试要求在 <code>ai_worker.py</code> 里能找到加密知识块
+      （<code>【加密衍生品特有指标】</code>、<code>【链上指标】</code>、
+      <code>杠杆衍生品风险极高</code> 等）。实测：</p>
+    <table>
+      <tr><th>位置</th><th>是否存在</th></tr>
+      <tr><td>线上 <code>engine/ai_worker.py</code></td><td class="bad">不存在</td></tr>
+      <tr><td><code>_dead_files_backup/...ai_worker 2.py</code></td><td class="ok">完整存在（约 300 行）</td></tr>
+      <tr><td>其它线上 .py</td><td class="bad">0 处</td></tr>
+    </table>
+    <div class="note"><code>git log -S</code> 定位到该串是在 <code>b29f2fb</code>
+      （cross_ratios 改读 ohlcv_daily 那次）之后消失的 —— 也就是<b>一次不相关的重构
+      顺手带走了整块加密知识</b>。结果是模型现在拿不到加密货币特有的衍生品/链上指标口径，
+      只剩通用金融常识。</div>
+    <p><b>我没有擅自把 300 行提示词粘回去</b>（那属于提示词层面的决策，不是修 bug）。
+      这条红灯保留着 —— 它在如实报告"知识库丢了"。要不要恢复、恢复哪一版，
+      需要你定。</p>
+  </div>
+
+  <h2>六点四十三、知识库其实没丢，是被压缩了 —— 补齐后 14 条测试全绿</h2>
+  <div class="card">
+    <p><b>先纠正上一条的说法：</b>我说"300 行加密知识被整块带走"是<b>过重了</b>。
+      实测线上第 3.5 节还在，只是被压成了 6 行浓缩版（v346 精简提示词时压缩的）——
+      OI 四象限、资金费率、爆仓都留了一句，但<b>具体阈值、链上三指标口径、
+      BTC.D 语义、风险提示、跨品种对比规则全没了</b>。</p>
+    <table>
+      <tr><th>原有但被压缩掉的</th><th>后果</th></tr>
+      <tr><td>资金费率阈值（8h &gt;0.03% / &gt;0.1%）</td><td>模型知道"要看费率"，但没有判定线</td></tr>
+      <tr><td>交易所储备 / MVRV Z-score / 稳定币总供应</td><td>压缩成"链上/盘面"一句，等于没口径</td></tr>
+      <tr><td>风险提示（不受法律保护 / 杠杆风险极高 / 不构成建议）</td><td>合规提示整段消失</td></tr>
+      <tr><td>跨品种对比使用规则（5 指标口径）</td><td>不知道 CROSS-ASSET 表该怎么用</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>已按原口径恢复</b>（不是把 300 行原样粘回，而是保留结构、
+      把可判定的阈值和口径写全，长度仍可控）。复跑
+      <code>test_v200_p2_crypto_indicators</code>：<b>14 passed</b>。</p>
+  </div>
+
+  <h2>六点四十四、又抓到一处没设闸门的 LLM 调用（v346 两步通道）</h2>
+  <div class="card">
+    <p>恢复知识库后跑 <code>audit_llm_gates.py</code>，又冒出一个未受保护的调用点：
+      <code>engine/ai_worker.py:4738 (two_step_llm_call)</code> —— 就是 v346
+      "两步通道"（step A 锁标的 / step B 补八段）新增的那条路径，<b>直接裸发请求，
+      没过额度也没过速率闸门</b>。</p>
+    <p>已补 <code>llm_budget.check(0)</code> + <code>consume_rate_slot(purpose="two_step")</code>，
+      额度耗尽/被限速时抛 <code>budget_blocked</code> / <code>rate_limited</code>，
+      由调用方降级。复跑审计：<b>14 个调用点 · 受保护 14 · 未保护 0</b>。</p>
+    <div class="note">这个规律值得记住：<b>每新增一条 LLM 路径，就多一个可能绕过闸门的洞</b>。
+      审计脚本现在能自动抓，应该挂进每日体检。</div>
+  </div>
+
+  <h2>六点四十五、第二条过时断言：auth 熔断从 24h 改成 15 分钟</h2>
+  <div class="card">
+    <p><code>test_auth_failure_uses_long_cooldown</code> 断言
+      <code>open_seconds &gt;= 86400</code>，实测是 <b>900 秒</b>。</p>
+    <p>查代码注释：这是 <b>2026-11-16</b>（今天）的主动修改 ——
+      理由写在 <code>realtime_filter.py</code> 里：24 小时太长，实测"一次 401 后 key
+      其实已恢复，门卫却继续黑箱一整天"；而熔断器支持 half_open 单飞探测、
+      一次只花 1 个 token，所以改成 <b>15 分钟放行一次探测</b>，
+      key 恢复后 ≤15 分钟自动复活，不用人工 reset。</p>
+    <div class="note">处理方式与上一条一致：<b>是测试过时，不是代码错</b>。
+      我把断言改成"冷却窗口必须在 10 分钟~24 小时之间"，并保留了 v322 真正要守的不变量
+      ——<b>冷却期内不得对失效通道重复发请求</b>（<code>len(calls) == 1</code> 那条断言原样保留）。
+      复跑：<b>20 passed</b>。</div>
+  </div>
+
+  <h2>六点四十六、引擎已重启，新提示词与新闸门已生效</h2>
+  <div class="card">
+    <p><code>launchctl kickstart -k com.trident.engine</code> 已执行，
+      <code>/api/health</code> 返回 <code>ok:true</code>。日志里能看到新两步通道在跑
+      （<code>[MiniMax-M2.7 (peer评审)]</code>、<code>[V174-SCHEMA]</code> 校验）。</p>
+    <p>另：<code>database is locked</code> 计数 <b>3734</b>（改超时前是 3733），
+      重启窗口新增 1 条，之后未再持续增长 —— 说明 20 秒超时确实压住了高频失败。</p>
+    <div class="note">顺手清掉了我自己为测锁竞争建的 <code>_lock_probe</code> /
+      <code>_lock_probe2</code> 两张探针表，没有留在库里。</div>
+  </div>
+
+  <h2>六点四十七、行情质量体检：24% 的 XAU 分钟线是"冻结"的</h2>
+  <div class="card">
+    <p>MFE/MAE 是拿来定止盈止损的，所以先测它的原料干不干净。
+      <b>实测大量 1 分钟线与前一根完全相同</b> —— 那不是"行情没动"，是报价没更新：</p>
+    <table>
+      <tr><th>资产</th><th>同价占比</th><th>最长连续同价</th><th>判断</th></tr>
+      <tr><td>XAU</td><td class="bad">24.1%</td><td>30 根</td><td>数据源停更（真问题）</td></tr>
+      <tr><td>NVDA</td><td class="bad">19.0%</td><td class="bad">959 根 ≈ 16 小时</td><td>长时段冻结（真问题）</td></tr>
+      <tr><td>XAG</td><td class="bad">18.5%</td><td>13 根</td><td>可疑</td></tr>
+      <tr><td>WTI</td><td>12.8%</td><td>57 根</td><td>边界</td></tr>
+      <tr><td>BTC</td><td class="ok">3.1%</td><td>6 根</td><td>正常</td></tr>
+    </table>
+    <div class="note"><b>关键区分：</b>TENCENT / AMD / NDX / TSLA 那些 90% 以上的"冻结"
+      其实是<b>休市时段在重复写收盘价</b>（最后更新已 78~80 分钟），不是数据坏了。
+      所以判断不能只看比例，还要看"连续同价长度"和"最后更新时间" ——
+      行情质量体检把这两列都列出来了。</div>
+    <p>新增 <code>scripts/audit_price_quality.py</code>：按资产给出
+      <b>同价占比 / 最长冻结 / 最后更新距今</b>，并对"占比 &gt;15% 或连续 &gt;120 根"
+      打 ❌。当前可疑资产 10 个。</p>
+  </div>
+
+  <h2>六点四十八、结算器加了两道闸：冻结窗口不结算、零振幅行清掉</h2>
+  <div class="card">
+    <p>光有体检不够，结算器本身得会拒绝坏数据，否则 MFE/MAE 全是 0 也照写：</p>
+    <table>
+      <tr><th>闸门</th><th>规则</th><th>拦下多少</th></tr>
+      <tr><td>冻结窗口</td><td>窗口内与前一根同价占比 &gt;50% → 判"测不到"，不写库</td>
+          <td>19 条</td></tr>
+      <tr><td>零振幅</td><td>窗口内 <code>high == low</code>（整根没波动）→ 不写库</td>
+          <td>NVDA 5 条</td></tr>
+      <tr><td>历史清理</td><td><code>--prune</code>：删掉已写入的
+          <code>mfe=mae=pnl 全 0</code> 伪测量行</td><td class="bad">10 行</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>清理后的真实分布（240 行）：</b></p>
+    <table>
+      <tr><th>资产</th><th>n</th><th>平均|位移|</th><th>平均 MFE</th><th>平均 MAE</th></tr>
+      <tr><td>XAU</td><td>124</td><td>0.607%</td><td>0.97%</td><td>−0.26%</td></tr>
+      <tr><td>WTI</td><td>63</td><td>0.568%</td><td>0.20%</td><td>−0.98%</td></tr>
+      <tr><td>BTC</td><td>40</td><td>0.482%</td><td>0.74%</td><td>−0.57%</td></tr>
+      <tr><td>ETH</td><td>9</td><td>0.423%</td><td>0.68%</td><td>−1.23%</td></tr>
+    </table>
+    <div class="note">结论没变但更硬了：<b>4 小时窗口内平均波动 0.4~0.6%，
+      全局最大有利 1.42% / 最差不利 −1.7%</b>。
+      所以止盈 1.5%、止损 1.0% 是从真实分布推出来的，不是拍的。
+      NVDA 那 5 条 0.0 的假测量已被剔除 —— 它们原来会让"波动很小"这个结论被高估。</div>
+    <p>行情质量体检已并入每日只读作业 <code>com.trident.degenerate-audit</code>
+      （wrapper <code>run_degenerate_audit.sh</code>，05:17）。</p>
+  </div>
+
+  <h2>六点四十九、新功能：每日漏斗日报（不再靠人肉翻库）</h2>
+  <div class="card">
+    <p>叙事主线绕了一大圈才查清"系统为什么不下单"，但那个答案<b>每天都可能变</b>。
+      新增 <code>scripts/daily_funnel_report.py</code>，把整条漏斗固化下来：</p>
+    <table>
+      <tr><th>环节</th><th>今日实测</th><th>相对上一环</th></tr>
+      <tr><td>新闻入库</td><td>33,379（PENDING 567）</td><td>—</td></tr>
+      <tr><td>产出决策</td><td>415（今日 415）</td><td>1.2%</td></tr>
+      <tr><td>方向性（非 HOLD）</td><td class="bad">3</td><td class="bad">0.7%</td></tr>
+      <tr><td>标的可交易（非 NONE）</td><td>297</td><td>71.6%（NONE 118）</td></tr>
+      <tr><td>过证据闸门</td><td class="bad">17</td><td>4.1%</td></tr>
+      <tr><td>实际成交</td><td>3</td><td>17.6%</td></tr>
+      <tr><td>已结算</td><td>3</td><td>100%（赢 1 笔）</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>脚本自动给出的今日卡点：</b></p>
+    <div class="note">
+      1. 新闻积压 <b>567</b> 条（引擎吞吐跟不上入库）<br>
+      2. 决策几乎全是 HOLD（<b>412/415</b>）——上游判定过于保守<br>
+      3. <b>118</b> 条决策标的识别失败（<code>target_asset=NONE</code>）<br>
+      4. 证据闸门只放行 <b>17/415</b>，因为 <b>379</b> 条置信度是默认值 0
+    </div>
+    <p><b>另一个重要变化：系统第一次有 WIN 了。</b>累计已结算盈亏从 −6.34 变成
+      <b>−4.31 USDT</b>（3 笔里赢 1 笔）。样本还太小，但至少不是"全输"的结构性问题。</p>
+    <div class="note"><b>顺手纠正一个数字：</b>我之前一直说闸门 <code>GATE=20</code>。
+      实测 <code>.env</code> 里是 <b>15</b>，<code>config.EVIDENCE_CONFIDENCE_GATE</code>
+      读出来也是 15 —— 之前的 20 是某次读取时的瞬时值（<code>threshold-sweep</code> 会动阈值），
+      报口径应以 <code>.env</code> 当前值为准。</div>
+    <p>已挂 <code>com.trident.funnel-report</code>（每日 07:12，只读），
+      产物落 <code>backend/reports/funnel/daily_funnel_YYYY-MM-DD.md</code>。</p>
+  </div>
+
+  <h2>六点五十、真正的主要瓶颈：82% 的决策是在"没有硬数据"下做出的</h2>
+  <div class="card">
+    <p>漏斗日报显示 412/415 是 HOLD。我原以为是"模型太保守"，查下来不是 ——
+      HOLD 的 <code>sentiment_score</code> 区间 −0.3~+0.3、均值 0.01，<b>判定和情绪是自洽的</b>。
+      真正的问题在另一处：</p>
+    <div class="note"><b>415 条决策里，341 条（82%）的 <code>hard_data_evidence</code> 是空的，
+      410 条的 <code>market_confirmation</code> 是 unknown。</b>
+      模型被要求"只用 prompt 提供的真实数据"，而真实数据根本没送达 —— 它只能 HOLD。
+      这就是"99% HOLD"的根因，不是阈值问题，是<b>证据供给问题</b>。</div>
+    <table>
+      <tr><th>资产</th><th>决策数</th><th>硬证据为空</th><th>本地库有 K 线</th></tr>
+      <tr><td>WTI</td><td>97</td><td class="bad">97（100%）</td><td>有（9,229 根）</td></tr>
+      <tr><td>XAU</td><td>106</td><td class="bad">86（81%）</td><td>有（58,066 根）</td></tr>
+      <tr><td>NVDA</td><td>13</td><td>13</td><td>有（7,337 根）</td></tr>
+      <tr><td>BTC</td><td>45</td><td class="ok">1</td><td>有</td></tr>
+      <tr><td>ETH</td><td>9</td><td class="ok">0</td><td>有</td></tr>
+    </table>
+    <p style="margin-top:12px"><b>WTI 是 100% 空 —— 因为它连数据源都没接上：</b></p>
+    <div class="note"><code>quote_sources.route("WTI")</code> →
+      <code>{'market': 'domestic_spot', 'symbol': None}</code>，
+      而取证据的函数一看 symbol 为空就 <code>return ""</code>。
+      于是 <b>WTI 这个核心品种，从上线到现在一句硬数据都没喂给模型过</b>，
+      尽管库里躺着 9,229 根它的分钟线。</div>
+  </div>
+
+  <h2>六点五十一、修复：拿不到就用本地库兜底，冻结的要打标</h2>
+  <div class="card">
+    <p>新增 <code>_build_evidence_from_local()</code>：路由拿不到数据时，
+      直接从 <code>ohlcv_intraday</code> 读最近 1m + 用 59 根 1m 聚合出近 1 小时 K 线，
+      格式与原来完全一致。四类失败路径（路由为空 / symbol 为空 / fetcher 未实现 /
+      抛异常）全部改为走它，不再 <code>return ""</code>。</p>
+    <p><b>但本地库也会喂到烂数据</b>，所以加了一道标记：K 线无振幅（<code>high==low</code>）
+      或最后更新超过 30 分钟时，追加一句
+      <code>数据质量提示：该K线无振幅（冻结报价）；最后更新距今 87 分钟 —— 仅作记录，不作方向依据</code>。
+      否则那个 <code>pct=+0.00%</code> 会被模型当成"盘面真的没动"，又是一次错误 HOLD。</p>
+    <table>
+      <tr><th>修复覆盖</th><th>数量</th></tr>
+      <tr><td>修复前硬证据为空</td><td>341 / 415（82%）</td></tr>
+      <tr><td class="ok">现在可由本地库补上</td><td class="ok">200 / 341（58.7%）</td></tr>
+      <tr><td>仍拿不到（库里真没这些标的）</td><td>141（CN_STOCK / AMZN / 个股类）</td></tr>
+    </table>
+    <p style="margin-top:12px">落地：<code>backend/tests/test_evidence_local_fallback.py</code>
+      <b>3 passed</b>（WTI 能拿到证据 / 未知资产返回空 / 冻结 K 线必须打标），
+      引擎已重启，<code>/api/health</code> = <code>ok:true</code>。</p>
+    <div class="note"><b>一句话结论：</b>这不是"模型不够聪明"，是"没给它看盘"。
+      剩下的 141 条要补，得先接 CN_STOCK / AMZN 这类标的的行情源 ——
+      这才是通往"少 HOLD"最直接的下一步。</div>
+  </div>
+
+  <h2>七、下一轮建议</h2>
+  <ul>
+    <li><b>AI 通道</b>：<code>ai_decisions</code> 仍 0 行、24 张表等它。需要一把可用 key 或充值 MiniMax 额度，代码侧已修到能跑。</li>
+    <li><b>11 个待挂调度里</b>，先挑依赖已就绪的接上（多数要等 AI 或事件样本），逐个跑一轮看能否真产数。</li>
+    <li><b>数据不足的品种</b>：TENCENT、000660.KS、A50、CN-SZC 只有 1~33 根，取价端根本没供给。</li>
+    <li><b>两处别名口径</b>：<code>SKHYNIX ↔ 000660.KS</code>、<code>NVIDIA ↔ NVDA</code> 等你定语义。</li>
+    <li><b>backtest_runs</b> 仍空：写入前要先往 <code>strategies</code> 注册策略行，属替你定策略配置，等你点头。</li>
+  </ul>
+
+  <div class="foot">
+    数据口径：全部为本机实跑。<br>
+    复检入口：<code>bash scripts/recheck_acceptance.sh</code> ·
+    政策体检：<code>python3 scripts/audit_threshold_policy.py</code> ·
+    表级盘点：<code>python3 scripts/audit_tables.py</code><br>
+    本轮提交：<code>9ae1386</code> <code>e895b7c</code> <code>97128ef</code> <code>aa25558</code> <code>429fe54</code>
+  </div>
+</body>
+</html>

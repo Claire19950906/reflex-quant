@@ -1,0 +1,1290 @@
+{
+  "summary": {
+    "backend_routes": 507,
+    "frontend_paths": 330,
+    "duplicate_routes": 27,
+    "unreferenced_candidates": 177
+  },
+  "duplicates": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "files": [
+        "src_python/master_api.py",
+        "src_python/bridge_server.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/trading/signals",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/trading_v201.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/impact/by-asset",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/trading_v201.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/event/opportunities",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/trading_v201.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/signal/{}",
+      "files": [
+        "src_python/data_poison.py",
+        "src_python/routers/portal.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/review/causal-graph",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/causal_graph.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/causal/accuracy-stats",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/causal_graph.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/discovery/fed-watch",
+      "files": [
+        "src_python/routers/discovery.py",
+        "src_python/routers/discovery.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "files": [
+        "src_python/master_api.py",
+        "src_python/routers/health.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/events",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/events.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/filter-stream",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/events.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/stream",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/events.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/abnormal-signals",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/abnormal.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/abnormal-signals/{}/attribution",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/abnormal.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/abnormal/feedback-stats",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/abnormal.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/calendar/events-for-asset",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/calendar.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/sources/alerts",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/sources.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/review/snapshot",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/review_run.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/macro/context",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/macro.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/prices",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/market_quotes.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/movers",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/market_quotes.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/history/{}",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/market_quotes.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/history/news-trades",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/history.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/history/news-trades/pending-count",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/history.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/history/news-trades/{}",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/history.py"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/history/news-trades/{}/review",
+      "files": [
+        "src_python/bridge_server.py",
+        "src_python/routers/history.py"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "files": [
+        "src_python/master_api.py",
+        "src_python/routers/meta.py"
+      ]
+    }
+  ],
+  "unreferenced": [
+    {
+      "method": "GET",
+      "path": "/",
+      "raw": "/",
+      "file": "src_python/master_api.py"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "raw": "/health",
+      "file": "src_python/master_api.py"
+    },
+    {
+      "method": "GET",
+      "path": "/signal/{}",
+      "raw": "/signal/{symbol}",
+      "file": "src_python/master_api.py"
+    },
+    {
+      "method": "POST",
+      "path": "/backtest",
+      "raw": "/backtest",
+      "file": "src_python/master_api.py"
+    },
+    {
+      "method": "POST",
+      "path": "/batch",
+      "raw": "/batch",
+      "file": "src_python/master_api.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/signal/{}",
+      "raw": "/api/signal/{symbol}",
+      "file": "src_python/data_poison.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/insight/weekly-status",
+      "raw": "/api/admin/insight/weekly-status",
+      "file": "src_python/api_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trading/health",
+      "raw": "/api/trading/health",
+      "file": "src_python/api_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/debug/mem",
+      "raw": "/api/debug/mem",
+      "file": "src_python/api_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/abnormal/feedback-stats",
+      "raw": "/api/abnormal/feedback-stats",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/impact/by-asset",
+      "raw": "/api/v201/impact/by-asset",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/event/opportunities",
+      "raw": "/api/v201/event/opportunities",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/causal/accuracy-stats",
+      "raw": "/api/v189/causal/accuracy-stats",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/calendar/events-for-asset",
+      "raw": "/api/v189/calendar/events-for-asset",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/...",
+      "raw": "/api/...",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/{}",
+      "raw": "/api/{full_path:path}",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/{}",
+      "raw": "/api/{full_path:path}",
+      "file": "src_python/bridge_server.py"
+    },
+    {
+      "method": "GET",
+      "path": "...",
+      "raw": "...",
+      "file": "src_python/selftest_v309_endpoints.py"
+    },
+    {
+      "method": "POST",
+      "path": "...",
+      "raw": "...",
+      "file": "src_python/selftest_v309_endpoints.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/policy/expectancy",
+      "raw": "/api/policy/expectancy",
+      "file": "src_python/routers/bets.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/impact/by-asset",
+      "raw": "/api/v201/impact/by-asset",
+      "file": "src_python/routers/trading_v201.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/event/opportunities",
+      "raw": "/api/v201/event/opportunities",
+      "file": "src_python/routers/trading_v201.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v201/trade-points",
+      "raw": "/api/v201/trade-points",
+      "file": "src_python/routers/trading_v201.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trading/latest",
+      "raw": "/api/trading/latest",
+      "file": "src_python/routers/trading_v201.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/watermark",
+      "raw": "/api/security/watermark",
+      "file": "src_python/routers/portal.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/security/entry",
+      "raw": "/api/security/entry",
+      "file": "src_python/routers/portal.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/signal/{}",
+      "raw": "/api/signal/{symbol}",
+      "file": "src_python/routers/portal.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/batch",
+      "raw": "/api/batch",
+      "file": "src_python/routers/portal.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/master/health",
+      "raw": "/api/master/health",
+      "file": "src_python/routers/portal.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/signals/actionable",
+      "raw": "/api/signals/actionable",
+      "file": "src_python/routers/actionable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/causal/quality",
+      "raw": "/api/causal/quality",
+      "file": "src_python/routers/causal_graph.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/causal/export",
+      "raw": "/api/causal/export",
+      "file": "src_python/routers/causal_graph.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/causal/accuracy-stats",
+      "raw": "/api/v189/causal/accuracy-stats",
+      "file": "src_python/routers/causal_graph.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v189/causal/expand-from-insights",
+      "raw": "/api/v189/causal/expand-from-insights",
+      "file": "src_python/routers/causal_graph.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/es",
+      "raw": "/api/v189/market/es",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/nq",
+      "raw": "/api/v189/market/nq",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/us10y",
+      "raw": "/api/v189/market/us10y",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/us5y",
+      "raw": "/api/v189/market/us5y",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/yield-curve-spread",
+      "raw": "/api/v189/market/yield-curve-spread",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/market/funding-rate",
+      "raw": "/api/v189/market/funding-rate",
+      "file": "src_python/routers/market.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/event_atoms",
+      "raw": "/api/event_atoms",
+      "file": "src_python/routers/event_atoms.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/event_atoms/{}",
+      "raw": "/api/event_atoms/{atom_id}",
+      "file": "src_python/routers/event_atoms.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/event_impact_curves",
+      "raw": "/api/event_impact_curves",
+      "file": "src_python/routers/event_atoms.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/event_impact_stat",
+      "raw": "/api/event_impact_stat",
+      "file": "src_python/routers/event_atoms.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/deep/enrich/{}",
+      "raw": "/api/reflection/deep/enrich/{reflection_id}",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reflection/deep/enrich-pending",
+      "raw": "/api/reflection/deep/enrich-pending",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reflection/meta-loop/run",
+      "raw": "/api/reflection/meta-loop/run",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/meta-loop/stats",
+      "raw": "/api/reflection/meta-loop/stats",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reflection/reasoning-logic-blindspot/detect",
+      "raw": "/api/reflection/reasoning-logic-blindspot/detect",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/reasoning-logic-blindspot/scan",
+      "raw": "/api/reflection/reasoning-logic-blindspot/scan",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/deep/{}",
+      "raw": "/api/reflection/deep/{reflection_id}",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/experiences/add",
+      "raw": "/api/v188/experiences/add",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/experiences/{}/update",
+      "raw": "/api/v188/experiences/{exp_id}/update",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/experiences/{}/archive",
+      "raw": "/api/v188/experiences/{exp_id}/archive",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/experiences/{}/stats",
+      "raw": "/api/v188/experiences/{exp_id}/stats",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/missed-signal/detect",
+      "raw": "/api/v188/missed-signal/detect",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/missed-signal/attention-candidates",
+      "raw": "/api/v188/missed-signal/attention-candidates",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/missed-signal/{}",
+      "raw": "/api/v188/missed-signal/{asset}",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/trade-reflections/{}/reproduce",
+      "raw": "/api/v188/trade-reflections/{reflection_id}/reproduce",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/trade-reflections/enrich-pending",
+      "raw": "/api/v188/trade-reflections/enrich-pending",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/reflection/stats",
+      "raw": "/api/v188/reflection/stats",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/decision/{}/diagnosis",
+      "raw": "/api/v188/decision/{decision_id}/diagnosis",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/recent",
+      "raw": "/api/reflection/recent",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/clustering",
+      "raw": "/api/reflection/clustering",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/stats",
+      "raw": "/api/reflection/stats",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reflection/stock-decisions",
+      "raw": "/api/reflection/stock-decisions",
+      "file": "src_python/routers/reflection.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/horizons/stats",
+      "raw": "/api/horizons/stats",
+      "file": "src_python/routers/decisions.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/policy/sibling-rules",
+      "raw": "/api/policy/sibling-rules",
+      "file": "src_python/routers/policy.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/insight/promote-now",
+      "raw": "/api/admin/insight/promote-now",
+      "file": "src_python/routers/policy.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/paper/buy-sell-kpi",
+      "raw": "/api/paper/buy-sell-kpi",
+      "file": "src_python/routers/paper.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v186/experiences",
+      "raw": "/api/v186/experiences",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v186/experiences/stats",
+      "raw": "/api/v186/experiences/stats",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v186/trade-reflections",
+      "raw": "/api/v186/trade-reflections",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v186/gate-reflection-cycle",
+      "raw": "/api/v186/gate-reflection-cycle",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v186/persona-stats",
+      "raw": "/api/v186/persona-stats",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v186/experience-reflect/run",
+      "raw": "/api/v186/experience-reflect/run",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v186/gate-reflection-cycle/run",
+      "raw": "/api/v186/gate-reflection-cycle/run",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v186/paper-reflection/run",
+      "raw": "/api/v186/paper-reflection/run",
+      "file": "src_python/routers/experience.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v190/exchange/status",
+      "raw": "/api/v190/exchange/status",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v190/exchange/mode/start",
+      "raw": "/api/v190/exchange/mode/start",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v190/exchange/mode/stop",
+      "raw": "/api/v190/exchange/mode/stop",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v190/exchange/stop_all",
+      "raw": "/api/v190/exchange/stop_all",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v190/exchange/credentials",
+      "raw": "/api/v190/exchange/credentials",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v190/exchange/audit",
+      "raw": "/api/v190/exchange/audit",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v190/exchange/daily_summary",
+      "raw": "/api/v190/exchange/daily_summary",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v190/exchange/daily_resets",
+      "raw": "/api/v190/exchange/daily_resets",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v190/exchange/signal_archive",
+      "raw": "/api/v190/exchange/signal_archive",
+      "file": "src_python/routers/exchange.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/trading/manager/start",
+      "raw": "/api/trading/manager/start",
+      "file": "src_python/routers/trading.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/trading/manager/stop",
+      "raw": "/api/trading/manager/stop",
+      "file": "src_python/routers/trading.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trading/manager/status",
+      "raw": "/api/trading/manager/status",
+      "file": "src_python/routers/trading.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trading/manager/logs",
+      "raw": "/api/trading/manager/logs",
+      "file": "src_python/routers/trading.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/challenge",
+      "raw": "/api/security/challenge",
+      "file": "src_python/routers/antibot.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/security/challenge/verify",
+      "raw": "/api/security/challenge/verify",
+      "file": "src_python/routers/antibot.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/visitors",
+      "raw": "/api/admin/visitors",
+      "file": "src_python/routers/antibot.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/block",
+      "raw": "/api/admin/block",
+      "file": "src_python/routers/antibot.py"
+    },
+    {
+      "method": "GET",
+      "path": "/admin",
+      "raw": "/admin",
+      "file": "src_python/routers/antibot.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v187/llm-stats/by-purpose",
+      "raw": "/api/v187/llm-stats/by-purpose",
+      "file": "src_python/routers/llm.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v187/llm-stats/by-key",
+      "raw": "/api/v187/llm-stats/by-key",
+      "file": "src_python/routers/llm.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v187/llm-stats/by-call-site",
+      "raw": "/api/v187/llm-stats/by-call-site",
+      "file": "src_python/routers/llm.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v187/llm-stats/timeline",
+      "raw": "/api/v187/llm-stats/timeline",
+      "file": "src_python/routers/llm.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v187/llm-stats/summary",
+      "raw": "/api/v187/llm-stats/summary",
+      "file": "src_python/routers/llm.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/indicators",
+      "raw": "/api/v188/indicators",
+      "file": "src_python/routers/indicators.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/indicators/run",
+      "raw": "/api/v188/indicators/run",
+      "file": "src_python/routers/indicators.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/macro/snapshot",
+      "raw": "/api/v188/macro/snapshot",
+      "file": "src_python/routers/indicators.py"
+    },
+    {
+      "method": "GET",
+      "path": "/uploads/{}",
+      "raw": "/uploads/{filename:path}",
+      "file": "src_python/routers/agent_chat.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/factory/report",
+      "raw": "/api/factory/report",
+      "file": "src_python/routers/factory.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/signal-weights",
+      "raw": "/api/signal-weights",
+      "file": "src_python/routers/signal_weights.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/signal-weights/recompute",
+      "raw": "/api/signal-weights/recompute",
+      "file": "src_python/routers/signal_weights.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/signal-weights/{}",
+      "raw": "/api/signal-weights/{decision_id}",
+      "file": "src_python/routers/signal_weights.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/abnormal/backfill",
+      "raw": "/api/abnormal/backfill",
+      "file": "src_python/routers/abnormal.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/abnormal/feedback-stats",
+      "raw": "/api/abnormal/feedback-stats",
+      "file": "src_python/routers/abnormal.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/swing-writeback",
+      "raw": "/api/admin/swing-writeback",
+      "file": "src_python/routers/abnormal.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v188/admin/daily-archive",
+      "raw": "/api/v188/admin/daily-archive",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v188/admin/db-stats",
+      "raw": "/api/v188/admin/db-stats",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/backtest/active_run",
+      "raw": "/api/v189/backtest/active_run",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v189/backtest/archive",
+      "raw": "/api/v189/backtest/archive",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v189/backtest/cleanup",
+      "raw": "/api/v189/backtest/cleanup",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v189/journal/record",
+      "raw": "/api/v189/journal/record",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v189/journal/rollup",
+      "raw": "/api/v189/journal/rollup",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/journal/{}",
+      "raw": "/api/v189/journal/{date}",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/journal",
+      "raw": "/api/v189/journal",
+      "file": "src_python/routers/ops.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/calendar/events-for-asset",
+      "raw": "/api/v189/calendar/events-for-asset",
+      "file": "src_python/routers/calendar.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v275/calendar/impact-by-asset",
+      "raw": "/api/v275/calendar/impact-by-asset",
+      "file": "src_python/routers/calendar.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard/overview",
+      "raw": "/api/dashboard/overview",
+      "file": "src_python/routers/overview.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/status",
+      "raw": "/api/trident2/status",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/spec/{}",
+      "raw": "/api/trident2/spec/{feature_id}",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/results",
+      "raw": "/api/trident2/results",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/alerts",
+      "raw": "/api/trident2/alerts",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/account",
+      "raw": "/api/trident2/account",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/positions",
+      "raw": "/api/trident2/positions",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trident2/orders",
+      "raw": "/api/trident2/orders",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/trident2/nl-amend",
+      "raw": "/api/trident2/nl-amend",
+      "file": "src_python/routers/trident2.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analysis/yield",
+      "raw": "/api/analysis/yield",
+      "file": "src_python/routers/analysis_yield.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analysis/yield/retry-list",
+      "raw": "/api/analysis/yield/retry-list",
+      "file": "src_python/routers/analysis_yield.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/id-reconcile/migrate",
+      "raw": "/api/admin/id-reconcile/migrate",
+      "file": "src_python/routers/admin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/id-reconcile/backfill",
+      "raw": "/api/admin/id-reconcile/backfill",
+      "file": "src_python/routers/admin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/id-reconcile/check",
+      "raw": "/api/admin/id-reconcile/check",
+      "file": "src_python/routers/admin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/id-reconcile/resolve",
+      "raw": "/api/admin/id-reconcile/resolve",
+      "file": "src_python/routers/admin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/id-reconcile/alerts",
+      "raw": "/api/admin/id-reconcile/alerts",
+      "file": "src_python/routers/admin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/data-health/summary",
+      "raw": "/api/data-health/summary",
+      "file": "src_python/routers/data_health.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/data-health/recent",
+      "raw": "/api/data-health/recent",
+      "file": "src_python/routers/data_health.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/data-health/record",
+      "raw": "/api/data-health/record",
+      "file": "src_python/routers/data_health.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/coinglass/lsr/latest",
+      "raw": "/api/v189/coinglass/lsr/latest",
+      "file": "src_python/routers/coinglass.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/coinglass/lsr/history",
+      "raw": "/api/v189/coinglass/lsr/history",
+      "file": "src_python/routers/coinglass.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/coinglass/health",
+      "raw": "/api/v189/coinglass/health",
+      "file": "src_python/routers/coinglass.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v189/coinglass/lsr/ranking",
+      "raw": "/api/v189/coinglass/lsr/ranking",
+      "file": "src_python/routers/coinglass.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/obs/sources",
+      "raw": "/api/obs/sources",
+      "file": "src_python/routers/obs.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/obs/staleness",
+      "raw": "/api/obs/staleness",
+      "file": "src_python/routers/obs.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/obs/llm",
+      "raw": "/api/obs/llm",
+      "file": "src_python/routers/obs.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reasoning/review/segment-history",
+      "raw": "/api/reasoning/review/segment-history",
+      "file": "src_python/routers/reasoning.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reasoning/review/{}",
+      "raw": "/api/reasoning/review/{decision_id}",
+      "file": "src_python/routers/reasoning.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reasoning/narrative/list",
+      "raw": "/api/reasoning/narrative/list",
+      "file": "src_python/routers/reasoning.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reasoning/narrative/{}",
+      "raw": "/api/reasoning/narrative/{decision_id}",
+      "file": "src_python/routers/reasoning.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reasoning/narrative/{}/generate",
+      "raw": "/api/reasoning/narrative/{decision_id}/generate",
+      "file": "src_python/routers/reasoning.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/macro/history",
+      "raw": "/api/macro/history",
+      "file": "src_python/routers/macro.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/macro/calendar",
+      "raw": "/api/macro/calendar",
+      "file": "src_python/routers/macro.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/market/price-at",
+      "raw": "/api/market/price-at",
+      "file": "src_python/routers/market_quotes.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/gate-reflection",
+      "raw": "/api/market/gate-reflection",
+      "file": "src_python/routers/market_quotes.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/kb/asset/{}",
+      "raw": "/api/kb/asset/{asset}",
+      "file": "src_python/routers/kb.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/kb/dim/{}",
+      "raw": "/api/kb/dim/{dim_code}",
+      "file": "src_python/routers/kb.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/kb/search",
+      "raw": "/api/kb/search",
+      "file": "src_python/routers/kb.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/kb/stats",
+      "raw": "/api/kb/stats",
+      "file": "src_python/routers/kb.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/smart-money/fills",
+      "raw": "/api/smart-money/fills",
+      "file": "src_python/routers/smart_money.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/smart-money/state",
+      "raw": "/api/smart-money/state",
+      "file": "src_python/routers/smart_money.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/nlq",
+      "raw": "/api/nlq",
+      "file": "src_python/routers/views.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/memory/search",
+      "raw": "/api/v1/memory/search",
+      "file": "src_python/routers/views.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-gaps",
+      "raw": "/api/knowledge-gaps",
+      "file": "src_python/routers/beliefs.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/external/fetch-and-ingest",
+      "raw": "/api/external/fetch-and-ingest",
+      "file": "src_python/routers/beliefs.py"
+    },
+    {
+      "method": "POST",
+      "path": "/api/external/ingest",
+      "raw": "/api/external/ingest",
+      "file": "src_python/routers/beliefs.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/external/indicators",
+      "raw": "/api/external/indicators",
+      "file": "src_python/routers/beliefs.py"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "raw": "/health",
+      "file": "src_python/routers/meta.py"
+    },
+    {
+      "method": "GET",
+      "path": "/metrics",
+      "raw": "/metrics",
+      "file": "src_python/routers/meta.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/timeseries/ticks/{}",
+      "raw": "/api/timeseries/ticks/{symbol}",
+      "file": "src_python/routers/timeseries.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/timeseries/ohlc/{}",
+      "raw": "/api/timeseries/ohlc/{symbol}",
+      "file": "src_python/routers/timeseries.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/timeseries/factors",
+      "raw": "/api/timeseries/factors",
+      "file": "src_python/routers/timeseries.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/timeseries/news",
+      "raw": "/api/timeseries/news",
+      "file": "src_python/routers/timeseries.py"
+    },
+    {
+      "method": "GET",
+      "path": "/api/timeseries/winrate",
+      "raw": "/api/timeseries/winrate",
+      "file": "src_python/routers/timeseries.py"
+    }
+  ]
+}

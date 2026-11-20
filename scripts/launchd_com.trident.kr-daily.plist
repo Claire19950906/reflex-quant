@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.trident.kr-daily</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/claire/.trident/wrappers/run_kr_daily.sh</string>
+  </array>
+  <!-- 韩国 15:30 收盘，16:20 KST（= 15:20 CST）跑 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>15</integer>
+    <key>Minute</key><integer>20</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Users/claire/.trident/log/kr_daily.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/claire/.trident/log/kr_daily.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>

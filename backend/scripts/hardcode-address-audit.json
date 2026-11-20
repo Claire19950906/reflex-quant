@@ -1,0 +1,278 @@
+[
+  {
+    "file": "src_python/anti_bot.py",
+    "line": 195,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "_LOOPBACK = (\"127.0.0.1\", \"::1\", \"localhost\")"
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1870,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3000\", \"http://127.0.0.1:3000\","
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1871,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3001\", \"http://127.0.0.1:3001\","
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1872,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3002\", \"http://127.0.0.1:3002\","
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1873,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3030\", \"http://127.0.0.1:3030\","
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1877,
+    "cat": "注释/日志文案（保留）",
+    "code": "\"[LIFESPAN] ⚠️  CORS_ALLOW_ORIGINS is still localhost-only in IS_FULL mode. \""
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 1925,
+    "cat": "回环监听/探测（保留）",
+    "code": "(\"127.0.0.1\", config.BRIDGE_PORT), timeout=1.5):"
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 2463,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "demo_mode.assert_full_guard_localhost(\"127.0.0.1\")"
+  },
+  {
+    "file": "src_python/api_server.py",
+    "line": 9476,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "_host = os.getenv(\"API_HOST\", \"127.0.0.1\")"
+  },
+  {
+    "file": "src_python/bridge_server.py",
+    "line": 7509,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "host = os.environ.get(\"BRIDGE_HOST\", \"127.0.0.1\")"
+  },
+  {
+    "file": "src_python/capability_acceptance.py",
+    "line": 56,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "BRIDGE = os.environ.get(\"TRIDENT_BRIDGE\", f\"http://127.0.0.1:{_BRIDGE_PORT}\")"
+  },
+  {
+    "file": "src_python/capability_gate.py",
+    "line": 26,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "\"TRIDENT_BRIDGE\", f\"http://127.0.0.1:{_BRIDGE_PORT}/api/\")"
+  },
+  {
+    "file": "src_python/cn_etf_flow.py",
+    "line": 46,
+    "cat": "UA 标识（非地址，保留）",
+    "code": "'(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')"
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 56,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "LOCAL_HOST = os.getenv(\"TRIDENT_LOCAL_HOST\", \"127.0.0.1\")"
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 400,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "LOCAL_LLM_BASE_URL   = os.getenv(\"LOCAL_LLM_BASE_URL\", \"http://localhost:11434/v1\").strip().rstrip(\""
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1403,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3000\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1404,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://127.0.0.1:3000\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1405,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3001\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1406,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://127.0.0.1:3001\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1407,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3002\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1408,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://127.0.0.1:3002\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1409,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://localhost:3030\","
+  },
+  {
+    "file": "src_python/config.py",
+    "line": 1410,
+    "cat": "CORS 本地开发端口兜底（保留）",
+    "code": "\"http://127.0.0.1:3030\","
+  },
+  {
+    "file": "src_python/crowd_sources.py",
+    "line": 34,
+    "cat": "UA 标识（非地址，保留）",
+    "code": "\"(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\""
+  },
+  {
+    "file": "src_python/demo_mode.py",
+    "line": 78,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "def assert_full_guard_localhost(host: str) -> None:"
+  },
+  {
+    "file": "src_python/demo_mode.py",
+    "line": 86,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "if h in (\"0.0.0.0\", \"\"):"
+  },
+  {
+    "file": "src_python/demo_mode.py",
+    "line": 91,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "elif h in (\"127.0.0.1\", \"::1\", \"localhost\"):"
+  },
+  {
+    "file": "src_python/engine/main.py",
+    "line": 218,
+    "cat": "回环监听/端口探测（保留）",
+    "code": "if _port_in_use(\"127.0.0.1\", _TREE_NEWS_PORT):"
+  },
+  {
+    "file": "src_python/engine/main.py",
+    "line": 252,
+    "cat": "回环监听/探测（保留）",
+    "code": "_tree_news_handler, \"127.0.0.1\", _TREE_NEWS_PORT"
+  },
+  {
+    "file": "src_python/engine/main.py",
+    "line": 254,
+    "cat": "回环监听/端口探测（保留）",
+    "code": "print(f\"[MAIN] Webhook server listening on 127.0.0.1:{_TREE_NEWS_PORT}\")"
+  },
+  {
+    "file": "src_python/engine/ws_client.py",
+    "line": 251,
+    "cat": "UA 标识（非地址，保留）",
+    "code": "\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chro"
+  },
+  {
+    "file": "src_python/feeds/treenews_bridge.py",
+    "line": 7,
+    "cat": "回环监听/端口探测（保留）",
+    "code": "Trident engine's webhook listener on 127.0.0.1:9000."
+  },
+  {
+    "file": "src_python/judge_worker.py",
+    "line": 80,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "ollama_url = os.environ.get(\"OLLAMA_URL\", \"http://127.0.0.1:11434\")"
+  },
+  {
+    "file": "src_python/license_auth.py",
+    "line": 269,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "if _host in (\"127.0.0.1\", \"::1\", \"localhost\", \"::ffff:127.0.0.1\"):"
+  },
+  {
+    "file": "src_python/master_api.py",
+    "line": 5,
+    "cat": "注释/日志文案（保留）",
+    "code": "监听：127.0.0.1:9001（公网绝对扫不到，靠 Cloudflare Tunnel 暴露）"
+  },
+  {
+    "file": "src_python/master_api.py",
+    "line": 6,
+    "cat": "注释/日志文案（保留）",
+    "code": "白名单：127.0.0.1 + Bearer token"
+  },
+  {
+    "file": "src_python/master_api.py",
+    "line": 43,
+    "cat": "env 兜底（可覆盖，保留）",
+    "code": "HOST = os.getenv(\"TRIDENT_MASTER_HOST\", \"127.0.0.1\")  # ⚠️ 只能 127.0.0.1"
+  },
+  {
+    "file": "src_python/master_api.py",
+    "line": 250,
+    "cat": "注释/日志文案（保留）",
+    "code": "logger.info(\"   ⚠️   这个 API 只在 127.0.0.1 上监听\")"
+  },
+  {
+    "file": "src_python/master_keeper.py",
+    "line": 82,
+    "cat": "env 兜底（保留）",
+    "code": "env.setdefault(\"TRIDENT_MASTER_HOST\", \"127.0.0.1\")"
+  },
+  {
+    "file": "src_python/model_probe.py",
+    "line": 703,
+    "cat": "本地地址判定（保留）",
+    "code": "return b.startswith(\"http://localhost\") or b.startswith(\"http://127.0.0.1\")"
+  },
+  {
+    "file": "src_python/net_path_probe.py",
+    "line": 84,
+    "cat": "回环监听/端口探测（保留）",
+    "code": "def _port_open(port: int, host: str = \"127.0.0.1\") -> bool:"
+  },
+  {
+    "file": "src_python/net_path_probe.py",
+    "line": 218,
+    "cat": "代理示例/诊断（保留）",
+    "code": "\"    HTTP_PROXY=http://127.0.0.1:%d\\n\""
+  },
+  {
+    "file": "src_python/net_path_probe.py",
+    "line": 219,
+    "cat": "代理示例/诊断（保留）",
+    "code": "\"    HTTPS_PROXY=http://127.0.0.1:%d\\n\""
+  },
+  {
+    "file": "src_python/net_path_probe.py",
+    "line": 311,
+    "cat": "代理示例/诊断（保留）",
+    "code": "ap.add_argument(\"--proxy\", default=\"\", help=\"用指定代理测 (如 http://127.0.0.1:7890)\")"
+  },
+  {
+    "file": "src_python/net_path_probe.py",
+    "line": 320,
+    "cat": "代理示例/诊断（保留）",
+    "code": "url = args.proxy or (\"http://127.0.0.1:%d\" % ports[0] if ports else \"\")"
+  },
+  {
+    "file": "src_python/routers/agent_chat.py",
+    "line": 110,
+    "cat": "安全白名单/回环判定（保留）",
+    "code": "_TRUSTED_PROXIES = frozenset({\"127.0.0.1\", \"::1\", \"localhost\"})"
+  }
+]

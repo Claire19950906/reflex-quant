@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Label: launchd 唯一标识，必须与文件名一致 -->
+    <key>Label</key>
+    <string>com.trident.equity-fundamentals-cron</string>
+
+    <!-- ProgramArguments: 05:10 跑公司级财报日更（挑在 KG 批处理收尾之后、盘前） -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/claire/Desktop/金融1.0/backend/cron/run_equity_fundamentals.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>10</integer>
+    </dict>
+
+    <!-- v406-fix: 工作目录不能放 ~/Desktop。
+         实测 kickstart 退出码 126，错误是
+           "shell-init: getcwd: cannot access parent directories: Operation not permitted"
+         原因不是读不到脚本（同目录下其他 job 都在跑，能读桌面文件），
+         而是 launchd 后台进程**不能把 TCC 保护的桌面目录当作 cwd**。
+         项目里能正常跑的 job 都把 WorkingDirectory 设在 ~/.trident。
+         脚本内部自己 cd 到项目根，所以这里放一个非 TCC 目录即可。 -->
+    <key>WorkingDirectory</key>
+    <string>/Users/claire/.trident</string>
+
+    <!-- launchd 默认 PATH 很窄，必须显式注入（Python 3.14 框架版） -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/claire</string>
+        <key>PYTHONIOENCODING</key>
+        <string>utf-8</string>
+        <key>TRIDENT_BUSY_TIMEOUT_MS</key>
+        <string>30000</string>
+        <key>TRIDENT_CN_FUND_TICKERS</key>
+        <string>600519.SH,00700.HK</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/claire/.trident/log/equity_fundamentals.launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/claire/.trident/log/equity_fundamentals.launchd.err.log</string>
+
+    <!-- 不在加载时立刻跑：加载那次很可能是下午，会把当日 AV 配额占掉 -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- 失败不自动重试：配额耗尽属预期失败，重试只会把配额打得更空 -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

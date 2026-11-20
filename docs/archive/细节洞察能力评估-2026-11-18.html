@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>细节洞察能力评估 · Reflex Quant 1.0 · 2026-11-18</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%235b8def' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23e05a5a'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0b0e14; --panel:#121722; --panel2:#0f1621; --line:#1f2735;
+  --txt:#e6ebf5; --sub:#8b97ad; --dim:#6b778c;
+  --ok:#2fbf8f; --warn:#e0a13a; --bad:#e05a5a; --mid:#5b8def;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.72 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Noto Sans SC",sans-serif}
+.wrap{max-width:1060px;margin:0 auto;padding:52px 28px 72px}
+
+.head{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+.eyebrow{font-size:12px;color:var(--dim);letter-spacing:2px}
+h1{font-size:27px;line-height:1.35;margin:10px 0 8px;letter-spacing:.3px}
+.sub{color:var(--sub);font-size:14px;max-width:74ch}
+.meta{color:var(--dim);font-size:12.5px;margin-top:14px;display:flex;gap:18px;flex-wrap:wrap}
+.meta span{border-left:1px solid var(--line);padding-left:12px}
+.meta span:first-child{border-left:0;padding-left:0}
+
+.banner{border:1px solid rgba(224,90,90,.45);background:linear-gradient(135deg,rgba(224,90,90,.12),rgba(224,90,90,.03));
+  border-radius:12px;padding:18px 22px;margin-bottom:26px}
+.banner .b-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.banner .dot{width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 4px rgba(224,90,90,.16)}
+.banner .b-title{font-size:16px;font-weight:600;color:#ffd7d7}
+.banner .b-body{color:#e3c9c9;font-size:13.5px;margin-top:10px;max-width:86ch}
+.banner .b-body b{color:#ffb3b3}
+.banner .b-facts{display:flex;gap:26px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px dashed rgba(224,90,90,.28)}
+.banner .b-facts div{font-size:12.5px;color:#d9b9b9}
+.banner .b-facts strong{display:block;font-size:15px;color:#ffe0e0;font-variant-numeric:tabular-nums;font-weight:600;margin-bottom:2px}
+
+.verdict{background:linear-gradient(135deg,#141a26,#0e131c);border:1px solid var(--line);
+  border-radius:14px;padding:24px 26px;margin-bottom:34px}
+.verdict .lead{font-size:19px;font-weight:600;line-height:1.62;margin:0 0 14px}
+.verdict .lead em{font-style:normal;color:var(--bad)}
+.verdict p{margin:0;color:var(--sub);font-size:14px;max-width:82ch}
+.verdict p + p{margin-top:8px}
+.verdict b{color:var(--txt);font-weight:600}
+
+h2{font-size:17px;margin:46px 0 6px;padding-left:11px;border-left:3px solid var(--mid)}
+h2 .no{color:var(--dim);font-weight:400;font-size:12.5px;margin-right:8px;letter-spacing:1px}
+h2 + .h2note{color:var(--sub);font-size:13px;margin:0 0 16px;padding-left:14px}
+h3{font-size:14.5px;margin:28px 0 10px;color:#cfd8e8}
+p{margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:500;font-size:12.5px;letter-spacing:.4px;background:#0d121b}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.t-ok{background:rgba(47,191,143,.13);color:var(--ok);border:1px solid rgba(47,191,143,.32)}
+.t-warn{background:rgba(224,161,58,.13);color:var(--warn);border:1px solid rgba(224,161,58,.32)}
+.t-bad{background:rgba(224,90,90,.13);color:var(--bad);border:1px solid rgba(224,90,90,.32)}
+.t-dim{background:rgba(107,119,140,.15);color:#9aa6bb;border:1px solid rgba(107,119,140,.32)}
+.muted{color:var(--sub);font-size:12px}
+code{background:#0c1018;border:1px solid #1a2230;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#a8b6cf;word-break:break-all}
+.note{background:var(--panel2);border-left:3px solid var(--warn);padding:13px 17px;border-radius:5px;
+  font-size:13.5px;color:#d5dced;margin:16px 0}
+.note.bad{border-left-color:var(--bad)}
+.note.ok{border-left-color:var(--ok)}
+.note b{color:var(--txt)}
+.caption{color:var(--dim);font-size:12px;margin:8px 0 0}
+
+.grade{display:grid;grid-template-columns:112px 58px 1fr;border-top:1px solid var(--line);font-size:13.5px}
+.grade > div{padding:11px 10px;border-bottom:1px solid var(--line)}
+.grade .g-name{color:var(--sub);font-size:12.5px}
+.grade .g-mark{font-size:19px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.grade .g-why{color:#c9d3e4}
+.g-a{color:var(--ok)} .g-b{color:var(--mid)} .g-c{color:var(--warn)} .g-d{color:var(--bad)}
+
+.bars{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 118px;align-items:center;gap:12px;margin:9px 0;font-size:13px}
+.bar-label{color:#c3cddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.bar-track{position:relative;height:15px;background:#0b0f16;border-radius:7px;border:1px solid #19212e;overflow:hidden}
+.bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:7px}
+.bar-val{text-align:right;color:var(--sub);font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+.legend{font-size:12px;color:var(--dim);margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);line-height:1.7}
+.stack{display:flex;height:20px;border-radius:6px;overflow:hidden;border:1px solid #19212e}
+.stack i{display:block;height:100%}
+.slabel{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:10px}
+.slabel span{display:inline-flex;align-items:center;gap:6px}
+.slabel b{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+.kv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 6px}
+.kv > div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.kv .k{font-size:11.5px;color:var(--dim);letter-spacing:.4px}
+.kv .v{font-size:21px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums;line-height:1.2}
+.kv .n{font-size:11.5px;color:var(--sub);margin-top:4px}
+
+.bt{display:grid;grid-template-columns:40px 1fr 210px;gap:0;border-top:1px solid var(--line);margin-top:8px}
+.bt > div{padding:13px 10px;border-bottom:1px solid var(--line);font-size:13.5px}
+.bt .bt-no{color:var(--bad);font-weight:600;font-variant-numeric:tabular-nums;font-size:14px}
+.bt .bt-body strong{display:block;color:#eef3fb;margin-bottom:3px;font-weight:600}
+.bt .bt-body span{color:var(--sub);font-size:13px}
+.bt .bt-read{color:#c9d3e4;font-size:12.5px;font-variant-numeric:tabular-nums}
+
+.foot{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px;line-height:1.8}
+.foot b{color:var(--sub);font-weight:500}
+pre{background:#0c1018;border:1px solid #1a2230;border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:12.5px;color:#a8b6cf;line-height:1.7}
+
+@media (max-width:760px){
+  .wrap{padding:34px 18px 52px}
+  h1{font-size:23px}
+  .kv{grid-template-columns:repeat(2,1fr)}
+  .grade{grid-template-columns:88px 46px 1fr}
+  .bar-row{grid-template-columns:110px 1fr 86px}
+  .bt{grid-template-columns:32px 1fr}
+  .bt .bt-read{grid-column:2;padding-top:0}
+  table{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div class="eyebrow">REFLEX QUANT 1.0 / 能力复核 · 第二次</div>
+  <h1>细节洞察能力评估<br>框架仍是强项，落地仍是断点</h1>
+  <p class="sub">用线上库只读实查，回答一个问题：这套系统现在能不能看见“细节”，把细节算成数、归成错因，最后改得动参数。与 11-16 版同一口径对照，并记录当天现场状态。</p>
+  <div class="meta">
+    <span>数据截至 2026-11-18 13:45 CST</span>
+    <span>线上库 903 决策 / 156 反思 / 104 洞察</span>
+    <span>只读复核，未改动任何数据</span>
+  </div>
+</div>
+
+<div class="banner">
+  <div class="b-top"><span class="dot" aria-hidden="true"></span><span class="b-title">现场告警：分析通道全断，洞察链已停摆</span></div>
+  <div class="b-body">12 条 LLM 通道在 13:16 心跳全部返回 <b>error</b>。主通道 MiniMax 报 <b>HTTP 429「已达到 Token Plan 用量上限」</b>；备用聚合站 AIPING 实测 <b>503 auth_unavailable</b>（上游 403，账号因违规被停用）；本地 qwen2.5:3b 的 <code>/v1/chat/completions</code> 请求 20 秒无响应（<code>/api/tags</code> 可访问，推理端点挂起）。</div>
+  <div class="b-facts">
+    <div><strong>11:15</strong>最后一条决策（NONE / HOLD / 降级）</div>
+    <div><strong>≈2 小时</strong>至今无新增决策</div>
+    <div><strong>11-17 17:35</strong>最后一条洞察，已约 20 小时无新增</div>
+    <div><strong>11 笔</strong>可验证成交样本，门槛要求 ≥12</div>
+  </div>
+</div>
+
+<div class="verdict">
+  <p class="lead">框架仍是 <em>A−</em>，落地仍是 <em>D</em>。看细节的能力比一周前好了一倍，把细节变成动作的能力<strong>一点没动</strong>。</p>
+  <p>硬数据覆盖从 11-16 的 <b>21.5%</b> 提到 analysis 池的 <b>50.7%</b>，错误码覆盖从 4.7% 提到 analysis 池的 <b>57.0%</b>，降级率从 89.5% 降到 <b>73.4%</b>——这三项是实打实的进步。</p>
+  <p>但洞察池 69 条 active 里 <b>64 条只能观察（92.8%）</b>，可执行只有 5 条，<b>verified 至今为 0</b>；反思的归因一致率按修完的真口径只有 <b>39.7%</b>。再加上今天通道全断，现在讨论“洞察准不准”没有样本基础。</p>
+</div>
+
+<h2><span class="no">01</span>先看现场：能力评估之前，管道得通</h2>
+<p class="h2note">这一节不属于能力，但决定了其余所有读数还剩下多少解释力。</p>
+
+<table>
+<colgroup><col style="width:18%"><col style="width:22%"><col style="width:60%"></colgroup>
+<thead><tr><th>项</th><th>状态</th><th>实测证据</th></tr></thead>
+<tbody>
+<tr><td>主通道 MiniMax</td><td><span class="tag t-bad">429 额度耗尽</span></td><td>12:50–13:24 连续 429，原文「已达到 Token Plan 用量上限：请升级 Token Plan 套餐或购买积分补充用量 (2056)」。13:40 逐把探活 .env 里 6 个 key（<code>MINIMAX_API_KEY / 2 / MAIN / GATE / ANOMALY / REFLECT</code>），<b>全部 429</b>——额度是账号级，换 key 无效</td></tr>
+<tr><td>备用聚合 AIPING</td><td><span class="tag t-bad">403 账号停用</span></td><td>对 <code>gpt-5.4-mini</code> 发 5 token 测试请求 → <code>503 auth_unavailable</code>，上游 403「service has been disabled for violation of Terms of Service」</td></tr>
+<tr><td>本地 qwen2.5:3b</td><td><span class="tag t-bad">内存不足，无法驻留</span></td><td><code>/api/tags</code> 正常；<code>/v1/chat/completions</code> 与 <code>/api/generate</code> 均 20–60 秒超时。根因是内存压力：<code>memory_guard.log</code> 显示 12:36–13:06 每 7 分钟卸载一次模型，实测空闲内存一度只剩 <b>≈12 MB</b>；卡死的 <code>llama-server</code> 进程已清理（释放约 745 MB），但 3B 模型仍不足以稳定驻留</td></tr>
+<tr><td>决策产出</td><td><span class="tag t-bad">停 2 小时</span></td><td>最后一条 <code>id=12328 · 11:15:01</code>，13:24 复查仍无新增</td></tr>
+<tr><td>洞察产出</td><td><span class="tag t-warn">停约 20 小时</span></td><td>最新 <code>id=1310 · 2026-11-17 17:35:16</code>；11-17 共产 42 条，11-18 为 0</td></tr>
+</tbody>
+</table>
+
+<div class="note bad"><b>结论：</b>当前处于「零样本产出」状态。恢复优先级高于任何能力改造——通道不通，归因、洞察、验证全部停在存量上，改代码也看不到新读数。</div>
+
+<h2><span class="no">02</span>本次读数能不能直接信</h2>
+<p class="h2note">指标口径不同，混着读会把“没样本”误读成“能力差”，或反过来。</p>
+
+<table>
+<colgroup><col style="width:14%"><col style="width:27%"><col style="width:18%"><col style="width:12%"><col style="width:29%"></colgroup>
+<thead><tr><th>类型</th><th>指标</th><th>样本</th><th>状态</th><th>怎么读</th></tr></thead>
+<tbody>
+<tr><td>不需结算</td><td>S20 硬数据覆盖 / S16 降级率 / S18 无标的 / S19 观察型洞察</td><td class="num">572 / 572 / 903 / 69</td><td><span class="tag t-warn">可读</span></td><td>样本足够，低分就是真低</td></tr>
+<tr><td>需结算</td><td>方向命中（影子账本）</td><td class="num">38 笔</td><td><span class="tag t-warn">样本不足</span></td><td>47.4%，区间宽到不能下结论，只能看方向</td></tr>
+<tr><td>需结算</td><td>因果链方向（5 日超额）</td><td class="num">5,139 条</td><td><span class="tag t-bad">约 48%</span></td><td>平衡口径 48.4%，上下对称，无方向能力</td></tr>
+<tr><td>需真值</td><td>洞察验证</td><td class="num">3 可执行 / 0 verified</td><td><span class="tag t-bad">不可读</span></td><td>验证门槛 ≥12 笔，全库只有 11 笔成交</td></tr>
+<tr><td>需真值</td><td>真值标记 <code>truth_verdict</code></td><td class="num">0 条</td><td><span class="tag t-bad">不可读</span></td><td>没有任何人工/独立真值，S8/S9 无意义</td></tr>
+</tbody>
+</table>
+
+<h2><span class="no">03</span>五维评级：A− 的框架，D 的闭环</h2>
+<p class="h2note">按「看见 → 算成数 → 归成错因 → 改得动」四段链路拆，避免一个总分掩盖结构性差异。括号内为 11-16 版评级。</p>
+
+<div class="grade">
+  <div class="g-name">洞察框架</div><div class="g-mark g-a">A−</div>
+  <div class="g-why">（A−）27+ 错误码、7 层反思、A/B/C 三维、结构因子 −2~+2、confidence 拆方向/赔率/可靠。本批还把 E001a 按原因拆成 g/h/i，机制密度仍是全系统最高。</div>
+
+  <div class="g-name">原料获取</div><div class="g-mark g-c">C+</div>
+  <div class="g-why">（C+）analysis 池硬数据 290/572 = 50.7%，比 11-16 的 21.5% 翻倍；但全库仍只有 35.4%，185 条断档、27 条无本地源、9 条符号未解析。一半决策还在“看不见数”。</div>
+
+  <div class="g-name">细粒度计算</div><div class="g-mark g-b">B−</div>
+  <div class="g-why">（B−）结构因子、三量置信度、影响分阶梯都已落字段；S14 权重分辨率 64.2% 是唯一达标项。但反思 depth_score 均值只有 4.41/10，机制就位 ≠ 已被用起来。</div>
+
+  <div class="g-name">错因归因</div><div class="g-mark g-c">C</div>
+  <div class="g-why">（B−→C）表清干净了（674→156，技术审计 592 条移出独立表），A/B/C 三维也已落库（A 100 / B 53 / C 3，全覆盖）；但真口径一致率只有 39.7%，151 条三层验证 142 条判“无明显错误”，94% 无法验证。</div>
+
+  <div class="g-name">洞察闭环</div><div class="g-mark g-d">D</div>
+  <div class="g-why">（D）92.8% 只能观察（13:45 重判后）、可执行 5 条、verified 0、applied_experience_ids 非空仅 13 条。能“想出来”的比例远高于能“改得动”的比例。</div>
+</div>
+
+<div class="kv">
+  <div><div class="k">降级率（全库）</div><div class="v" style="color:var(--bad)">73.4%</div><div class="n">663 / 903，11-16 为 89.5%</div></div>
+  <div><div class="k">硬数据覆盖（analysis 池）</div><div class="v" style="color:var(--warn)">50.7%</div><div class="n">290 / 572，11-16 为 21.5%</div></div>
+  <div><div class="k">洞察可执行率（active）</div><div class="v" style="color:var(--bad)">7.2%</div><div class="n">5 / 69，观察型 64 条</div></div>
+  <div><div class="k">洞察已验证数</div><div class="v" style="color:var(--bad)">0</div><div class="n">全库 104 条，0 条 verified</div></div>
+</div>
+
+<!-- ===== 视图：四层证据 ===== -->
+
+<h2><span class="no">04</span>层 1 · 原料：细节看得见了多少</h2>
+<p class="h2note">只统计 analysis 池（排除 routing_miss），避免“没标的”把覆盖率分母灌水。</p>
+
+<div class="bars">
+  <div class="bar-row"><div class="bar-label">ETH</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--ok)"></div></div><div class="bar-val">30/30 · 100%</div></div>
+  <div class="bar-row"><div class="bar-label">SOL</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--ok)"></div></div><div class="bar-val">6/6 · 100%</div></div>
+  <div class="bar-row"><div class="bar-label">BTC</div><div class="bar-track"><div class="bar-fill" style="width:96.1%;background:var(--ok)"></div></div><div class="bar-val">99/103 · 96.1%</div></div>
+  <div class="bar-row"><div class="bar-label">XAU</div><div class="bar-track"><div class="bar-fill" style="width:48.9%;background:var(--warn)"></div></div><div class="bar-val">90/184 · 48.9%</div></div>
+  <div class="bar-row"><div class="bar-label">SKHYNIX</div><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--warn)"></div></div><div class="bar-val">2/5 · 40.0%</div></div>
+  <div class="bar-row"><div class="bar-label">WTI</div><div class="bar-track"><div class="bar-fill" style="width:38.3%;background:var(--warn)"></div></div><div class="bar-val">62/162 · 38.3%</div></div>
+  <div class="bar-row"><div class="bar-label">US_STOCK</div><div class="bar-track"><div class="bar-fill" style="width:9.1%;background:var(--bad)"></div></div><div class="bar-val">1/11 · 9.1%</div></div>
+  <div class="bar-row"><div class="bar-label">CN_STOCK / NVDA / AMZN</div><div class="bar-track"><div class="bar-fill" style="width:0.6%;background:var(--bad)"></div></div><div class="bar-val">0/42 · 0%</div></div>
+  <div class="legend">覆盖率 = 该标的 analysis 决策中带 <code>hard_data_evidence</code> 的条数。个股整类为 0，是因为本地没有行情源、取数走外部源被限流，不是代码没接。</div>
+</div>
+
+<table>
+<colgroup><col style="width:34%"><col style="width:18%"><col style="width:48%"></colgroup>
+<thead><tr><th>硬数据缺口状态</th><th>条数</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td><code>ok</code></td><td class="num">320 / 903 · 35.4%</td><td>有可引用行情快照</td></tr>
+<tr><td><code>missing:none_target</code></td><td class="num">301</td><td>本来就没标的（routing_miss 池）</td></tr>
+<tr><td><code>missing:feed_stale</code></td><td class="num">185</td><td>有源但断档，可修</td></tr>
+<tr><td><code>missing:unknown_symbol</code></td><td class="num">27</td><td>符号解析失败，可修</td></tr>
+<tr><td><code>missing:no_local_feed</code></td><td class="num">27</td><td>本地无源，结构性，需接数据源</td></tr>
+<tr><td><code>missing:unresolved_target</code></td><td class="num">9</td><td>标的存在但未解析成代码</td></tr>
+</tbody>
+</table>
+
+<div class="note warn"><b>另外两个“看不见”的口径，比覆盖率更值得注意：</b>影响力维 <code>impact_score</code> 为默认 5.0 或空的占 <b>542/903 = 60.0%</b>；盘面确认 <code>market_confirmation</code> 为 <code>unknown</code> 的占 <b>882/903 = 97.7%</b>（positive 仅 1 条）。这两项决定了“细节”能不能进闸门，目前基本是死的。</div>
+
+<div class="note"><b>无标的仍是最大分母污染：</b><code>target_asset=NONE</code> <b>349/903 = 38.7%</b>，其中 <code>routing_miss</code> 331 条。11-16 是 31.2%，一周后反而变差——新闻量上来，无标的条目同步变多。</div>
+
+<h2><span class="no">05</span>层 2 · 计算：细节算成数了吗</h2>
+<p class="h2note">机制都在，问题在“写了不等于被用”。</p>
+
+<table>
+<colgroup><col style="width:23%"><col style="width:37%"><col style="width:19%"><col style="width:21%"></colgroup>
+<thead><tr><th>模块</th><th>解决了什么</th><th>当前读数</th><th>风险</th></tr></thead>
+<tbody>
+<tr><td><code>structure_factor.py</code></td><td>价位位置 / ATR 分档 / 周期共振 → −2~+2 结构分；缺失时 <code>available=False</code> 不拿 0 占位</td><td>字段级已落库</td><td>进闸门后被 unknown 稀释</td></tr>
+<tr><td><code>confidence_split.py</code></td><td>confidence 拆方向 / 赔率 / 可靠三量；样本 &lt;10 时只报区间</td><td>写入端未统一</td><td>主字段仍取 <code>algo_score</code></td></tr>
+<tr><td><code>impact_score_ladder.py</code></td><td>model &gt; gate &gt; gate_strength &gt; default 四级，<code>field_sources</code> 标清是否兜底</td><td>已落库</td><td>60% 仍是兜底 5.0，上游门卫从未打分</td></tr>
+<tr><td><code>reflection_dimension_map.py</code></td><td>错误码 → A/B/C 三维 + 细分小类，按硬度排序</td><td>错误码 555 行 / 343 决策；A/B/C 全覆盖</td><td>维度已落库（A100/B53/C3）；缺的是三层验证的子层细分</td></tr>
+<tr><td>反思深度</td><td><code>depth_score</code> 评估推理深度</td><td>均值 4.41 / 10</td><td>大量反思停在“观察 + 一句话结论”</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>S14 权重分辨率 64.2%（n=201）是记分卡里唯一达标项，但它不等于判别力。</b>它只说明权重有 29 个不同取值；方向判别仍未过线（因果链 48.4%、影子账本 47.4%）。机制就位 ≠ 已被证明。</div>
+
+<h2><span class="no">06</span>层 3 · 归因：细节归成错因了吗</h2>
+<p class="h2note">这批数据在 11-18 09:24 做过一次表重建，把混在交易反思里的 526 条流程审计迁出——所以下面读的是“干净后的真反思”。</p>
+
+<table>
+<colgroup><col style="width:36%"><col style="width:30%"><col style="width:34%"></colgroup>
+<thead><tr><th>观测点</th><th>实测</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>交易反思总条数</td><td class="num">156（重建前 674）</td><td>526 条“决策延迟”流程审计迁入 <code>technical_audit</code>（592 行）</td></tr>
+<tr><td>A/B/C 三维落库</td><td class="num">A 100 / B 53 / C 3 · 100%</td><td>写在实际使用的 <code>dimension</code> 列，全覆盖——这一项是通的</td></tr>
+<tr><td>遗留列 <code>error_layer</code></td><td class="num">143 / 156 · 91.7% 为空</td><td>该列只有 13 条旧维名（analysis / timing / filter），已不承载 A/B/C；读分布要看 <code>dimension</code>，不要看它</td></tr>
+<tr><td>三层反思判定</td><td class="num">151 条：无明显错误 142 / 买卖判断失误 9</td><td>94.0% 被归成“没错误”，错因高度集中</td></tr>
+<tr><td>可验证性</td><td class="num">不可分离 83 + 不适用 59 = 142 / 151 · 94.0%</td><td>九成反思判不了对错；验证 3、否证 6</td></tr>
+<tr><td>归因一致率（真口径）</td><td class="num">39.7%（n=63）</td><td>修前那个 95.9% 是“HOLD 无 pnl → 判技术错误 → 有行情 → 判成立”的自我循环，已作废</td></tr>
+<tr><td>逐决策错误码覆盖</td><td class="num">343/903 · 38.0%<br>analysis 池 326/572 · 57.0%</td><td>比 11-16 的 4.7% 大幅提升，机制接通了</td></tr>
+</tbody>
+</table>
+
+<div class="bars" style="margin-top:16px">
+  <div class="bar-row"><div class="bar-label">E001h 缺硬数据(断档)</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--warn)"></div></div><div class="bar-val">185</div></div>
+  <div class="bar-row"><div class="bar-label">E001a 缺硬数据(未标注)</div><div class="bar-track"><div class="bar-fill" style="width:39.5%;background:var(--warn)"></div></div><div class="bar-val">73</div></div>
+  <div class="bar-row"><div class="bar-label">E001c 证据不足</div><div class="bar-track"><div class="bar-fill" style="width:24.3%;background:var(--mid)"></div></div><div class="bar-val">45</div></div>
+  <div class="bar-row"><div class="bar-label">E005 推理链断裂</div><div class="bar-track"><div class="bar-fill" style="width:16.2%;background:var(--mid)"></div></div><div class="bar-val">30</div></div>
+  <div class="bar-row"><div class="bar-label">E028 结构因子缺失</div><div class="bar-track"><div class="bar-fill" style="width:15.1%;background:var(--mid)"></div></div><div class="bar-val">28</div></div>
+  <div class="bar-row"><div class="bar-label">E001i 符号未解析</div><div class="bar-track"><div class="bar-fill" style="width:14.6%;background:var(--mid)"></div></div><div class="bar-val">27</div></div>
+  <div class="bar-row"><div class="bar-label">E001g 本地无源</div><div class="bar-track"><div class="bar-fill" style="width:13%;background:var(--mid)"></div></div><div class="bar-val">24</div></div>
+  <div class="legend">错误码前两位被“缺硬数据”家族（h + a）占掉 258 行 / 555 行 = 46.5%。归因的主旋律是“没数据”，还没走到“判断错”。</div>
+</div>
+
+<div class="note bad"><b>归因最大的问题不是覆盖率，是它自己会猜错。</b>v412-G 的复盘记录里：56 条“漏掉有效移动”的判断中，<b>32 条被独立测量否证</b>。反思把“结果不好”当成了“方向错”，而不是先查同期新闻是否真的反向。这就是一致率只有 39.7% 的来源。</div>
+
+<div class="note warn"><b>一处必须点明的对不上：</b>v412-G 写的是“A 94 / B 51 / C 3、信息方向错误 56 条（32 条被否证）”。A/B/C 维度确实在库里（A 100 / B 53 / C 3，与文档基本一致），但 <code>reflection_3layer</code> 的 <code>layer</code> 只剩“无明显错误 142 / 买卖判断失误 9”，<b>没有“信息方向错误”这一子层</b>，全库否证仅 6 条。说明三层验证表没有保存子层细分，或已被重跑覆盖——<b>“32/56 被否证”只能在文档里引用，库内无法复核</b>。这是“算出来的细节没存全”，不是“维度没落库”。</div>
+
+<h2><span class="no">07</span>层 4 · 闭环：洞察改得动吗</h2>
+<p class="h2note">这是全系统最弱的一环，也是“细节洞察”这个名字最容易被高估的地方。</p>
+
+<div class="stack" role="img" aria-label="洞察验证状态分布">
+  <i style="width:33.7%;background:var(--bad)"></i>
+  <i style="width:23.1%;background:var(--warn)"></i>
+  <i style="width:22.1%;background:var(--mid)"></i>
+  <i style="width:21.1%;background:#3c4757"></i>
+</div>
+<div class="slabel">
+  <span><b style="background:var(--bad)"></b>failed 35 · 33.7%</span>
+  <span><b style="background:var(--warn)"></b>partial 24 · 23.1%</span>
+  <span><b style="background:var(--mid)"></b>param_rule 23 · 22.1%</span>
+  <span><b style="background:#3c4757"></b>insufficient_sample 22 · 21.1%</span>
+</div>
+
+<table style="margin-top:16px">
+<colgroup><col style="width:40%"><col style="width:22%"><col style="width:38%"></colgroup>
+<thead><tr><th>观测点</th><th>实测</th><th>怎么读</th></tr></thead>
+<tbody>
+<tr><td>洞察库存</td><td class="num">104 条，active 69</td><td>11-15/16/17 分别 31/31/42 条，11-18 为 0</td></tr>
+<tr><td>只能观察（observe_only）</td><td class="num">64 / 69 = 92.8%</td><td>清池推高了比例；13:45 重判后 2 条转正，才回到 92.8%</td></tr>
+<tr><td>可执行洞察</td><td class="num">5 条：buy_min_score×2、max_position_pct×2、stop_loss_pct×1</td><td>只有能映射进 <code>settings</code>/<code>strategy</code> 的才算；重判让 max_position_pct 两条转正</td></tr>
+<tr><td>验证通过 <code>verified</code></td><td class="num">0 条</td><td>不是算法缺，是分母缺（见第 08 节）</td></tr>
+<tr><td>洞察 → 决策回灌</td><td class="num">13 条 <code>applied_experience_ids</code> 非空</td><td>156 条反思里 8.3%，等于洞察仍是“只写不用”</td></tr>
+<tr><td>最近一条洞察</td><td class="num">11-17 17:35:16</td><td>此后无新增，与通道停摆叠加</td></tr>
+</tbody>
+</table>
+
+<h3>为什么仍有 92.8% 只能观察：原因很具体，不是文案差</h3>
+<table>
+<colgroup><col style="width:58%"><col style="width:12%"><col style="width:30%"></colgroup>
+<thead><tr><th>观察原因（原文归并）</th><th>条数</th><th>能不能修</th></tr></thead>
+<tbody>
+<tr><td>没有参数键，无法映射到任何可调参数</td><td class="num">22</td><td>生成侧强制加键，可修</td></tr>
+<tr><td><code>sizing.position_weight</code> 有上下文，但文案没给具体数值</td><td class="num">9</td><td>权益已有（9996.28），缺的是数值，可修</td></tr>
+<tr><td><code>sizing.take_profit_pct</code> 需要 <code>atr_pct</code>；文案也没给数值</td><td class="num">7</td><td>补 ATR 上下文 + 文案量化，可修</td></tr>
+<tr><td><code>sizing.stop_loss_pct</code> 需要 <code>atr_pct</code></td><td class="num">5</td><td>同上，可修</td></tr>
+<tr><td><code>max_position_pct</code> 可映射，但文案没声明预期方向</td><td class="num">5</td><td>生成侧写“提高/降低”，可修</td></tr>
+<tr><td><code>take_profit_pct / stop_loss_pct</code> 有上下文但没数值</td><td class="num">4</td><td>文案量化，可修</td></tr>
+<tr><td>其它可映射但没声明方向（<code>signal_threshold / sell_min_score / min_event_strength</code>）</td><td class="num">6</td><td>同上，可修</td></tr>
+<tr><td>其余零散（拒绝换算 / 非参数 / 样本不足）</td><td class="num">6</td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="note ok"><b>13:45 已做了一次重判（可复核）：</b><code>scripts/reclassify_insights.py --only-observe --commit</code> 扫描 66 条 → 14 条差异 → <b>2 条从观察转可执行</b>（<code>max_position_pct</code> 两条），可执行 3→5、观察 66→64。原因不是文案变好，是 ATR 与权益上下文现在库里都有（WTI ATR 0.396%、权益 9996.28），旧行按旧代码判过就不会自动重判。<b>这是一次性维护，不产生新洞察。</b></div>
+
+<div class="note"><b>现场抽的几条洞察，方向都对，但都不是可执行规则：</b><br>
+<code>[score.sell_min_score] 黄金卖出需利率上行与价格走弱共振</code><br>
+<code>[sizing.take_profit_pct] 避免小赢大亏，盈利单应及时止盈</code><br>
+<code>[sizing.position_weight] 依据价格结构确认方向，消息仅作背景</code><br>
+没有数值、没有阈值、没有观测窗口，落到库里就只能 <code>observe_only</code>。</div>
+
+<h2><span class="no">08</span>验证样本的天花板：0 verified 是数学结果</h2>
+<p class="h2note">这一节解释“为什么改了这么多，还是 0 条验证通过”。</p>
+
+<div class="kv">
+  <div><div class="k">quick_sim 成交</div><div class="v" style="color:var(--bad)">11</div><div class="n">全部已结算，近 24h 仅 6 笔</div></div>
+  <div><div class="k">影子账本已结算</div><div class="v" style="color:var(--warn)">38</div><div class="n">命中 18，47.4%</div></div>
+  <div><div class="k">验证门槛</div><div class="v">≥12</div><div class="n">每组的笔数下限</div></div>
+  <div><div class="k">实际可验证洞察</div><div class="v" style="color:var(--bad)">0</div><div class="n">分母不够，verified 不可达</div></div>
+</div>
+
+<table>
+<colgroup><col style="width:33%"><col style="width:20%"><col style="width:47%"></colgroup>
+<thead><tr><th>样本通道</th><th>可用量</th><th>为什么不够</th></tr></thead>
+<tbody>
+<tr><td>成交级验证（quick_sim）</td><td class="num">11 笔</td><td>阈值 ≥12；且 11 笔里方向单只有 7 笔，分组后 ≤7</td></tr>
+<tr><td>影子账本（gate 前方向）</td><td class="num">38 笔</td><td>够看方向，不够做“规则验证”；且不区分规则来源</td></tr>
+<tr><td>决策级归因（已建链）</td><td class="num">放行组 1–5 / 拦截组 ≤5</td><td>要求每组 ≥5 才判结论，目前样本刚好卡在门槛下</td></tr>
+</tbody>
+</table>
+
+<div class="note warn"><b>这不是“再等一等”能解决的。</b>按现在约 30 条有方向决策/天的节奏，决策级归因要 3–7 天才能出第一条真结论。要更快，只能改验证方式（不等成交，直接用决策后 24h 价格检验规则）——那条链已经建了，卡的是每组 5 条的下限。</div>
+
+<h2><span class="no">09</span>四个瓶颈：按重量排</h2>
+
+<div class="bt">
+  <div class="bt-no">01</div>
+  <div class="bt-body"><strong>降级主导：73.4% 的决策没有真分析</strong><span>663/903 <code>analysis_degraded=1</code>；analysis 池也有 351/572 = 61.4%。原因分布：<code>target_none</code> 315、<code>asset_late_bound</code> 122、<code>llm_empty</code> 117、<code>summary_only</code> 76、<code>server_fallback</code> 33。洞察跑在“没分析”的链上，看到的是兜底模板。</span></div>
+  <div class="bt-read">→ 这是所有指标的分母污染源</div>
+
+  <div class="bt-no">02</div>
+  <div class="bt-body"><strong>无标的：38.7% 的决策没有附着点</strong><span>349/903 <code>NONE</code>，其中 <code>routing_miss</code> 331 条。11-16 是 31.2%，反而变差。洞察没有标的可挂，却仍计入所有细分指标。</span></div>
+  <div class="bt-read">→ 先修路由，再谈洞察质量</div>
+
+  <div class="bt-no">03</div>
+  <div class="bt-body"><strong>归因自身不准：一致率 39.7%</strong><span>56 条“漏掉有效移动”里 32 条被否证（文档口径，库内不可复核）；151 条三层验证 94% 判不了；A/B/C 维度虽全覆盖（A100/B53/C3），但缺的是“可验证的结论”。错误码 46.5% 落在“缺硬数据”，还没走到“判断错”。</span></div>
+  <div class="bt-read">→ 错因分布目前不可信</div>
+
+  <div class="bt-no">04</div>
+  <div class="bt-body"><strong>转化断裂：92.8% 不可执行、0 verified</strong><span>可执行 5 条（13:45 重判后）、回灌 13 条、验证 0 条。参数键映射面只有 <code>score.*</code> 与少数 <code>sizing.*</code>，且缺 ATR / 权益上下文。</span></div>
+  <div class="bt-read">→ 洞察对系统行为影响 ≈ 0</div>
+</div>
+
+<h2><span class="no">10</span>下一步：先通管道，再谈准不准</h2>
+<p class="h2note">按性价比排，每条给可验收口径，避免“改了代码但仍不绿”。</p>
+
+<table>
+<colgroup><col style="width:9%"><col style="width:30%"><col style="width:35%"><col style="width:26%"></colgroup>
+<thead><tr><th>优先级</th><th>动作</th><th>具体做法</th><th>验收口径</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-bad">P0</span></td><td>恢复 LLM 通道</td><td>主通道只能靠续 MiniMax Token Plan 或接新的付费 provider（3 个探针均实测不可用）。本地 ollama 不可当主分析：项目自己的注释写明 qwen2.5:3b 只配跑门卫，且实测内存压力下模型每 7 分钟被卸载一次，重启也留不住</td><td>连续 1 小时有新增决策；<code>worker_heartbeat.llm_channels</code> 转 <code>ok&gt;0</code></td></tr>
+<tr><td><span class="tag t-bad">P0</span></td><td>核对洞察停摆原因</td><td>通道恢复后，看 <code>review_insights</code> 是否恢复出条；若仍为 0，查 <code>review_agent.save_insights</code> 的触发条件（是否绑定已结算成交）</td><td>次日 08:20 维护任务后洞察条数 &gt; 0</td></tr>
+<tr><td><span class="tag t-warn">P1</span></td><td>归因加“方向自检”</td><td>判“漏掉有效移动”前，先查同期同品种新闻方向；反向则改判“信息方向错误”，并记录证据</td><td>一致率 ≥60%（n≥60）；否证率 ≤20%</td></tr>
+<tr><td><span class="tag t-warn">P1</span></td><td>洞察量化前置 + 上下文补齐</td><td>入库强制“数值+单位+窗口+方括号参数键”；<code>market_context</code> 补 <code>atr_pct</code>（<code>kline_snapshots</code> 1h 可取），权益用 <code>sim_equity_snapshots</code> 最新值</td><td>observe_only ≤70%；可执行 ≥10 条；每条的 <code>observe_reason</code> 写明缺哪项</td></tr>
+<tr><td><span class="tag t-dim">P2</span></td><td>决策级归因扩样本</td><td>放行组/拦截组各 ≥5 后自动判结论；不等成交，用决策后 24h <code>kline_bars</code> 打分</td><td>首批 10 条结论文本可读，且标明 n 与区间</td></tr>
+<tr><td><span class="tag t-dim">P2</span></td><td>降级治理</td><td>先攻 <code>target_none</code> 315 条（prompt 侧明确回 NONE 并进 out_of_scope）与 <code>llm_empty</code> 117 条（抢救预算已拆，观察 <code>rescue_log</code>）</td><td>全库降级率 ≤50%；analysis 池 ≤40%</td></tr>
+<tr><td><span class="tag t-dim">P3</span></td><td>修个股行情源</td><td>CN_STOCK / NVDA / US_STOCK 整类硬数据为 0，本地无源；接本地线或换稳定的外部源</td><td>个股硬数据覆盖 ≥80%</td></tr>
+</tbody>
+</table>
+
+<div class="note warn"><b>恢复口径：</b>以通道恢复时刻为新起点，停机期（11-18 11:15 起）堆积的待分析新闻不补跑、不做历史回填，只用恢复后的新新闻产出决策——避免用过期新闻制造一批“看似有分析、实则错时”的样本。</div>
+
+<div class="note ok"><b>一周内真正的进步，也要记下来：</b>硬数据从 21.5% → 50.7%；错误码从 4.7% → 57.0%（analysis 池）；技术故障与交易错因分表，反思从 674 条虚高变成 156 条真反思；错误码 E001a 从 85% 拆到 6.5%；<code>asset_route</code> 补齐 100%；休市感知、ticker 解析、每日洞察维护都已接线。这些不是纸面改动，读数上能看见。</div>
+
+<h2><span class="no">11</span>报告之外：还值得优化的八件事</h2>
+<p class="h2note">按“现在就能做 → 需要拍板”排序，每条都带证据与成本。</p>
+
+<table>
+<colgroup><col style="width:8%"><col style="width:26%"><col style="width:32%"><col style="width:34%"></colgroup>
+<thead><tr><th>优先级</th><th>优化点</th><th>证据</th><th>做法与成本</th></tr></thead>
+<tbody>
+<tr><td><span class="tag t-ok">已完成</span></td><td>存量洞察重判</td><td>66 条扫描、14 条差异、2 条转正；可执行 3→5</td><td><code>reclassify_insights.py</code> 加 <code>--only-observe --commit</code>；1 分钟，上下文再变时重跑</td></tr>
+<tr><td><span class="tag t-bad">P0</span></td><td>恢复时切掉积压新闻</td><td><code>raw_news</code> PENDING 已 395 条，最老回溯约 14.7 小时</td><td>恢复时刻打 cutoff，把早于恢复点的 PENDING 标 <code>EXPIRED</code>，不补跑；10 分钟</td></tr>
+<tr><td><span class="tag t-warn">P1</span></td><td>归因子层持久化</td><td><code>reflection_3layer</code> 只剩“无明显错误 / 买卖判断失误”，<b>信息方向错误</b>未存；32/56 否证无法复核</td><td>写库时保留 <code>sub_layer</code> 与证据字段；否则一致率永远只能引用文档。约 0.5 天</td></tr>
+<tr><td><span class="tag t-warn">P1</span></td><td>记分卡自动跑</td><td><code>history.jsonl</code> 停在 11-16 20:34，之后所有读数都靠手工 SQL</td><td>挂到每日 08:30 或每次发版后；约 1 小时</td></tr>
+<tr><td><span class="tag t-dim">P2</span></td><td>生成侧硬门槛</td><td>22 条“没有参数键”（占观察池 34%），提示词⑦⑧已有但模型仍常漏</td><td>入库前校验：无键 / 无方向直接标 <code>observe_only</code> 并记录缺项；约 0.5 天</td></tr>
+<tr><td><span class="tag t-dim">P2</span></td><td>供应商单点</td><td>6 个 key 全部 429，同一账号；备用站 403 停用</td><td>加一个不同厂商的付费 fallback，并做 5 token 日探针；开户成本</td></tr>
+<tr><td><span class="tag t-dim">P3</span></td><td>内存抖动</td><td><code>memory_guard</code> 12:36–13:06 每 7 分钟卸载一次模型，空闲内存一度 12MB</td><td>本地模型只留门卫用途、<code>keep_alive=0</code>；主分析不要指望 3B。配置级</td></tr>
+<tr><td><span class="tag t-dim">P3</span></td><td>成交样本</td><td><code>quick_sim</code> 仅 11 笔，<code>final_score≈0</code> 卡住放行</td><td>要样本就得动交易阈值/白名单——属风险参数，需你拍板</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>最值得先做的不是上面任何一条，而是恢复通道。</b>通道不通，这六条都只能改“存量”；通道一通，第 2、3、5 条会在一天内看到新读数。</div>
+
+<h2><span class="no">12</span>本次复核的局限</h2>
+<p class="h2note">按治理规则如实写，不用口径把结论“调好看”。</p>
+
+<table>
+<colgroup><col style="width:27%"><col style="width:73%"></colgroup>
+<thead><tr><th>项</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>只读</td><td>全部读数通过 <code>file:trident_event_bus.db?mode=ro</code> 现算，未写任何表；LLM 探针只发了 5 token 的测试请求</td></tr>
+<tr><td>记分卡快照过期</td><td><code>history.jsonl</code> 最后一批是 11-16 20:34；本报告的百分比为现场 SQL 现算，不是快照值</td></tr>
+<tr><td>不可跨表相减</td><td>11-16、11-17、11-18 的分母口径多次变更（分池、拆码、清池）；本报告只做“同口径内对比”，跨版本只给方向</td></tr>
+<tr><td>洞察时间戳</td><td>最新洞察为 11-17 17:35；11-18 当天 0 条，与通道停摆可能相关，但未验证因果</td></tr>
+<tr><td>归因一致率</td><td>39.7%（n=63）引自同日 v412-G 复盘的重算口径，本报告未独立重跑验证链路</td></tr>
+<tr><td>样本门槛</td><td>影子账本 38 笔、成交 11 笔，均低于 60 笔门槛；方向类结论只描述当前行情，不构成能力结论</td></tr>
+</tbody>
+</table>
+
+<div class="foot">
+<b>复算方式</b>（只读，不写表）：<br>
+<pre>cd backend &amp;&amp; python3 - &lt;&lt;'PY'
+import sqlite3
+c = sqlite3.connect("file:trident_event_bus.db?mode=ro", uri=True)
+print(c.execute("select count(*), sum(analysis_degraded) from ai_decisions").fetchone())
+print(c.execute("select count(*), sum(active), sum(observe_only) from review_insights where active=1").fetchone())
+print(c.execute("select verification_verdict, count(*) from review_insights group by 1").fetchall())
+PY</pre>
+数据来源：线上库 <code>backend/trident_event_bus.db</code>（只读，截至 2026-11-18 13:45 CST）· 通道故障日志 <code>backend/runtime/llm_call_failures.jsonl</code> · 心跳 <code>worker_heartbeat</code> · 反思修复记录 <code>docs/v412-G-反思机制修复-2026-11-18.md</code> · 上一版 <code>docs/细节洞察能力评估-2026-11-16.html</code>
+</div>
+
+</div>
+</body>
+</html>

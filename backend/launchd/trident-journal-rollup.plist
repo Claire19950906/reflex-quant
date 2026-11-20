@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- v189: 反思日记每日滚动归档 (UTC 23:55 = 北京时间 07:55 次日)
+         - 滚动生成 reflection_daily_journal (供次日开市前 LLM 摄入)
+         - 自动启动方式: launchctl load -w ~/Library/LaunchAgents/com.trident.journal.plist -->
+    <key>Label</key>
+    <string>com.trident.journal</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Frameworks/Python.framework/Versions/3.12/bin/python3</string>
+        <string>/Users/yangyang/Desktop/套利交易系统/strategy_package_v170/backend/src_python/reflection_journal.py</string>
+        <string>rollup</string>
+    </array>
+
+    <!-- UTC 23:55 触发 (= 北京时间 07:55 次日) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>23</integer>
+        <key>Minute</key>
+        <integer>55</integer>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/yangyang/Desktop/套利交易系统/strategy_package_v170/backend/src_python</string>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/trident-journal.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/trident-journal.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

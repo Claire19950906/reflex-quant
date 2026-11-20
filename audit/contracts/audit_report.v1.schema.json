@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reflex-quant.local/audit/audit_report.v1.schema.json",
+  "title": "audit_report.v1 — 审计层输出契约",
+  "description": "每条 finding 必须同时带 evidence_refs 与 remediation，缺一即进 incomplete。",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "verdict",
+    "findings",
+    "coverage",
+    "grade",
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "const": "audit.v1"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "clean",
+        "warn",
+        "reject",
+        "insufficient"
+      ],
+      "description": "clean=无 finding；warn=有 WARN；reject=有 CRITICAL；insufficient=证据不足/短路"
+    },
+    "grade": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "subject": {
+      "type": "object",
+      "properties": {
+        "asset": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "degraded": {
+          "type": "boolean"
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "layer",
+          "rule_id",
+          "remediation",
+          "evidence_refs"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^E[0-9]{3}[a-f]?$"
+          },
+          "severity": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "layer": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "rule_id": {
+            "type": "string"
+          },
+          "remediation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "object"
+          },
+          "basis": {
+            "enum": [
+              "decision",
+              "outcome"
+            ],
+            "description": "decision=进单前可判；outcome=需事后行情"
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "checked",
+        "not_applicable",
+        "error",
+        "total_layers"
+      ],
+      "properties": {
+        "checked": {
+          "type": "integer"
+        },
+        "not_applicable": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "integer"
+        },
+        "total_layers": {
+          "type": "integer"
+        },
+        "ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "partial": {
+          "type": "integer",
+          "description": "层跑了但没跑全（子检查器缺数据）的层数"
+        }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "layer",
+          "status"
+        ],
+        "properties": {
+          "layer": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "checked",
+              "not_applicable",
+              "error",
+              "short_circuit"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "elapsed_ms": {
+            "type": "number"
+          },
+          "findings": {
+            "type": "integer"
+          },
+          "parts": {
+            "type": "array",
+            "description": "子检查器级状态：缺哪张表只跳哪个 checker",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "checked",
+                    "not_applicable",
+                    "error"
+                  ]
+                },
+                "findings": {
+                  "type": "integer"
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "incomplete": {
+      "type": "array",
+      "description": "缺 remediation 或 evidence_refs 的 finding；非空即报告不合格",
+      "items": {
+        "type": "object"
+      }
+    },
+    "elapsed_ms": {
+      "type": "number"
+    },
+    "mode": {
+      "enum": [
+        "full",
+        "pretrade"
+      ],
+      "description": "pretrade=只认决策当时可判的 finding"
+    },
+    "source": {
+      "type": "object",
+      "description": "本次报告依据的数据源与可用层（数据会漂移，必须可追溯）",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "available": {
+          "type": "object"
+        },
+        "notes": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>系统优化规划 v3</title>
+<style>
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; margin: 32px; color: #1a1a1a; line-height: 1.65; }
+  h1 { color: #111; border-bottom: 3px solid #2563eb; padding-bottom: 10px; font-size: 24px; }
+  h2 { color: #1e3a8a; border-left: 5px solid #2563eb; padding-left: 10px; margin-top: 28px; font-size: 18px; }
+  h3 { color: #333; font-size: 15px; }
+  .sub { color: #666; font-size: 13px; }
+  .note { background: #f0f4ff; border-left: 4px solid #2563eb; padding: 8px 12px; font-size: 13px; color: #333; }
+  .code { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 12px; font-family: Consolas, monospace; font-size: 13px; margin: 10px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; }
+  th, td { border: 1px solid #d0d7de; padding: 7px 10px; text-align: left; }
+  th { background: #eef2ff; font-weight: 600; }
+  tr:nth-child(even) { background: #fafbfc; }
+  .done { color: #16a34a; font-size: 13px; }
+  .todo { color: #d97706; font-size: 13px; }
+  .skip { color: #9ca3af; font-size: 13px; }
+  .star { color: #dc2626; font-weight: 700; }
+  li, ol li { margin: 3px 0; font-size: 14px; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>系统优化规划 v3</h1>
+<p class="sub">Trident Agent · 按最新决策整理 · 状态：✅已实现 / 🟡建议实现 / ⬜远期 / ➖跳过</p>
+<p class="note">决策记录：① "王的"不用管 → 自建盘面结构分析 ② openbb 免费先接+预留 3.0 key ③ 金十暂未申请，先预留接入框架</p>
+
+<h2>1️⃣ 新闻数据源 <span class="skip">➖ 按用户要求跳过</span></h2>
+<p>仅保留两个预留口：</p>
+<ul>
+<li>🟡 <b>openbb</b>：免费接口先接（数据采集），同时预留 3.0 key 配置位（<code>OPENBB_API_KEY</code>，有 key 时自动启用高级通道）</li>
+<li>🟡 <b>金十数据中心</b>：预留接入框架（数据模型 + 采集入口 + 开关），账号申请后填 key 即启用</li>
+</ul>
+
+<h2>2️⃣ AI 反思能力 <span class="done">✅ 已实现（P4）</span></h2>
+<p>单笔实时反思（trade_reflections）+ 经验命中验证 + 每日复盘 + 参考信号注入。可选深化：反思结果前端展示。</p>
+
+<h2>3️⃣ 买卖策略 + 新闻即时性 <span class="done">✅ 已实现基础（P0/P3）</span></h2>
+<p>时效门槛（后台可调）/ 即时性 prompt / 不对称门槛 / 新鲜度分级 / 组合胜率。可继续：反向新闻平仓（P5）、市场反应窗口。</p>
+
+<h2>4️⃣ 知识库（历史数据/K线/经验 + 节省 token 检索）<span class="done">✅ 基础已做</span></h2>
+<table>
+<tr><th>层</th><th>方案</th><th>优先级</th></tr>
+<tr><td>存储</td><td>现有 SQLite（K线/经验/判断）</td><td>✅</td></tr>
+<tr><td>检索 A</td><td>关键词+时间窗过滤：按「品种×事件类型×近期」检索历史判断/经验，注入 top-k</td><td>🟡 P0</td></tr>
+<tr><td>检索 B</td><td>embedding 向量检索（bge-m3 中文）：语义相似度取 top-k，<b>只注入最相关的 3-5 条（每条 ≤100 字）→ 省 token</b></td><td>🟡 P1</td></tr>
+<tr><td>金十数据</td><td>预留接入（日历/情绪/讲话），账号后启用</td><td>🟡</td></tr>
+</table>
+
+<h2>5️⃣ 稳定性增强 <span class="todo">🟡 P1</span></h2>
+<ul>
+<li>✅ 已完成：LLM 通道熔断/fallback、快照 15s 超时、429 快速失败、健康接口</li>
+<li>🟡 待做：配置自检（.env 必填项校验）、异常自动重启脚本、源健康监控</li>
+</ul>
+
+<h2>6️⃣ 新闻即时性（CPI 提前准备）<span class="done">✅ 15s→3s 已做</span></h2>
+<ul>
+<li>🟡 CPI 经济日历预加载（发布前 1h 预热价格缓存 + 预构建上下文）</li>
+<li>🟡 高影响数据快速通道（CPI/非农 bypass 排队，优先分析）</li>
+</ul>
+
+<h2>7️⃣ 量化新闻判断（冲突类/趋势类）<span class="todo">🟡 P1</span></h2>
+<table>
+<tr><th>维度</th><th>量化方式</th><th>应用</th></tr>
+<tr><td>冲突类（突发/高影响）</td><td>事件强度评分 + 突发标记 → 直接 BUY/SELL</td><td>入场决策</td></tr>
+<tr><td>趋势类（力量趋势）</td><td>按品种聚合多空力量值（sentiment×权重×时间衰减）</td><td>买卖节点、止损位、大中趋势</td></tr>
+<tr><td>量化输出</td><td>prompt 增加 bull_power / bear_power 字段</td><td>注入决策</td></tr>
+</table>
+
+<h2>8️⃣ AI 提示词可配置 <span class="todo">🟡 P1</span></h2>
+<p>提示词存 DB（ai_prompts 表）+ 后台编辑页（系统提示词/JSON 结构/评分规则/阈值），留版本可回退。</p>
+
+<h2>9️⃣ 盘面结构（自建，结合 AI 决策）<span class="star">🟡 P1 ⭐ 重点</span></h2>
+<p class="note">决策："王的"不用管——用现有 K 线数据自建盘面结构分析，注入 AI 决策上下文。</p>
+<h3>盘面结构模块设计（market_structure.py）</h3>
+<div class="code">盘面结构（XAU 1h）：<br>
+&nbsp;&nbsp;趋势方向: 上升（MA20&gt;MA60，低点抬高）<br>
+&nbsp;&nbsp;趋势阶段: 中期 · 动量偏多（RSI 62）<br>
+&nbsp;&nbsp;关键位: 支撑 4550（前低）/ 阻力 4620（前高）<br>
+&nbsp;&nbsp;结构状态: 趋势中·回调整理<br>
+&nbsp;&nbsp;建议: 顺势做多为主，回踩 4550 附近是入场参考，跌破 4520 结构转弱</div>
+<h3>结合 AI 的方式</h3>
+<ol>
+<li><b>决策上下文注入</b>：AI 分析新闻时，decision_context 附带盘面结构层 → AI 结合盘面判断顺势/逆势、入场节点、止损位</li>
+<li><b>新闻×盘面匹配</b>：利多+上升趋势→高置信 BUY（顺势）；利多+下降趋势→降置信（逆势）；冲突类突发+关键位→判断突破概率</li>
+<li><b>止损位参考</b>：盘面关键位 + ATR → 量化止损建议</li>
+</ol>
+<h3>实现要点</h3>
+<ul>
+<li>新模块 + 快照缓存（30s）</li>
+<li>注入点：ai_worker 的 decision_context / market_context</li>
+<li>不依赖外部工具，全部基于已有 K 线数据</li>
+</ul>
+
+<h2>🔟 规则改变 → 经验进知识库 <span class="todo">🟡 P2</span></h2>
+<ul>
+<li>已部分实现：失败归因"游戏规则变化"（reason 4）自动沉淀经验</li>
+<li>增强：分析时检索"近期规则变化/新经验"（时间权重）注入 prompt</li>
+</ul>
+
+<h2>1️⃣1️⃣ 稳定回测（zipline-reloaded）+ openbb 接入 <span class="todo">🟡 P2</span></h2>
+<table>
+<tr><th>项</th><th>方案</th></tr>
+<tr><td>现有 backtest 调参</td><td>参数 grid search（P0，快速迭代）</td></tr>
+<tr><td>zipline-reloaded</td><td><code>pip install zipline-reloaded==2.0.0rc1</code>——⚠️ 独立 venv（<code>python -m venv zi</code>），避免 pandas&lt;2 污染主环境；自定义数据源</td></tr>
+<tr><td>openbb</td><td>🟡 免费接口先接；预留 OPENBB_API_KEY，有 key 自动启用 3.0 通道</td></tr>
+</table>
+
+<h2>1️⃣2️⃣ 量化时序下单和止损 <span class="todo">🟡 P1</span></h2>
+<ul>
+<li><b>时序下单</b>：信号强度 × 新鲜度 × 盘面结构 → 规则化入场时机（冲突类立即、趋势类等力量确认/回踩关键位）</li>
+<li><b>量化止损</b>：盘面关键位 ± ATR×系数（结合 7️⃣ 力量值）</li>
+<li>建仓时机规则引擎（forward 扩展）+ 止损参数后台可调</li>
+</ul>
+
+<h2>总体优先级</h2>
+<table>
+<tr><th>阶段</th><th>内容</th></tr>
+<tr><td>P0</td><td>4️⃣ 检索 A（关键词+时间窗）；7️⃣ 冲突类直接交易规则；1️⃣1️⃣ 现有 backtest 参数扫描</td></tr>
+<tr><td>P1</td><td><b>9️⃣ 盘面结构（重点）</b>；8️⃣ 提示词可配置；1️⃣2️⃣ 时序下单/量化止损；6️⃣ CPI 日历预加载</td></tr>
+<tr><td>P2</td><td>4️⃣ 向量检索；🔟 规则变化知识库增强；1️⃣1️⃣ zipline 独立环境；openbb 免费接入</td></tr>
+<tr><td>预留</td><td>openbb 3.0 key、金十数据中心（账号后启用）</td></tr>
+</table>
+
+<h2>建议实施顺序</h2>
+<ol>
+<li><b>9️⃣ 盘面结构模块</b>（最关注）→ 注入 decision_context → 新闻×盘面匹配逻辑</li>
+<li><b>4️⃣ 知识库检索 A</b>（关键词+时间窗，省 token 第一步）</li>
+<li><b>8️⃣ 提示词可配置</b>（后台编辑，配合盘面结构调整 prompt）</li>
+<li><b>1️⃣2️⃣ 时序下单</b>（盘面结构 → 入场节点/止损位规则）</li>
+<li>其他按优先级推进</li>
+</ol>
+
+</body>
+</html>

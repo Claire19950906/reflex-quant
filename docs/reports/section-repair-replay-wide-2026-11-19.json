@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-11-19 08:17:51",
+  "days": 45,
+  "n": 1,
+  "success_full8": 1,
+  "success_rate": 1.0,
+  "improved": 1,
+  "improved_rate": 1.0,
+  "avg_elapsed_s": 8.1,
+  "results": [
+    {
+      "id": 12700,
+      "news_id": 40358,
+      "asset": "XAU",
+      "action": "SELL",
+      "before_missing": 8,
+      "before_found": 0,
+      "after_missing": 0,
+      "after_found": 8,
+      "ok": true,
+      "news_len": 285,
+      "elapsed_s": 8.1
+    }
+  ]
+}

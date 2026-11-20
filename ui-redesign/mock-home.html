@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Trident · 实时信号台 改版方案</title>
+<style>
+  :root{
+    --bg:#0d0e11;
+    --panel:#16181c;
+    --panel-2:#1b1e23;
+    --line:rgba(255,255,255,.08);
+    --line-2:rgba(255,255,255,.14);
+    --fg:#e8eaee;
+    --muted:#9aa2ad;
+    --muted-2:#6f7783;
+    --pri:#5b8cff;
+    --long:#37c07f;
+    --short:#e5534b;
+    --hold:#e2a53d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1680px;height:1050px;overflow:hidden}
+  body{
+    background:var(--bg);color:var(--fg);
+    font-family:-apple-system,system-ui,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:13px;line-height:1.45;
+    display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .muted{color:var(--muted)}
+  .tiny{font-size:11px}
+
+  /* ---------- header ---------- */
+  header{
+    height:60px;flex:0 0 60px;display:flex;align-items:center;gap:24px;
+    padding:0 24px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#131519,#0f1114);
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .mark{
+    width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+    background:rgba(91,140,255,.12);border:1px solid rgba(91,140,255,.32);
+  }
+  .mark svg{width:16px;height:16px}
+  .brand h1{font-size:17px;font-weight:700;letter-spacing:.02em}
+  .brand p{font-size:10px;letter-spacing:.22em;color:var(--muted-2);text-transform:uppercase}
+  .search{
+    margin-left:8px;width:300px;height:34px;display:flex;align-items:center;gap:8px;
+    padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+    color:var(--muted);font-size:12px;
+  }
+  .search kbd{margin-left:auto;font-size:10px;color:var(--muted-2);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+  .h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .model{
+    height:34px;display:flex;align-items:center;gap:8px;padding:0 12px;
+    border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:12px;
+  }
+  .model .dot{width:6px;height:6px;border-radius:50%;background:var(--long);box-shadow:0 0 0 4px rgba(55,192,127,.12)}
+  .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;color:var(--muted)}
+
+  /* ---------- market strip ---------- */
+  .markets{
+    height:38px;flex:0 0 38px;display:flex;align-items:center;gap:8px;
+    padding:0 24px;border-bottom:1px solid var(--line);background:#101216;
+    font-size:11.5px;
+  }
+  .chip{
+    display:flex;align-items:center;gap:7px;height:24px;padding:0 10px;
+    border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02);
+    white-space:nowrap;
+  }
+  .chip b{font-weight:600}
+  .chip .d{width:6px;height:6px;border-radius:50%}
+  .chip .px{margin-left:2px}
+  .up{color:var(--long)} .down{color:var(--short)}
+  .clock{margin-left:auto;color:var(--muted-2);font-size:11px}
+
+  /* ---------- nav ---------- */
+  nav{
+    height:46px;flex:0 0 46px;display:flex;align-items:center;gap:26px;
+    padding:0 24px;border-bottom:1px solid var(--line);background:#101216;
+  }
+  nav a{color:var(--muted);text-decoration:none;font-size:13px;height:46px;display:flex;align-items:center;position:relative}
+  nav a.on{color:var(--fg);font-weight:600}
+  nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--pri);border-radius:2px}
+  nav .badge{margin-left:6px;font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(91,140,255,.16);color:#a8c0ff}
+  nav .more{margin-left:4px;color:var(--muted-2)}
+
+  /* ---------- body ---------- */
+  main{
+    flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;
+    padding:16px 24px 12px;
+  }
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .kpi{
+    position:relative;overflow:hidden;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px 34px;
+  }
+  .kpi .spark-mask{position:absolute;left:0;right:0;bottom:0;height:30px;overflow:hidden}
+  .kpi .top{display:flex;align-items:center;gap:8px}
+  .kpi .label{font-size:11px;letter-spacing:.08em;color:var(--muted-2)}
+  .kpi .tag{margin-left:auto;font-size:10px;color:var(--muted);border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+  .kpi .val{font-size:34px;font-weight:650;letter-spacing:-.03em;margin-top:8px;line-height:1.05}
+  .kpi .val .unit{font-size:12px;font-weight:400;color:var(--muted-2);margin-left:6px;letter-spacing:0}
+  .kpi .sub{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11.5px;color:var(--muted);position:relative;z-index:2}
+  .kpi .delta{font-size:11.5px;padding:1px 6px;border-radius:4px}
+  .delta.up{background:rgba(55,192,127,.12);color:#5ddc9b}
+  .delta.down{background:rgba(229,83,75,.12);color:#ff817a}
+  .kpi svg.spark{position:absolute;left:0;bottom:0;width:100%;height:30px;opacity:.55;z-index:0}
+  .kpi::after{content:"";position:absolute;left:0;right:0;bottom:0;height:30px;z-index:1;
+    background:linear-gradient(90deg,var(--panel) 0%,rgba(22,24,28,.3) 42%,rgba(22,24,28,0) 100%)}
+
+  .grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 420px;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0}
+  .card-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .card-h h2{font-size:13px;font-weight:600}
+  .card-h .hint{font-size:11px;color:var(--muted-2)}
+  .seg{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg span{padding:3px 9px;font-size:11px;color:var(--muted);border-left:1px solid var(--line)}
+  .seg span:first-child{border-left:0}
+  .seg span.on{background:rgba(91,140,255,.16);color:#b7c9ff}
+
+  .chart-wrap{flex:1;position:relative;padding:14px 16px 8px}
+  .chart-wrap .legend{position:absolute;left:16px;top:12px;display:flex;gap:14px;font-size:11px;color:var(--muted)}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .chart-wrap svg{width:100%;height:100%}
+
+  .table{display:flex;flex-direction:column;min-height:0}
+  .thead,.trow{display:grid;grid-template-columns:88px 62px 1fr 1fr 1fr 86px;align-items:center;gap:8px;padding:0 16px}
+  .thead{height:30px;font-size:10.5px;letter-spacing:.06em;color:var(--muted-2);border-bottom:1px solid var(--line)}
+  .trow{height:36px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.045)}
+  .trow:last-child{border-bottom:0}
+  .table-foot{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted-2)}
+  .dir{display:inline-flex;width:38px;justify-content:center;padding:1px 0;border-radius:3px;font-size:10.5px;font-weight:600}
+  .dir.l{background:rgba(55,192,127,.14);color:#5ddc9b}
+  .dir.s{background:rgba(229,83,75,.14);color:#ff817a}
+
+  /* signal list */
+  .sig{display:flex;flex-direction:column;gap:0;overflow:hidden}
+  .sig-item{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .sig-item:last-child{border-bottom:0}
+  .sig-top{display:flex;align-items:center;gap:8px;font-size:12px}
+  .sig-top .t{color:var(--muted-2);font-size:11px}
+  .sig-top .sym{font-weight:600}
+  .sig-top .side{margin-left:auto;font-size:10.5px;padding:1px 7px;border-radius:3px;font-weight:600}
+  .sig-body{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
+  .conf{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);flex:1;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:2px}
+  .conf span{font-size:10.5px;color:var(--muted-2)}
+  .sig-foot{margin-top:auto;padding:10px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted-2)}
+
+  /* footer health */
+  footer{
+    height:34px;flex:0 0 34px;display:flex;align-items:center;gap:10px;
+    padding:0 24px;border-top:1px solid var(--line);background:#0f1114;font-size:11px;color:var(--muted-2)
+  }
+  .src{display:flex;align-items:center;gap:5px}
+  .src i{width:5px;height:5px;border-radius:50%;display:inline-block}
+  .ok{background:var(--long)} .lag{background:var(--hold)} .err{background:var(--short)}
+  footer .right{margin-left:auto;display:flex;gap:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 22 21H2L12 3Z" fill="#5b8cff" opacity=".9"/></svg>
+    </div>
+    <div>
+      <h1>Trident</h1>
+      <p>Quant Platform</p>
+    </div>
+  </div>
+
+  <div class="search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <span class="num">BTC / USDT · Perpetual</span>
+    <kbd>⌘K</kbd>
+  </div>
+
+  <div class="h-right">
+    <div class="model"><span class="dot"></span><span>MiniMax-M3</span><span style="color:var(--muted-2)">▾</span></div>
+    <div class="icon-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+    </div>
+    <div class="icon-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+    </div>
+  </div>
+</header>
+
+<div class="markets">
+  <div class="chip"><span class="d" style="background:var(--long)"></span><b>BTC</b><span class="px up num">68,420.50</span><span class="up num" style="font-size:10.5px">+1.82%</span><span class="tiny" style="color:var(--muted-2)">24×7</span></div>
+  <div class="chip"><span class="d" style="background:var(--muted-2)"></span><b>美股</b><span class="tiny" style="color:var(--muted-2)">休市 · 18:00 ET 开盘</span></div>
+  <div class="chip"><span class="d" style="background:var(--long)"></span><b>黄金</b><span class="px num">2,684.2</span><span class="up num" style="font-size:10.5px">+0.42%</span></div>
+  <div class="chip"><span class="d" style="background:var(--short)"></span><b>原油</b><span class="px num">71.34</span><span class="down num" style="font-size:10.5px">-0.68%</span></div>
+  <div class="clock num">2026-11-15 22:14:08 CST · 延迟 12ms</div>
+</div>
+
+<nav>
+  <a class="on" href="#">实时信号台</a>
+  <a href="#">模拟盘</a>
+  <a href="#">行情归因</a>
+  <a href="#">漏检信号</a>
+  <a href="#">反思系统</a>
+  <a href="#">发现</a>
+  <a href="#">新闻流</a>
+  <a href="#">更多<span class="more">▾</span></a>
+</nav>
+
+<main>
+  <section class="kpis">
+    <div class="kpi">
+      <div class="top"><span class="label">总权益</span><span class="tag">PAPER</span></div>
+      <div class="val num">100,000.00<span class="unit">USDT</span></div>
+      <div class="sub"><span class="delta up num">+2.14%</span><span>今日 +2,140.50</span></div>
+      <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 32 12 30 24 33 36 26 48 28 60 20 72 22 84 14 100 8" stroke="#37c07f" stroke-width="1.6" fill="none"/><path d="M0 32 12 30 24 33 36 26 48 28 60 20 72 22 84 14 100 8" stroke="none" fill="url(#g1)" opacity=".25"/><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#37c07f"/><stop offset="1" stop-color="#37c07f" stop-opacity="0"/></linearGradient></defs></svg>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">今日盈亏</span><span class="tag">实时</span></div>
+      <div class="val num" style="color:#5ddc9b">+2,140.50<span class="unit">USDT</span></div>
+      <div class="sub"><span class="delta up num">+2.14%</span><span>2 笔持仓 · 浮盈 +128.40</span></div>
+      <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 34 12 28 24 30 36 22 48 24 60 16 72 18 84 10 100 12" stroke="#37c07f" stroke-width="1.6" fill="none"/></svg>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">胜率</span><span class="tag">近 30 天</span></div>
+      <div class="val num">53.9<span style="font-size:16px;color:var(--muted)">%</span></div>
+      <div class="sub"><span>已结算 13 笔</span><span class="muted">盈亏比 1.42 · 期望 +0.13R</span></div>
+      <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 26 12 22 24 27 36 20 48 23 60 18 72 21 84 15 100 17" stroke="#5b8cff" stroke-width="1.6" fill="none"/></svg>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">活跃信号</span><span class="tag">4 条</span></div>
+      <div class="val num">4<span class="unit">条待处理</span></div>
+      <div class="sub"><span class="delta up">2 多</span><span class="delta down">2 空</span><span class="muted">最近 22:11</span></div>
+      <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 30 12 32 24 26 36 30 48 22 60 26 72 18 84 22 100 14" stroke="#e2a53d" stroke-width="1.6" fill="none"/></svg>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div style="display:flex;flex-direction:column;gap:14px;min-height:0">
+      <div class="card" style="flex:1">
+        <div class="card-h">
+          <h2>权益曲线</h2><span class="hint">30 天 · 含手续费</span>
+          <div class="seg"><span>1D</span><span>7D</span><span class="on">30D</span><span>90D</span></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="legend"><span><i style="background:#5b8cff"></i>权益</span><span><i style="background:#37c07f"></i>基准 (BTC)</span></div>
+          <svg viewBox="0 0 1000 330" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#5b8cff" stop-opacity=".28"/>
+                <stop offset="1" stop-color="#5b8cff" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="rgba(255,255,255,.06)" stroke-width="1">
+              <line x1="0" y1="40" x2="1000" y2="40"/><line x1="0" y1="110" x2="1000" y2="110"/>
+              <line x1="0" y1="180" x2="1000" y2="180"/><line x1="0" y1="250" x2="1000" y2="250"/>
+            </g>
+            <path d="M0 250 C 80 240,120 262,180 245 C 240 228,280 252,340 232 C 400 212,440 236,500 205 C 560 178,600 200,660 165 C 720 132,780 158,840 118 C 890 92,950 108,1000 86 L1000 330 L0 330Z" fill="url(#fill)"/>
+            <path d="M0 250 C 80 240,120 262,180 245 C 240 228,280 252,340 232 C 400 212,440 236,500 205 C 560 178,600 200,660 165 C 720 132,780 158,840 118 C 890 92,950 108,1000 86" stroke="#5b8cff" stroke-width="2.2" fill="none"/>
+            <path d="M0 262 C 100 270,160 246,240 258 C 320 268,380 240,460 252 C 540 264,600 228,680 242 C 760 256,820 224,900 236 C 950 242,980 228,1000 232" stroke="#37c07f" stroke-width="1.2" fill="none" opacity=".55" stroke-dasharray="4 4"/>
+            <text x="1000" y="78" text-anchor="end" fill="#a8c0ff" font-size="12" font-family="ui-monospace,monospace">+2.14%</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="card" style="flex:0 0 auto">
+        <div class="card-h">
+          <h2>当前持仓</h2><span class="hint">2 笔 · 1 多 1 空</span>
+          <div class="seg"><span class="on">实时</span><span>已结算</span></div>
+        </div>
+        <div class="table">
+          <div class="thead"><span>品种</span><span>方向</span><span>入场</span><span>现价</span><span>浮盈亏</span><span>止损</span></div>
+          <div class="trow"><span>BTC</span><span><i class="dir l">多</i></span><span class="num muted">67,250.0</span><span class="num">68,420.5</span><span class="num up">+1.74%</span><span class="num muted">65,800</span></div>
+          <div class="trow"><span>ETH</span><span><i class="dir s">空</i></span><span class="num muted">3,480.0</span><span class="num">3,492.6</span><span class="num down">-0.36%</span><span class="num muted">3,560</span></div>
+          <div class="trow"><span>XAU</span><span><i class="dir l">多</i></span><span class="num muted">2,671.4</span><span class="num">2,684.2</span><span class="num up">+0.48%</span><span class="num muted">2,640</span></div>
+          <div class="trow"><span>SOL</span><span><i class="dir s">空</i></span><span class="num muted">148.20</span><span class="num">146.85</span><span class="num up">+0.91%</span><span class="num muted">152.4</span></div>
+        </div>
+        <div class="table-foot"><span>共 4 笔 · 保证金占用 32,400 USDT · 可用 67,600</span><span style="margin-left:auto;color:#a8c0ff">查看全部 →</span></div>
+      </div>
+    </div>
+
+    <div class="card sig">
+      <div class="card-h">
+        <h2>实时信号流</h2><span class="hint">按置信度排序</span>
+        <div class="seg"><span class="on">全部</span><span>多</span><span>空</span></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-top"><span class="t num">22:11</span><span class="sym">BTC/USDT</span><span class="side" style="background:rgba(55,192,127,.14);color:#5ddc9b">多</span></div>
+        <div class="sig-body">ETF 净流入 3.2 亿美元 + 资金费率转正，价格突破前高缩量回踩。</div>
+        <div class="conf"><div class="bar"><i style="width:78%;background:#37c07f"></i></div><span class="num">置信 78%</span></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-top"><span class="t num">22:04</span><span class="sym">ETH/USDT</span><span class="side" style="background:rgba(229,83,75,.14);color:#ff817a">空</span></div>
+        <div class="sig-body">交易所净流入连续 3 小时上升，做市商库存偏空。</div>
+        <div class="conf"><div class="bar"><i style="width:62%;background:#e5534b"></i></div><span class="num">置信 62%</span></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-top"><span class="t num">21:58</span><span class="sym">XAU/USD</span><span class="side" style="background:rgba(226,165,61,.14);color:#f0c479">观察</span></div>
+        <div class="sig-body">实际利率下行但美元走强，信号冲突 —— 等待方向确认。</div>
+        <div class="conf"><div class="bar"><i style="width:41%;background:#e2a53d"></i></div><span class="num">置信 41%</span></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-top"><span class="t num">21:46</span><span class="sym">SOL/USDT</span><span class="side" style="background:rgba(229,83,75,.14);color:#ff817a">空</span></div>
+        <div class="sig-body">链上活跃地址回落 + 永续持仓量高位，短线过热。</div>
+        <div class="conf"><div class="bar"><i style="width:57%;background:#e5534b"></i></div><span class="num">置信 57%</span></div>
+      </div>
+      <div class="sig-foot">已忽略 2 条 · 全部信号 →</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span style="color:var(--muted)">数据源</span>
+  <div class="src"><i class="ok"></i>Tree</div>
+  <div class="src"><i class="ok"></i>深潮</div>
+  <div class="src"><i class="ok"></i>东财</div>
+  <div class="src"><i class="ok"></i>金十</div>
+  <div class="src"><i class="ok"></i>FRED</div>
+  <div class="src"><i class="ok"></i>Finnhub</div>
+  <div class="src" style="color:var(--hold)"><i class="lag"></i>Reuters · 延迟 4m</div>
+  <div class="right"><span>已入库 943</span><span>已分析 943</span><span>信号 4</span><span class="num">自动刷新 60s</span></div>
+</footer>
+</body>
+</html>

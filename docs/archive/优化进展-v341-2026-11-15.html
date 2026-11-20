@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Reflex Quant · v341 优化进展（2026-11-15）</title>
+<style>
+  :root{--ink:#12141a;--muted:#6b7280;--line:#e5e7eb;--bg:#f7f8fa;--ok:#0f9d58;--bad:#d93025;--warn:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:36px 24px 64px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:26px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .kpi b{display:block;font-size:24px;letter-spacing:-.5px}
+  .kpi span{color:var(--muted);font-size:12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:22px}
+  h2{font-size:17px;margin:0 0 12px}
+  h2 small{color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12px}
+  .ok{color:var(--ok);font-weight:600}
+  .bad{color:var(--bad);font-weight:600}
+  .warn{color:var(--warn);font-weight:600}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  .bar{height:26px;border-radius:6px;background:#e8eef7;position:relative;margin:6px 0}
+  .bar i{display:block;height:100%;border-radius:6px;background:#3b6fd4}
+  .barlabel{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+  ul{margin:8px 0 0 18px;padding:0}
+  li{margin:5px 0}
+  code{background:#f1f3f6;border-radius:4px;padding:1px 5px;font-size:12.5px}
+  .foot{color:var(--muted);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Reflex Quant · v341 优化进展</h1>
+  <div class="sub">2026-11-15 19:50 · 代码版本 v341 · 数据库 trident_event_bus.db（1.4 GB / 149 表）</div>
+
+  <div class="kpis">
+    <div class="kpi"><b>88</b><span>删除的重复行情行（同标的两个名字）</span></div>
+    <div class="kpi"><b>35</b><span>价格序列（原按 asset 数 49，含 7 个抽屉）</span></div>
+    <div class="kpi"><b>0</b><span>跨表一致性问题（5 项检查）</span></div>
+    <div class="kpi"><b>12/0/14</b><span>验收 PASS / FAIL / SKIP</span></div>
+  </div>
+
+  <div class="card">
+    <h2>一、这轮修的根本问题<small>都不是"写报告"，是改了代码并跑了实测</small></h2>
+    <table>
+      <tr><th style="width:22%">问题</th><th style="width:33%">实际证据</th><th>做法</th><th style="width:18%">结果</th></tr>
+      <tr>
+        <td>同一标的两个名字</td>
+        <td>ADA 2480 行 / ADA-USD 9 行，同 ts 两边都有，只差 0.5%~2% 的量源</td>
+        <td><code>asset_alias.py</code> 统一入口 + <code>merge_asset_aliases.py</code> 合并</td>
+        <td class="ok">删 88 行，复扫 0</td>
+      </tr>
+      <tr>
+        <td>价格指标不叫 close</td>
+        <td>NG=<code>hf_fut_price</code>、DXY=<code>DXY</code>、SGE_GOLD=<code>sge_au9999_cny_g</code> 全被判"指标不明确"→ 一行异动不出</td>
+        <td>指标名语义挑选，并排除量/存量/市值/资金费</td>
+        <td class="ok">NG/DXY/SGE 取到序列</td>
+      </tr>
+      <tr>
+        <td>分钟序列当日线用</td>
+        <td>NG 的 431 个点是每 90 秒一根 → k=1 变成"90 秒涨跌"</td>
+        <td><code>_to_daily()</code> 按自然日压平</td>
+        <td class="ok">1d/3d/5d 口径恢复</td>
+      </tr>
+      <tr>
+        <td>asset 是抽屉不是品种</td>
+        <td><code>*</code> 里 25,080 行是 GLD/TLT/^GSPC 的价格；<code>US_MACRO</code> 的 <code>us_dgs10_calc</code> 是 10Y 收益率</td>
+        <td><code>series_namespace.py</code> 打坐标 + <code>series_registry</code> 279 行</td>
+        <td class="ok">价格/聚合/宏观分开</td>
+      </tr>
+      <tr>
+        <td>一条序列被数多遍</td>
+        <td>VIX 三份副本：<code>*</code>^VIX、<code>US_MACRO.us_vix_cboe</code>、<code>fred.VIX</code></td>
+        <td><code>series_plan.py</code> 按序列遍历，同序列只留一份</td>
+        <td class="ok">35 序列 / 16 条有多来源，各留一</td>
+      </tr>
+      <tr>
+        <td>同一异动两个来源各写一行</td>
+        <td>BTC 17:11 <code>fast_rise</code>：market_ticks 实时源与 ohlcv_intraday 回填各一行 → 重复计权重</td>
+        <td>别人占住的 (asset, ts, kind) 直接跳过</td>
+        <td class="ok">重复行 0</td>
+      </tr>
+      <tr>
+        <td>跨纪元的慢异动被整条丢掉</td>
+        <td>闸门只看窗口起点，3d/5d 慢涨起点在纪元前就全被筛掉</td>
+        <td>改看窗口终点；起点早则 ts 抬到纪元，<code>duration_min</code> 留真值</td>
+        <td class="ok">纪元前残留仍 0</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>二、指标贴着哪个坐标系<small>series_registry 279 个 (asset, indicator) 组合</small></h2>
+    <div class="barlabel"><span>asset / price（真正的单品种价格）</span><span class="mono">51,102 行</span></div>
+    <div class="bar"><i style="width:100%"></i></div>
+    <div class="barlabel"><span>market / metric（量、持仓、资金费、哈希率…）</span><span class="mono">30,747 行</span></div>
+    <div class="bar"><i style="width:60%;background:#7a93bd"></i></div>
+    <div class="barlabel"><span>supply / supply（稳定币与流通量）</span><span class="mono">13,585 行</span></div>
+    <div class="bar"><i style="width:27%;background:#9aa7b8"></i></div>
+    <div class="barlabel"><span>market / change（涨跌幅）</span><span class="mono">11,699 行</span></div>
+    <div class="bar"><i style="width:23%;background:#b6bfcc"></i></div>
+    <div class="barlabel"><span>market / ratio（xau_xag 等比率）</span><span class="mono">6,182 行</span></div>
+    <div class="bar"><i style="width:12%;background:#c8cfd9"></i></div>
+    <div class="barlabel"><span>macro / macro·change·yield（宏观、收益率）</span><span class="mono">2,344 行</span></div>
+    <div class="bar"><i style="width:5%;background:#d8dde4"></i></div>
+    <div class="foot">此前这些全被当成"某个品种的价格"。收益率（4.19%）被当金价、市值被当行情，都会直接污染涨跌幅与权重。</div>
+  </div>
+
+  <div class="card">
+    <h2>三、跨表一致性<small>149 张表 0 条外键，用查询兜住真出过事的四类</small></h2>
+    <table>
+      <tr><th>检查项</th><th>数量</th><th>它代表的故障</th></tr>
+      <tr><td>归因 move_id 悬空</td><td class="ok">0</td><td>异动重建换 id 后，归因指向不存在的行（曾发生）</td></tr>
+      <tr><td>队列 src_id 已消失</td><td class="ok">0</td><td>AI 队列还在等复核，源行没了（曾 168 条里 135 条 gone）</td></tr>
+      <tr><td>异动 asset 不在价格序列</td><td class="ok">0</td><td>抽屉名/别名混进异动 → 统计重复计</td></tr>
+      <tr><td>同 (asset, ts, kind) 重复行</td><td class="ok">0</td><td>同一时点重复计权重（本轮修掉 1 条）</td></tr>
+      <tr><td>ohlcv_daily 残留别名</td><td class="ok">0</td><td>ADA-USD 这类应已并入 ADA</td></tr>
+    </table>
+    <div class="foot">已接进 <code>scripts/recheck_acceptance.sh</code>，<code>--strict</code> 时任何一项非 0 直接 exit 1。</div>
+  </div>
+
+  <div class="card">
+    <h2>四、仍然卡住的地方<small>按优先级</small></h2>
+    <ul>
+      <li><b>AI 通道</b>：<code>ai_decisions</code> 仍是 0 行。MiniMax 两把 key 都是 <code>2056</code>（Token Plan 用量上限），本地 3B 出 8 token 就超时。<b>这一步没有 key 就推不动</b>。</li>
+      <li><b>慢异动暂为 0</b>：BTC/ETH 日线最新只到 11-15 08:00（早于纪元 09:10），窗口终点都还没跨过纪元。等 11-16 00:00 那根日线入库后才会出 slow；届时若仍为 0 才是真问题。验收第 7 项因此暂时判 SKIP 而非 FAIL。</li>
+      <li><b>AMZN / META / GOOGL</b>：已加进 <code>backfill_ohlcv.ASSETS</code>，但本轮实测 yfinance 三只全部返回 0 行（网络侧被拦），还没真入库。</li>
+      <li><b>SKHYNIX ↔ 000660.KS、NVIDIA ↔ NVDA</b>：挂起等人工定。前者两边各有 486 / 33 行独立数据，后者 NVIDIA 名下只有 <code>mexc_funding_rate</code>。</li>
+      <li><b>真外键</b>：SQLite 加外键要重建整表，1.4 GB 且在跑引擎，没动 —— 一致性体检只能兜症状。</li>
+      <li><b>bridge_server.py 9,853 行 / db.py 5,537 行</b>：纯技术债，未动。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>五、提交与验证</h2>
+    <table>
+      <tr><th>提交</th><th>内容</th></tr>
+      <tr><td class="mono">bbade41</td><td>命名双轨合并 + 取价口径（指标名 / 日线压平 / BTC 错配价连源一起清）</td></tr>
+      <tr><td class="mono">c0caa0c</td><td>外部指标坐标系 + 取价前先排非价格类指标</td></tr>
+      <tr><td class="mono">a492acc</td><td>抽屉不当品种 + 短快照序列回退日线</td></tr>
+      <tr><td class="mono">17c49e8</td><td>补 AMZN / META / GOOGL 到 K 线名单</td></tr>
+      <tr><td class="mono">1dbdaa4</td><td>慢异动改按序列遍历，一条序列只留一个来源</td></tr>
+      <tr><td class="mono">295f784</td><td>注册表跟着小时 cron 重建 + 时差告警</td></tr>
+      <tr><td class="mono">c9a9bda</td><td>跨表一致性体检 + 跨纪元慢异动 + 验收第 7 项宽限</td></tr>
+    </table>
+    <div class="foot">
+      实测：验收 12 PASS / 0 FAIL / 14 SKIP（exit 0）· 一致性 5/5 OK · 纪元前残留 0 · 相关测试 369 + 157 passed
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

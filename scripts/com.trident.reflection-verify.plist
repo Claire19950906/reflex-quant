@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.trident.reflection-verify</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_reflection_verify.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>23</integer></dict>
+  <key>WorkingDirectory</key><string>/Users/claire/.trident</string>
+  <key>StandardOutPath</key><string>/Users/claire/.trident/log/reflection_verify.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/claire/.trident/log/reflection_verify.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PYTHONUNBUFFERED</key><string>1</string>
+    <key>PYTHONIOENCODING</key><string>utf-8</string>
+    <key>PATH</key><string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin</string>
+  </dict>
+</dict>
+</plist>

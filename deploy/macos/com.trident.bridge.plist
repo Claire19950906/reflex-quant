@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>BRIDGE_HOST</key>
+		<string>0.0.0.0</string>
+		<key>BRIDGE_PORT</key>
+		<string>8100</string>
+		<key>PATH</key>
+		<string>/Users/claire/android-runtime/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PYTHONIOENCODING</key>
+		<string>utf-8</string>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+		<key>TRIDENT_BUSY_TIMEOUT_MS</key>
+		<string>30000</string>
+		<key>TRIDENT_NO_AUTO_SETUP</key>
+		<string>1</string>
+	</dict>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.trident.bridge</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/claire/.trident/wrappers/run_bridge.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/claire/.trident/log/bridge.err.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/claire/.trident/log/bridge.out.log</string>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/claire</string>
+</dict>
+</plist>

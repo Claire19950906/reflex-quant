@@ -1,0 +1,65 @@
+# ── docker-compose 骨架（P2-4）──────────────────────────────────────────────
+# 现状：生产由 launchd 本机拉起。本文件是迁容器的目标编排，尚未在生产启用。
+# 启用前先读 docs/ops/容器化迁移说明.md，逐项归类 cron / 守护 / 本地 Ollama。
+#
+# 预览配置（不接库卷、不连真实密钥）：
+#   docker compose config
+#
+# 注意：
+#   * 所有服务先只绑回环；对外暴露需显式改 ports 或加网关；
+#   * SQLite 主库 / 旁库 / runtime / reports 通过 ./backend 卷持久化；
+#   * env 从 backend/.env 读取（已在 .gitignore，不进镜像）。
+
+services:
+  backend-bridge:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["python", "src_python/bridge_server.py"]
+    ports:
+      - "127.0.0.1:8100:8100"
+    environment:
+      BRIDGE_HOST: 127.0.0.1
+      BRIDGE_PORT: "8100"
+      TRIDENT_DB_PATH: /app/data/trident_event_bus.db
+      # 本地 Ollama 在宿主机时（macOS/Windows）走网关；Linux 用 host 网络另配。
+      OLLAMA_URL: http://host.docker.internal:11434
+    volumes:
+      - ./backend:/app/data
+      - ./backend/runtime:/app/runtime
+      - ./backend/reports:/app/reports
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  backend-master:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["python", "src_python/master_api.py"]
+    ports:
+      - "127.0.0.1:9001:9001"
+    environment:
+      TRIDENT_MASTER_HOST: 127.0.0.1
+      TRIDENT_MASTER_PORT: "9001"
+      TRIDENT_DB_PATH: /app/data/trident_event_bus.db
+    volumes:
+      - ./backend:/app/data
+      - ./backend/runtime:/app/runtime
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      - backend-bridge
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3030:3030"
+    environment:
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:8100/api
+    depends_on:
+      - backend-bridge
+    restart: unless-stopped

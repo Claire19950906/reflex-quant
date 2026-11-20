@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.trident.error-code-cron</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/claire/.trident/wrappers/run_error_code_cron.sh</string>
+  </array>
+  <key>StartInterval</key><integer>600</integer>
+  <key>RunAtLoad</key><true/>
+  <key>WorkingDirectory</key><string>/Users/claire</string>
+  <key>StandardOutPath</key><string>/Users/claire/.trident/log/error_code_cron.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/claire/.trident/log/error_code_cron.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PYTHONUNBUFFERED</key><string>1</string>
+    <key>PYTHONIOENCODING</key><string>utf-8</string>
+    <key>TRIDENT_BUSY_TIMEOUT_MS</key><string>20000</string>
+    <key>PATH</key><string>/Library/Frameworks/Python.framework/Versions/3.14/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin</string>
+  </dict>
+</dict>
+</plist>

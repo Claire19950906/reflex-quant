@@ -1,0 +1,218 @@
+{
+  "at": "2026-11-19T18:41:07",
+  "corpus": {
+    "total": 1,
+    "real": 1,
+    "template": 0,
+    "llm": 0,
+    "paper": 1,
+    "real_ratio": 1.0,
+    "template_note": "v482 起 HOLD 漏检写入 missed_signal_reflections，不再进本表",
+    "settled": 1,
+    "win": 0,
+    "loss": 1,
+    "fp_current": "c289021+/p32890b4f",
+    "fp_tagged": 0,
+    "fp_other_gen": 0
+  },
+  "judged": {
+    "judged": 0,
+    "verified": 0,
+    "falsified": 0,
+    "unknown": 1,
+    "template_excluded": 0,
+    "judge_rate": 0.0,
+    "consistency": null
+  },
+  "coverage": {
+    "decisions": 15,
+    "with_reflection": 1,
+    "rate": 0.0667,
+    "real_trade_reflections": 1
+  },
+  "shadow": {
+    "rows": 0,
+    "ok": 0,
+    "wrong": 0,
+    "flat": 0,
+    "insufficient": 0,
+    "hit_rate": null,
+    "hit_rate_note": "样本不足(<60)，不构成结论",
+    "rows_24h": 0,
+    "by_asset": [],
+    "by_direction": [],
+    "ledger": {
+      "settled": 0,
+      "hit": 0,
+      "hit_rate": null,
+      "avg_move_pct": null
+    },
+    "bench": {
+      "n_samples": 0,
+      "n_settled": 0,
+      "hit_rate": null,
+      "hit_ci": [
+        null,
+        null
+      ],
+      "baseline": {
+        "n": 0,
+        "up": 0,
+        "down": 0,
+        "flat": 0,
+        "always_sell": null,
+        "always_buy": null,
+        "mix_implied": null,
+        "p_buy": null,
+        "p_sell": null
+      },
+      "by_direction": {
+        "BUY": {
+          "n": 0,
+          "hit": 0,
+          "rate": null,
+          "ci": [
+            null,
+            null
+          ]
+        },
+        "SELL": {
+          "n": 0,
+          "hit": 0,
+          "rate": null,
+          "ci": [
+            null,
+            null
+          ]
+        }
+      },
+      "ba_label": {
+        "value": null,
+        "ci": [
+          null,
+          null
+        ]
+      },
+      "ba_pred": null,
+      "excess_vs_mix": null,
+      "excess_vs_always_sell": null,
+      "expectancy": {
+        "n": 0,
+        "gross_bps": null,
+        "net_bps": null,
+        "ci": [
+          null,
+          null
+        ],
+        "fee_bps": 12.0
+      },
+      "fee_bps": 12.0,
+      "gate": 200,
+      "by_asset": [],
+      "verdict": {
+        "code": "empty",
+        "headline": "没有可结算样本（样本不足）",
+        "detail": "影子层/反射层还没攒到已结算样本；等数据进来再读，不要当成能力为 0。"
+      },
+      "source": "none",
+      "throughput": {
+        "window_hours": 24,
+        "decisions": 15,
+        "directional": 4,
+        "directional_per_hour": 0.2,
+        "settleable": 3,
+        "settleable_per_hour": 0.1,
+        "settled_total": 0,
+        "remaining_to_gate": 200,
+        "eta_days": 83.3
+      }
+    },
+    "by_confidence": [],
+    "h24": {
+      "ok": 0,
+      "wrong": 0,
+      "flat": 0,
+      "insufficient": 0,
+      "pending": 0,
+      "settled": 0,
+      "hit_rate": null,
+      "flipped_from_4h_wrong": 0,
+      "note": "4h 判错但 24h 判对 = 窗口太短，不是判断错"
+    }
+  },
+  "horizon_truth": {
+    "real_reflections": 1,
+    "stamped_4h": 0,
+    "ok_4h": 0,
+    "wrong_4h": 0,
+    "flat_4h": 0,
+    "insufficient_4h": 0,
+    "unjudged_4h": 1,
+    "judge_rate_4h": 0.0,
+    "hit_rate_4h": null,
+    "avg_net_pct_4h": null,
+    "stamped_24h": 0,
+    "hit_rate_24h": null,
+    "basis": "shadow_reflections 4h/24h（扣往返成本后的净收益）",
+    "note": "样本不足(<60)，不构成结论"
+  },
+  "meta": {
+    "cycles": 0,
+    "last": null,
+    "kinds": {}
+  },
+  "patches": {
+    "pending": 0,
+    "rejected": 0,
+    "applied": 0
+  },
+  "scheduler": {
+    "verifier_last_evaluated": null,
+    "shadow_watermark": 1795049335,
+    "shadow_floor": 1795049335,
+    "enrich_last_ok": "2026-11-19 09:49:03"
+  },
+  "injection": {
+    "rules_total": 21,
+    "observable_only": 20,
+    "injectable": 1,
+    "experience_applications": 0,
+    "decisions_with_hit_ids": 4,
+    "hit_sources": {
+      "unknown": 4
+    }
+  },
+  "ab": {
+    "ok": true,
+    "days": 14,
+    "rate": 0.3,
+    "groups": {
+      "control": {
+        "batches": 7,
+        "n_decisions": 0,
+        "n_shadow": 0,
+        "ok": 0,
+        "hit_rate": null,
+        "n_shadow_24h": 0,
+        "hit_rate_24h": null,
+        "avg_confidence": null,
+        "directional_ratio": null,
+        "claimed_hit_ratio": null,
+        "avg_soft_rules": 0.0
+      },
+      "treatment": {
+        "batches": 22,
+        "n_decisions": 15,
+        "n_shadow": 0,
+        "ok": 0,
+        "hit_rate": null,
+        "n_shadow_24h": 0,
+        "hit_rate_24h": null,
+        "avg_confidence": 18.415,
+        "directional_ratio": 0.2,
+        "claimed_hit_ratio": 0.267,
+        "avg_soft_rules": 2.23
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+# 前端 .dockerignore
+node_modules/
+.next/
+npm-debug.log*
+.env.local
+.env.*.local
+*.tsbuildinfo

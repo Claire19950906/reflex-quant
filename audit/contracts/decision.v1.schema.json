@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reflex-quant.local/audit/decision.v1.schema.json",
+  "title": "decision.v1 — 审计层输入契约",
+  "description": "任何带证据的决策记录均可审计。不要求结算、盈亏或交易语义。",
+  "type": "object",
+  "required": ["suggested_action", "target_asset"],
+  "anyOf": [
+    {"required": ["id"]},
+    {"required": ["decision_id"]}
+  ],
+  "properties": {
+    "id": {"type": "integer", "description": "决策主键，报告 trace_id 来源"},
+    "decision_id": {"type": "integer"},
+
+    "suggested_action": {
+      "type": "string",
+      "enum": ["BUY", "SELL", "HOLD", "NONE"],
+      "description": "方向性结论。HOLD 也参与审计（会查是否该给方向但没给）"
+    },
+    "target_asset": {"type": "string", "description": "标的；不可交易时填 NONE 而非留空"},
+    "asset_reasoning": {"type": "string"},
+
+    "reasoning": {"type": "string", "description": "分析正文"},
+    "reasoning_path": {
+      "type": "string",
+      "description": "八段推演：[事件识别][因素定位][情绪评估][跨资产传导][人物权重][时间窗口][驱动力][总结]"
+    },
+    "hard_data_evidence": {
+      "type": "string",
+      "description": "带品种+时间+数值的硬事实，JSON 或文本；空则触发 E001a"
+    },
+    "factor_ranking": {"type": "string", "description": "因子及方向，JSON 或文本"},
+    "cross_asset_likely": {"type": "string"},
+    "cross_asset": {"type": "string"},
+
+    "sentiment_score": {"type": "number", "minimum": -1, "maximum": 1},
+    "evidence_confidence": {"type": ["number", "null"]},
+    "completeness_score": {
+      "type": ["number", "null"],
+      "description": "< 0.7 时直接短路为 E019，不再跑其余 7 层"
+    },
+    "data_anchor_ts": {"type": ["string", "null"], "description": "数据锚点时间"},
+    "event_type_code": {"type": ["string", "null"]},
+    "backtest_sample_size": {"type": ["integer", "null"]},
+
+    "news_id": {"type": ["integer", "null"]},
+    "news_text": {"type": ["string", "null"]},
+    "news_summary": {"type": ["string", "null"]},
+    "event_atom_ids": {"type": ["string", "null"]},
+
+    "analysis_degraded": {"type": "integer", "description": "1=降级兜底产出，禁止按真结论采信"},
+    "analysis_degraded_reason": {"type": ["string", "null"]},
+    "market_confirmation": {"type": ["string", "null"]},
+    "invalidation_condition": {"type": ["string", "null"]},
+
+    "forward_pnl": {"type": ["number", "null"], "description": "可选：事后前向盈亏"},
+    "mfe_pct": {"type": ["number", "null"]},
+    "mae_pct": {"type": ["number", "null"]},
+    "is_correct": {"type": ["string", "null"], "description": "可选：WIN / LOSS / BE / ''"},
+    "settled": {"type": ["integer", "null"]},
+
+    "missing_fields": {"type": ["string", "null"]},
+    "field_sources": {"type": ["string", "object", "null"]}
+  },
+  "additionalProperties": true
+}

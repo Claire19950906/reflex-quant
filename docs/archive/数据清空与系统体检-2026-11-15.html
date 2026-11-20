@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据清空 + 系统体检 · 2026-11-15</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#1f2735;--txt:#e6ebf5;--sub:#8b97ad;--ok:#2fbf8f;--warn:#e0a13a;--bad:#e05a5a;--mid:#5b8def;--dim:#6b778c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px 80px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:.5px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:28px}
+.hero{background:linear-gradient(135deg,#141a26,#0f141d);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:32px}
+.hero .k{font-size:12.5px;color:var(--sub);letter-spacing:1px}
+.hero .v{font-size:18px;font-weight:600;margin-top:8px;line-height:1.6}
+.tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12px;font-weight:600}
+.ok{background:rgba(47,191,143,.14);color:var(--ok);border:1px solid rgba(47,191,143,.35)}
+.warn{background:rgba(224,161,58,.14);color:var(--warn);border:1px solid rgba(224,161,58,.35)}
+.bad{background:rgba(224,90,90,.14);color:var(--bad);border:1px solid rgba(224,90,90,.35)}
+.dim{background:rgba(107,119,140,.16);color:#9aa6bb;border:1px solid rgba(107,119,140,.35)}
+h2{font-size:17px;margin:38px 0 14px;padding-left:10px;border-left:3px solid var(--mid)}
+h3{font-size:15px;margin:24px 0 10px;color:#cfd8e8}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:500;font-size:12.5px}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.card .hd{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px}
+.card .hd b{font-size:15px}
+.k4{color:var(--sub);font-size:12.5px}
+.note{background:#0f1621;border-left:3px solid var(--warn);padding:12px 16px;border-radius:6px;font-size:13.5px;margin:14px 0}
+.note.bad{border-left-color:var(--bad)}
+.note.ok{border-left-color:var(--ok)}
+ul{margin:8px 0 0 18px}li{margin:5px 0}
+code{background:#0c1018;border:1px solid #1a2230;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#a8b6cf}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;font-size:13.5px}
+footer{color:var(--dim);font-size:12px;margin-top:44px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>数据清空 + 系统体检</h1>
+<div class="meta">2026-11-15 · 金融1.0 / Reflex Quant · 只读审计 + 4 处代码修复 · 备份 1.43 GB</div>
+
+<div class="hero">
+  <div class="k">一句话结论</div>
+  <div class="v">
+    数据这次<strong>真清空了</strong>（73 张表 / 455,954 行，原始行情与新闻一行未动）。
+    以前清不掉不是脚本没跑，是三个机制在往回填：脚本只动 3 张表、纪元标记没人读、
+    回填 cron 每 5~60 分钟重扫全历史。三处已堵死，验收也从「假红」改成了「无样本」。
+  </div>
+</div>
+
+<h2>一、为什么以前"删不下去"</h2>
+<table>
+<thead><tr><th style="width:30px">#</th><th style="width:190px">机制</th><th>证据</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>脚本只隔离了 3 张表</td><td><code>clean_epoch.py</code> 全文只做三件事：<code>review_insights</code> 置 active=0、<code>auto_quick_sim</code> 链置 active=0、重算 <code>magnitude_hit</code>。8,865 条决策、49,606 条权重、5,096 条结算<strong>一条没删</strong>。</td></tr>
+<tr><td>2</td><td>"纪元"是个装饰品</td><td>它写入 <code>data_epoch</code> 表，但全项目只有它自己读写（<code>grep -rn data_epoch</code> 无第二处调用）。所有统计照旧读全表。</td></tr>
+<tr><td>3</td><td>cron 会把旧账长回来</td><td><code>calc_event_move_attribution</code> 每 5 分钟 <strong>DELETE+INSERT 整表重建</strong>；<code>backfill_critical_moves</code> 每小时重扫全部历史日线（实测清空后 45 分钟内长回 189 条，最早回到 2026-03）；<code>fast_move_detector</code> 的 48h 窗口也跨过清空点。</td></tr>
+</tbody>
+</table>
+
+<h2>二、这次清了什么、留了什么</h2>
+<div class="card">
+  <div class="grid">
+    <div><div class="k4">清空</div><div>73 张表 / 455,954 行：决策、成交、权重、结算、归因、反思、漏检、异动标注、影子账本</div></div>
+    <div><div class="k4">保留</div><div>raw_news 16,330 · news_events 31,949 · market_ticks 87.8 万 · kline 29.7 万 · flow_snapshots 3.5 万 · COT 2,067 · 经济日历</div></div>
+    <div><div class="k4">知识结构</div><div>739 条因果链<strong>定义与三问全保留</strong>，只把 weight 重置为 1.0（原来 101 个不同权重 → 1 个）</div></div>
+    <div><div class="k4">备份</div><div><code>runtime/backup/reset_20261115_0910.db</code> 1,426 MB + 清单 JSON，可整库回滚</div></div>
+  </div>
+</div>
+
+<h2>三、堵住回填：改了 4 处</h2>
+<table>
+<thead><tr><th style="width:210px">位置</th><th>改动</th><th style="width:96px">状态</th></tr></thead>
+<tbody>
+<tr><td><code>reset_derived_epoch.py</code>（新增）</td><td>先备份 → 单事务清 73 表 → 重置链权重 → 写 data_epoch → 校验残留 + 落清单</td><td><span class="tag ok">已执行</span></td></tr>
+<tr><td><code>backfill_critical_moves.py</code></td><td>新增 <code>--since</code>，默认取 data_epoch；实测过滤 443 → 0 条历史</td><td><span class="tag ok">已修</span></td></tr>
+<tr><td><code>fast_move_detector.py</code></td><td>48h lookback 与纪元取 max，不再把清空前的 tick 异动插回</td><td><span class="tag ok">已修</span></td></tr>
+<tr><td><code>frozen_ruler_full.py</code>（R4→R5）</td><td>E2/E2L/E2K 加纪元切片（news_events 是保留表，里面仍有旧模型写的 BUY/SELL）</td><td><span class="tag ok">已修</span></td></tr>
+<tr><td><code>capability_acceptance.py</code></td><td>① #13 只统计纪元后的 DONE 事件；② 新纪元 7 天内"0 样本"的 FAIL 降级为 SKIP</td><td><span class="tag ok">已修</span></td></tr>
+<tr><td><code>capability_acceptance.py</code> #15</td><td>三个漏检组件拆到 <code>v237/</code> 后，判据还在 live-desk.tsx 里搜字符串 → 恒假红。改为"页面有区块 + 组件存在"</td><td><span class="tag ok">已修</span></td></tr>
+</tbody>
+</table>
+
+<div class="note ok">
+<strong>清空后验收语义已修正：</strong>23 PASS/1 FAIL → <strong>11 PASS / 0 FAIL / 15 SKIP</strong>（退出码 0）。
+"还没攒到样本"不再被读成"链路断了"；7 天宽限后仍无样本，才照旧判 FAIL。
+</div>
+
+<h2>四、顺手挖出的一个真 bug：慢涨检测对核心品种完全失效</h2>
+<div class="card">
+  <div class="hd"><b>BTC / ETH / XAU / WTI / DJI / IXIC 的慢涨慢跌，历史上一条都没进库</b><span class="tag bad">已修</span></div>
+  <div>原因：<code>fetch_prices()</code> 只在 <code>external_indicators</code> 里找 <code>close/price</code> 这类 indicator；
+  这些品种名下挂了几十个指标（资金费率、OI、多空比…），判定"指标不明确"后直接 <code>return []</code>，
+  于是 <code>[SKIP] indicator 不明确</code>，慢涨检测被静默跳过。</div>
+  <div style="margin-top:10px">修复：判定不明确时回退到 <code>ohlcv_daily.close</code>（31 个品种、8.6 万根日线）。实测恢复量：</div>
+  <div class="grid" style="margin-top:10px">
+    <div>BTC 2,625 根 → <strong>1,144</strong> 个慢涨点</div>
+    <div>ETH 2,546 根 → <strong>1,551</strong> 个</div>
+    <div>AAPL 6,020 根 → <strong>1,543</strong> 个</div>
+    <div>MU 4,741 根 → <strong>2,183</strong> 个</div>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <strong>但阈值本身要改。</strong>现在全局用 |1d| ≥ 3%，实测各品种 3% 的发生率差 20 倍：
+    <table style="margin-top:10px">
+      <thead><tr><th>品种</th><th>p50</th><th>p90</th><th>p95</th><th>3% 命中率</th><th>建议阈值</th></tr></thead>
+      <tbody>
+      <tr><td>BTC</td><td class="num">1.37%</td><td class="num">4.80%</td><td class="num">6.45%</td><td class="num">22.7%</td><td class="num">≈6.5%</td></tr>
+      <tr><td>ETH</td><td class="num">1.94%</td><td class="num">6.55%</td><td class="num">8.46%</td><td class="num">34.1%</td><td class="num">≈8.5%</td></tr>
+      <tr><td>WTI</td><td class="num">1.23%</td><td class="num">3.68%</td><td class="num">4.83%</td><td class="num">15.7%</td><td class="num">≈4.8%</td></tr>
+      <tr><td>XAU</td><td class="num">0.44%</td><td class="num">1.58%</td><td class="num">2.01%</td><td class="num">1.6%</td><td class="num">≈2.0%</td></tr>
+      <tr><td>NDX</td><td class="num">0.61%</td><td class="num">2.13%</td><td class="num">2.83%</td><td class="num">4.3%</td><td class="num">≈2.8%</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:8px">3% 对 BTC 是"每 4 天一次"，对 XAU 是"两个月一次"——同一个阈值不可能同时正确。
+    建议改成 <code>max(2%, 该品种近 250 日 |1d| 的 p95)</code>，3日/5日按比例放大。</div>
+  </div>
+</div>
+
+<h2>五、系统体检：P0 / P1 / P2</h2>
+
+<h3>P0 · 会影响判断 correctness</h3>
+<table>
+<thead><tr><th style="width:210px">问题</th><th>说明</th><th style="width:70px">状态</th></tr></thead>
+<tbody>
+<tr><td>123 个已改文件 + 284 个未跟踪文件</td><td>整个仓库上 100+ 处改动未提交，<code>frozen_ruler_full.py</code> 甚至从未入库。现在任何回滚都只能靠手工。<strong>应先 commit 一个 checkpoint。</strong></td><td><span class="tag bad">待办</span></td></tr>
+<tr><td>AI 第二道复核只覆盖 8.5%</td><td>282 条归因里只有 24 条 <code>ai_verdict</code> 非空；LLM 通道熔断后，"双重验证"实际只剩规则一层。</td><td><span class="tag warn">待办</span></td></tr>
+<tr><td>归因表 DELETE+INSERT</td><td>每 5 分钟整表重建，人工打标与 AI 复核结果会被覆盖（v338 已接 <code>verify_all()</code> 缓解，但"人工标注"仍会丢）。</td><td><span class="tag warn">待办</span></td></tr>
+<tr><td>阈值全局 3%</td><td>见上表：BTC 22.7% 的日子都算"临界点"，等于没有临界点。</td><td><span class="tag warn">待办</span></td></tr>
+</tbody>
+</table>
+
+<h3>P1 · 会让系统"看起来在跑、实际缺一块"</h3>
+<table>
+<thead><tr><th style="width:210px">问题</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>资金费率取不到</td><td>4 个币种全部 <code>skipped</code>，<code>external_indicators</code> 里 funding 行数为 0 → #14 的"杠杆/套利离场"判断没有输入。</td></tr>
+<tr><td>盘口只有 28 份快照</td><td>每小时存一份，约 1 天量，无法回测"墙"与挂单不平衡。</td></tr>
+<tr><td>DB 写锁竞争</td><td>日志有 <code>database is locked</code>（fast_move / slow_backfill 都出现过）。1.4 GB 单库 + 4 常驻 + 90 个 cron，迟早互相卡。<code>busy_timeout</code> 是唯一缓冲。</td></tr>
+<tr><td>验收 #13 曾用旧标签冒充当前能力</td><td>已修（纪元切片），但说明这类"清空后仍读旧表"的口径要在每个指标上逐一核。</td></tr>
+<tr><td>30.8% 的 HOLD 是兜底空输出</td><td>S12 实质分析覆盖 26.8%。数据清空后要重新观察，若仍如此，说明不是数据问题而是生成链路。</td></tr>
+</tbody>
+</table>
+
+<h3>P2 · 工程卫生</h3>
+<div class="card">
+  <ul>
+    <li><strong>4 份 1.4 GB 备份共 4.1 GB</strong>：<code>backup_before_reset_20261114.db</code>、<code>backups/*.bak-fix4-*</code>、<code>runtime/backup/reset_20261115_0910.db</code>，外加当前库。建议验证一次可还原后，只留最新一份。</li>
+    <li><strong>循环软链</strong> <code>strategy_package_v170 → .</code>（指向自己）：<code>find -L</code>、部分 IDE/打包工具会无限递归。除 CHANGELOG 外无引用，建议删。</li>
+    <li><strong>空文件</strong> <code>bsqlite3</code>（0 字节，疑似 <code>sqlite3 &gt; bsqlite3</code> 打错）。</li>
+    <li><strong>巨型模块</strong>：<code>bridge_server.py</code> 9,637 行、<code>db.py</code> 5,537 行、<code>review_agent.py</code> 5,050 行。435 个 Python 模块、147 张表、0 个外键——全靠代码约定维持一致性。</li>
+    <li><strong>clean_epoch.py 应废弃</strong>：它现在是误导源（只动 3 表 + 写一个没人读的纪元）。建议改名 <code>_legacy_clean_epoch.py</code> 或直接删。</li>
+    <li><strong>13 处 TODO/FIXME</strong>（11-15 时点口径；2026-11-17 复核：后端实有 2 处未接线占位 TODO，1 处为字符串枚举误计；前端 0 处）；静默吞异常审计 0 命中（这点做得很好，保持）。</li>
+    <li><strong>安全</strong>：无硬编码密钥，<code>.env</code> 未入库，API 有 <code>X-Trident-API-Key</code> 与 demo 模式限流，只监听本地。这项可以放心。</li>
+  </ul>
+</div>
+
+<h2>六、建议的下一步（按性价比）</h2>
+<div class="card">
+  <div><strong>1. 先 commit 一个 checkpoint（0.5 小时）</strong><br>
+  123 个改动 + 284 个未跟踪文件，现在任何"改坏了"都难以回到今天这个干净起点。</div>
+  <div style="margin-top:10px"><strong>2. 按品种标定临界点阈值（1 小时）</strong><br>
+  <code>max(2%, p95(近250日|1d|))</code>。不做这一步，慢涨面板在 BTC 上会天天报警、在 XAU 上两个月不响。</div>
+  <div style="margin-top:10px"><strong>3. 把 AI 复核接到队列（半天）</strong><br>
+  现在是"抽样 8.5%"，应当"全量入队、异步补"。否则 #12 的真因果占比永远只有规则一层的证据。</div>
+  <div style="margin-top:10px"><strong>4. 备份瘦身 + 删循环软链（10 分钟）</strong><br>
+  省 4 GB，去掉一个会让工具挂死的雷。</div>
+</div>
+
+<h2>七、复核命令</h2>
+<div class="card" style="font-size:13px;color:#b9c4d6">
+<code>python3 reset_derived_epoch.py --dry-run</code> → 当前应为 0 行（已清空）<br>
+<code>python3 capability_acceptance.py --no-http</code> → 11 PASS / 0 FAIL / 15 SKIP，退出码 0<br>
+<code>python3 frozen_ruler_full.py --all</code> → 8 指标全部"样本不足"，基准仍为实测 49.97%（n=70,844）<br>
+<code>python3 backfill_critical_moves.py --dry-run</code> → 443 → 0（纪元闸门生效）<br>
+<code>pytest backend/tests -k "acceptance or scorecard or critical_move"</code> → 15 passed<br>
+<br>
+备份：<code>backend/runtime/backup/reset_20261115_0910.db</code>（1,426 MB）
+</div>
+
+<footer>
+本报告基于只读审计与实际执行结果。清空前的库已完整备份，可随时回滚；
+清空后所有统计只应使用 data_epoch（2026-11-15 09:10:59）之后的数据。
+</footer>
+</div>
+</body>
+</html>

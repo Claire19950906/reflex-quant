@@ -250,6 +250,14 @@ def test_fingerprint_has_git_and_param_dimensions():
     # 改关键参数 → 指纹必须变（否则分层会串代）
     old = os.environ.get("REVIEW_INSIGHTS_RANK")
     os.environ["REVIEW_INSIGHTS_RANK"] = "0" if old != "0" else "1"
+    # 全量跑时别的用例会短暂改工作区，git 维度会从 `hash` 变成 `hash+`（脏标记），
+    # 让这条"参数变了才变"的断言假红。这里把 git 维度钉死，只测参数维度。
+    import code_fingerprint as cf
+    from functools import lru_cache
+    orig = cf._git_hash
+    cf._git_hash.cache_clear()
+    fixed = orig()
+    cf._git_hash = lru_cache(maxsize=1)(lambda: fixed)
     try:
         assert reload_fingerprint() != fp
     finally:
@@ -257,7 +265,11 @@ def test_fingerprint_has_git_and_param_dimensions():
             os.environ.pop("REVIEW_INSIGHTS_RANK", None)
         else:
             os.environ["REVIEW_INSIGHTS_RANK"] = old
-        assert reload_fingerprint() == fp
+        try:
+            assert reload_fingerprint() == fp
+        finally:
+            cf._git_hash = orig
+            cf._git_hash.cache_clear()
 
 
 def test_fingerprint_survives_missing_git(monkeypatch):

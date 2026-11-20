@@ -66,6 +66,7 @@ $ pytest tests/test_api_format.py -q
 1. `tests/test_repository_news.py`、`tests/test_v418_manual_chain_guard.py` 在 import 期就读真实库（后者拷 schema），`pytestmark = skipif` 来不及生效——无库环境是 **ERROR** 不是 skip。已改模块级 `pytest.skip(allow_module_level=True)`。
 2. `test_v413::test_analyze_within_threshold_is_normal` 断言的是旧规则（step 阈值 = 3×threshold），代码早已改成固定 700s，用例一直红着没人看。已改为显式传 `hang_after`，测的仍是原意。
 3. 全量首跑 6 红，其中 5 红是上面两类环境问题，1 红是用例与实现脱节——**这就是不跑全量的代价：红的用例会被当成"已知噪声"。**
+4. 第二轮全量（5007 passed / 1 failed）只剩 `test_v453::test_fingerprint_has_git_and_param_dimensions`——单独跑绿、全量跑红。原因：别的用例短暂改写工作区，git 维度从 `hash` 变成 `hash+`（脏标记），指纹自然不等。已把 git 维度钉成常量，这条只测"参数变→指纹变"。**单独跑绿、全量跑红，是最容易骗过自己的一类假绿。**
 
 ## 不该为了分数做的事
 

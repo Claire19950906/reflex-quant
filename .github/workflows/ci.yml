@@ -86,9 +86,9 @@ jobs:
             -k "dimension or reflection or risk or gate or contract or schema or registry" \
             --maxfail=20 \
             --cov=src_python --cov-report=term --cov-report=xml \
-            --cov-fail-under=18
+            --cov-fail-under=20
         # 门槛说明：2026-11-20 实测该子集对 src_python 的覆盖率 20%。
-        # 门槛故意卡在 18%——先防回退，每接一个新模块就抬到「实测 − 2pp」，
+        # 棘轮规则：门槛 = 实测值，只升不降。每接一个新模块就抬到「新实测」，
         # 目标 60%。直接写 60% 只会让 CI 常红，没人再看。
 
       - name: 上传覆盖率
@@ -105,10 +105,47 @@ jobs:
           name: endpoint-baseline
           path: backend/reports/baseline/
 
+  demo-smoke:
+    # 目的：证明"陌生人 clone 后能跑"。不是跑测试，是真起一次服务。
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TRIDENT_OFFLINE: "1"
+      TRIDENT_DB_PATH: ${{ github.workspace }}/backend/demo.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: 用演示库起服务
+        working-directory: backend
+        run: |
+          python src_python/api_server.py > /tmp/api.log 2>&1 &
+          ok=0
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/health || true)
+            if [ "$code" = "200" ]; then echo "health 200（等待 ${i} 次）"; ok=1; break; fi
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then echo "服务没起来"; tail -60 /tmp/api.log; exit 1; fi
+      - name: 64 项目录可读
+        run: |
+          n=$(curl -sf http://127.0.0.1:8000/api/trident2/features | python -c "import sys,json;print(json.load(sys.stdin)['summary']['total'])")
+          echo "features total=$n"
+          test "$n" = "64"
+
   full-suite:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    permissions:
+      contents: read
+      issues: write
     env:
       TRIDENT_OFFLINE: "1"
     steps:
@@ -130,3 +167,18 @@ jobs:
         with:
           name: pytest-report
           path: backend/.pytest_cache/v/cache/lastfailed
+
+      # 夜间全量失败如果没人看，等于没跑。这里直接开 issue（已存在同名就不重复开）。
+      - name: 失败自动开 issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="nightly: 全量回归失败 $(date -u +%Y-%m-%d)"
+          if gh issue list --search "$TITLE in:title" --state open --json number -q '.[0].number' | grep -q .; then
+            echo "已有未关闭的同类 issue，跳过"
+          else
+            gh issue create --title "$TITLE" \
+              --body "夜间全量测试失败。日志与失败清单见本次 run：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n处理完请关闭本 issue；修复前不要再手动触发夜间任务。" \
+              --label bug || echo "开 issue 失败（可能是缺 label 权限），已忽略"
+          fi

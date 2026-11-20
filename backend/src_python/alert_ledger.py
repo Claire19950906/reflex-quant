@@ -78,7 +78,9 @@ def detect_asset(title: str) -> Optional[str]:
     """从标题里认品种。认不出返回 None（不猜）。"""
     t = str(title or "").upper()
     for sym in SYMBOLS:
-        if re.search(rf"\b{sym}\b", t) or sym in t:
+        # 边界只按"字母"判：标题是中文时没有空格（"BTC反弹"），
+        # 但必须挡住"Solo""SOLAR"这类被前缀命中的假阳性。
+        if re.search(rf"(?<![A-Z]){sym}(?![A-Z])", t):
             return sym
     return None
 

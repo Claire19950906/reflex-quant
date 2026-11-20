@@ -12,6 +12,10 @@
 
 **English** | [中文](./README.md)
 
+| Gate evaluations | Directional calls | Passed | Blocked |
+| :---: | :---: | :---: | :---: |
+| 735 | 156 | 20 | **136 · 87.2%** |
+
 </div>
 
 It speaks twice around every order.

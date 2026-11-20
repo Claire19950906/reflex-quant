@@ -7,8 +7,8 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量 **5007 passed / 12 skipped / 0 failed**（18 分 51 秒）；全量覆盖率 **39%**（128,556 语句）；本轮补 32 条 `v500` 用例：`alert_gate` 0%→**97%**、`accuracy_baseline` 0%→**55%**；`test_v500_import_smoke` 一次 import 全部 **438** 个模块（15 秒） | 覆盖率总量仍在 39%——补测是分轮做的账，不是一轮能结的账 |
-| 5 | CI | 9/10 | typecheck + 离线核心子集（覆盖率棘轮 20%，只升不降）+ ruff 错误级 + 端点基线 artifact + nightly 全量 | 棘轮目标 60% 尚未到位 |
+| 4 | 测试与自检 | 9/10 | 全量 **5008 passed / 0 failed / 12 skipped**（19 分 00 秒）；覆盖率实测 **40%**（128,554 语句）；本轮新增 52 条纯函数用例：`api_server` 纯函数 19%、`us_release_schedule` **0→95%**、`true_anomaly` **0→88%** | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
 | 8 | 边界与诚实 | 10/10 | 0 结算写 0；胜率标 NULL；分歧大直接不给方向；事故写在文档里 | — |
@@ -55,6 +55,20 @@ $ pytest tests/ -q -k "schema or contract or registry or gate or event"
 $ pytest tests/test_api_format.py -q
   → 17 passed（0.85 秒）
 ```
+
+覆盖率这轮的账（别自己骗自己）：
+
+```
+$ pytest tests/ -q --cov=src_python        → 5008 passed / 12 skipped，40%（77710 未覆盖）
+$ pytest -k "dimension or reflection or risk or gate or contract or schema or registry
+             or api_format or api_pure" --cov=src_python
+                                           → 1038 passed，20.0%（102885 未覆盖）
+```
+
+**从 40% 到 60% 要覆盖约 26,000 条语句**——相当于再写几十个测试文件。
+所以这轮的做法是"从 0% 的大块头里挑纯函数开刀"，而不是凑一堆断言把数字刷上去：
+`us_release_schedule`（FOMC 前瞻）0→95%、`true_anomaly`（减噪器）0→88%，
+两个都是"逻辑一改就会静默走样、却没人拦"的地方。
 
 顺手做了一次死代码体检：`api_server.py` 192 个顶层函数里，95 个在文件外零引用，
 但逐个看下来——26 个在文件内也零引用，其中绝大多数是 `@app` 路由（框架按装饰器调用，

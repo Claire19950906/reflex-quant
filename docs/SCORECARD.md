@@ -6,8 +6,8 @@
 |---|---|---|---|---|
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
-| 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ②③ 已落地：格式化层 → `api_format.py`、时间口径层 → `api_time.py`，`api_server.py` 9,514 → **9,263 行** | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**八轮共新增 542 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`capability_acceptance` 统计口径 **0→13%**、`engine/worker_helpers` 判定护栏 **0→16%**、`causal_graph` 证据体积/归一 **0→18%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ②③ 已落地：格式化层 → `api_format.py`、时间口径层 → `api_time.py`，`api_server.py` 9,514 → **9,179 行**（两次切片；中途误删的常量已补回） | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
+| 4 | 测试与自检 | 9/10 | 单进程全量复跑 **5693 passed / 12 skipped / 0 failed**（20 分 33 秒，2026-11-21）；分块并行复跑曾合计 5,353 passed（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**八轮共新增 542 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`capability_acceptance` 统计口径 **0→13%**、`engine/worker_helpers` 判定护栏 **0→16%**、`causal_graph` 证据体积/归一 **0→18%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -42,7 +42,7 @@ $ curl /api/trident2/features | jq .summary   → total 64 / P0 11 / P1 36 / P2 
 这条链路已固化成 CI 的 `demo-smoke` job：起服务 → 等 health 200 → 断言 64 项。红一次就说明"陌生人跑不起来"。
 
 ```
-$ pytest tests/ -q          → 4989 passed, 11 skipped（21 分 33 秒）
+$ pytest tests/ -q          → 5693 passed, 12 skipped, 0 failed（20 分 33 秒）
 $ pytest tests/ --cov=src_python → 39%（128,556 语句，78,333 未覆盖）
 ```
 

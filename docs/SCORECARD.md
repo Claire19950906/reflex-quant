@@ -7,7 +7,7 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**五轮共新增 321 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**六轮共新增 383 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -108,6 +108,23 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 顺带测出两个口径缺口，先记录不改（改动会动到历史数据口径）：
 - 重复判定只比对**非 FILTERED** 历史行 —— 首条自身就是 FILTERED 时，后续同内容仍进 PENDING；
 - `raw_news.content_fingerprint` 是入库时算的，手改正文**不会**重算，判断"正文被改过"必须自己再算一遍比对。
+
+## 第六轮：`macro_context.py`（1144 语句）0→43%
+
+这个模块把十几个外部源拼成给**模型**读的宏观段。错法很安静：源挂了却输出一个看着还行的数，
+或者口径算反（隐含利率 = 100 − ZQ 期货价、基差 = mark/index − 1 折 bp、±12.5bp 决定 hike/cut）。
+62 条用例覆盖解析与渲染两端：
+
+- **没有数就写 N/A，不写 0**：F&G 空数据、CFTC 拉不到、FRED 超时，一律 `N/A (note)`；
+  全部源都挂时整段只剩一句「全部外部源不可用……禁止补造宏观数字」。
+- **口径钉死**：funding 0.0001 → 0.01%、100→95.68 的 ZQ 价 → 隐含 4.32% → 相对 EFFR 4.33% 得 −1bp → `hold`。
+- **防前视**：报告期晚于今天的行渲染成 `@日期⚠未来(勿用)`，不让未发布数据被当已知喂给模型。
+- **prompt 版面**：缺口汇总成一行；周度数据挂「周度」；COT 只展开投机净头寸、商业头寸折叠成计数（不丢数据）。
+- **跨层资金速览**：杠杆/现货比、加密 OI ÷ 总市值、BTC/ETH 市占推山寨占比，缺字段就 N/A。
+
+顺带测出一个真问题：`fetch_structure` 的 `get` 注入**没覆盖** OKX 那三连
+（`_okx_structure_rows` 直接调 `quote_sources.fetch_okx_*`），不打桩时单条用例白等 3~30 秒。
+现在打桩后 62 条 3 秒跑完；这条也说明"能注入 get 就算离线"是个错觉。
 
 ## 之前顺手修的三类真问题
 

@@ -60,12 +60,25 @@ def _is_already_decided(conn: sqlite3.Connection, signal_id: int) -> bool:
     `context_json`（写入走 signals.decision_writer，字段名同 evidence 字典）。
     列不存在 → 每轮 `no such column` 崩在 propose_one 之前，异动决策产线整天零输出。
     """
+    # v512: 原来只做子串匹配 `"signal_id": 7`，会把 `"signal_id": 70` 也算成"已决策"
+    #       → 7 号异动的决策被静默跳过（一天少一单，且日志只写"已被决策"，看不出是误判）。
+    #       先用 LIKE 粗筛，再解析 JSON 比较整数，只认真正相等的那条。
     pat = f'"signal_id": {signal_id}'
-    row = conn.execute(
-        "SELECT 1 FROM trade_decisions WHERE context_json LIKE ? LIMIT 1",
+    rows = conn.execute(
+        "SELECT context_json FROM trade_decisions WHERE context_json LIKE ? LIMIT 500",
         (f"%{pat}%",),
-    ).fetchone()
-    return row is not None
+    ).fetchall()
+    for r in rows:
+        raw = r[0]
+        try:
+            ctx = json.loads(raw or "{}")
+            if isinstance(ctx, dict) and int(ctx.get("signal_id") or -1) == int(signal_id):
+                return True
+        except (TypeError, ValueError):
+            # JSON 坏了也不能因此漏判：退回严格字面匹配（后面必须跟 , 或 }）
+            if f'"signal_id": {signal_id},' in str(raw) or f'"signal_id": {signal_id}}}' in str(raw):
+                return True
+    return False
 
 
 def _action_from_move(move_pct: float) -> str:

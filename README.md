@@ -4,6 +4,9 @@
 
 ### 提高你的决策正确率，提高你的赚钱几率
 
+### Raise your decision accuracy. Raise your odds.
+
+[![blocked](https://img.shields.io/badge/directional%20calls%20blocked-87.2%25-brightgreen)](#一-下单前告诉你现在是什么情况)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
 [![ci](https://github.com/Claire19950906/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/Claire19950906/reflex-quant/actions)

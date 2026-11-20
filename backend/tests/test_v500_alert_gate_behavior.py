@@ -25,6 +25,10 @@ def gate(tmp_path, monkeypatch):
     """每个用例一个空库，避免用例之间互相污染指纹。"""
     monkeypatch.setattr(config, "DB_PATH", str(tmp_path / "gate.db"), raising=False)
     monkeypatch.setattr(ag, "DAILY_CAP", 6, raising=False)
+    # 时钟必须钉死：这套用例跑在凌晨就是"夜间静默"，白天才是正常放行。
+    # 真实教训：全量套件在北京时间 04:5x 跑过一次，5 条用例全红，
+    # 原因只是"现在几点"，不是逻辑错。
+    monkeypatch.setattr(ag, "_hhmm_now", lambda: "12:00")
     ag._KIND_GAP_CACHE.clear()
     return ag
 

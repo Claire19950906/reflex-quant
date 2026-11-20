@@ -282,6 +282,112 @@ class TradingProcessManager:
             self._log_stream = None
 
 
+_EVENT_SELECT = """
+    SELECT
+        rn.id AS news_id,
+        rn.timestamp,
+        rn.published_at,
+        rn.source,
+        rn.content_fingerprint,
+        rn.first_seen_ts,
+        rn.net_origin_info,
+        rn.cross_net_first_seen_ts,
+        rn.cross_net_source,
+        rn.content AS news_text,
+        rn.status AS analysis_status,
+        -- v321 fix: 这两列必须 SELECT 出来，否则 _row_to_event 里的
+        -- _safe(row, "is_noise"/"gate_unavailable", 0) 恒为 0，
+        -- 导致噪声行/门卫冻结行被误显示为「待 AI 分析」。
+        rn.is_noise,
+        rn.gate_unavailable,
+        ad.id AS decision_id,
+        ad.paper_trading_run_id,
+        ad.strategy_id,
+        ad.strategy_version_id,
+        ad.agent_model_id,
+        ad.evidence_confidence,
+        ad.evidence_action,
+        ad.trade_gate_reason,
+        ad.no_trade_reason,
+        UPPER(ad.suggested_action) AS action,
+        ad.sentiment_score AS score,
+        ad.reasoning AS reason,
+        ad.market_category,
+        ad.target_asset,
+        ad.created_at,
+        ad.parent_id,
+        ad.child_count,
+        ad.reasoning_path,
+        ad.asset_reasoning,
+        ad.vip_tag,
+        qs.entry_price,
+        qs.exit_price,
+        ad.partial_exit_price,
+        ad.partial_exit_ratio,
+        ad.partial_pnl_pct,
+        ad.heat_score,
+        ad.impact_score,
+        ad.asset_impact,
+        ad.peer_reviews,
+        qs.max_price,
+        qs.min_price,
+        qs.max_price_time,
+        qs.min_price_time,
+        qs.verdict AS is_correct,
+        qs.settled,
+        ad.doubao_action,
+        ad.doubao_reasoning,
+        ad.extra_models_consensus,
+        datetime(qs.entry_ts, 'unixepoch', '+8 hours') AS entry_time,
+        ad.cluster_size,
+        ad.prediction_type,
+        ad.event_phase,
+        ad.market_confirmation,
+        ad.direct_catalyst,
+        ad.expected_horizon,
+        ad.invalidation_condition,
+        ad.decision_context,
+        ad.mfe_pct,
+        ad.mae_pct,
+        qs.pnl_pct AS forward_pnl,
+        ad.mfe_time_mins,
+        ad.attention_score,
+        ad.elasticity_window,
+        ad.data_anchor_ts,
+        ad.hard_data_evidence,
+        ad.event_struct,
+        ad.structured_input,
+        ad.structured_check,
+        ad.event_type_code,
+        ad.snapshot_proximity
+    FROM raw_news rn
+    -- 修复：C1 — 去 N+1。原写法每行 rn 跑一次 correlated subquery，
+    -- 改成 LEFT JOIN 上游预先聚合的 latest 子查询（按 news_id 取一条最大 id）。
+    LEFT JOIN (
+        SELECT news_id, MAX(id) AS latest_id FROM ai_decisions
+        WHERE is_sibling = 0 OR is_sibling IS NULL
+        GROUP BY news_id
+    ) latest ON latest.news_id = rn.id
+    LEFT JOIN ai_decisions ad ON ad.id = latest.latest_id
+    LEFT JOIN quick_sim_trades qs ON qs.decision_id = ad.id
+"""
+
+# v170.5+: 启动期预加载 now±15 天内所有事件 → 内存 dict → /api/events 直接查,
+# 省掉每次 await DB + 重复 row→event 转换。60s TTL 增量刷新以收纳 0~60s 内新增。
+_EVENTS_15D_LOCK = threading.Lock()
+_EVENTS_15D_CACHE: List[Dict[str, Any]] = []
+_EVENTS_15D_LAST_LOAD: float = 0.0       # time.monotonic() 上次成功写入时间
+_EVENTS_15D_TTL_S: float = 60.0          # 60s 后下一次请求触发增量 reload
+_EVENTS_15D_WINDOW_DAYS: int = 15        # ±15 天窗口
+_EVENTS_15D_WINDOW_S: int = 15 * 86400    # 秒数
+# v321：reload 单飞锁。reload 一次要几秒（SQL + 4000+ 行转换），
+# 期间到达的并发请求**各自**都会触发一次 reload → 线程池打满 → 接口看起来挂死。
+# 用一把"非阻塞抢锁"保证同一时刻只有一个线程在 reload，
+# 其余请求直接用旧缓存（stale-while-revalidate）。
+_EVENTS_15D_RELOAD_LOCK = threading.Lock()
+_EVENTS_15D_WAIT_S: float = 30.0          # 首加载（无旧缓存）时最多等多久
+
+
 def _trading_manager_enabled() -> bool:
     """修复：A1 — 显式 opt-in 才启用交易管理器子进程。"""
     raw = (os.getenv("TRADING_MANAGER_ENABLED", "0") or "").strip().lower()

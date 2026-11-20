@@ -189,13 +189,25 @@ def test_health_flags_only_open_markets(tmp_path, monkeypatch):
     conn.row_factory = sqlite3.Row
     t2store.ensure_schema(conn)
     conn.execute("CREATE TABLE IF NOT EXISTS market_ticks (symbol TEXT, price REAL, ts INTEGER)")
-    now = int(time.time())
+    # 钉死在 UTC 12:00（北京 20:00）：美股/A 股都收盘，只有 BTC 该更新。
+    now = int(dt.datetime(2026, 11, 20, 12, 0, 0,
+                          tzinfo=dt.timezone.utc).timestamp())
     conn.execute("INSERT INTO market_ticks VALUES ('NVDA', 150.0, ?)", (now - 5000,))
     conn.execute("INSERT INTO market_ticks VALUES ('002241', 10.0, ?)", (now - 5000,))
     conn.execute("INSERT INTO market_ticks VALUES ('BTC', 64000.0, ?)", (now - 1000,))
     conn.commit()
     conn.close()
     monkeypatch.setenv("HEALTH_TICK_STALE_SEC", "300")
+    # 时钟必须钉死在这个时刻：美股与 A 股都收盘、只有 24/7 品种在交易。
+    # 真实教训：全量套件在北京时间 04:5x 跑过一次，此时美股正开着，
+    # NVDA 的旧 tick 理应收进 stale_open_markets —— 用例红得毫无道理，
+    # 因为它其实是在断言"现在是白天收盘时段"。
+    frozen = now
+    import market_rules as _mr
+    orig_session_open = _mr.session_open
+    monkeypatch.setattr(_mr, "session_open",
+                        lambda asset, ts=None: orig_session_open(asset, frozen))
+    monkeypatch.setattr(th.time, "time", lambda: frozen)
     saved = dict(os.environ)
     try:
         h = th.build(path)      # 会读 .env 并写 os.environ；测试后必须还原，否则污染后续用例

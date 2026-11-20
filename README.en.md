@@ -66,6 +66,15 @@ Accuracy does not come from "I'll be careful next time". It comes from **last mi
 
 Accuracy = right trades ÷ all trades. The numerator needs skill; the denominator needs discipline. **It only moves the denominator — and the denominator never needs prediction.**
 
+**Measured, not marketed**: in 735 gate evaluations on this machine, there were 156 directional attempts, 20 passed, **136 blocked (87.2%)**; the other 579 were HOLD (no direction). One query reproduces it:
+
+```bash
+sqlite3 backend/trident_event_bus.db \
+  "SELECT COUNT(*) FROM gate_evaluations WHERE action IN ('BUY','SELL') AND passed=0;"
+```
+
+That is **not** "accuracy improved by 87%". It is "87% of attempts were not allowed." The difference between those two sentences is the whole project.
+
 **1. It deletes orders that are certain to be wrong.** Stale quotes, an unreconciled ledger, duplicate runs, breached leverage — these are operational errors, not judgement calls. Anyone who blocks them avoids them 100%. A smaller denominator with the same numerator is a higher hit rate.
 
 **2. No evidence, no signal.** If the supporting facts don't clear the bar, no order is emitted. **Flat is not a wrong trade** — it never enters the denominator.

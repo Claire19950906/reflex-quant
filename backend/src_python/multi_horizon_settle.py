@@ -73,16 +73,20 @@ def _resolve_price(conn: sqlite3.Connection, asset: str, target_ts: int,
     """取 target_ts 之后（容差内）的第一根价：分钟线优先，日线回退。"""
     sqls = (
         ("SELECT ts, close FROM ohlcv_intraday WHERE asset=? AND ts>=? AND ts<=? "
-         "ORDER BY ts ASC LIMIT 1", (target_ts, target_ts + tolerance_s)),
+         "ORDER BY ts ASC LIMIT 50", (target_ts, target_ts + tolerance_s)),
         ("SELECT ts, close FROM ohlcv_daily WHERE asset=? AND ts>=? AND ts<=? "
-         "ORDER BY ts ASC LIMIT 1", (target_ts, target_ts + tolerance_s)),
+         "ORDER BY ts ASC LIMIT 50", (target_ts, target_ts + tolerance_s)),
     )
     for sql, extra in sqls:
         try:
-            row = conn.execute(sql, (asset,) + extra).fetchone()
+            rows = conn.execute(sql, (asset,) + extra).fetchall()
         except sqlite3.Error:
             continue
-        if row and row[1] is not None:
+        # 逐根挑第一个可用价：窗口内若第一根是脏价（0/负/空），
+        # 不能因此把整个周期记成 no_price —— 后面的干净价仍然有效。
+        for row in rows or ():
+            if not row or row[1] is None:
+                continue
             try:
                 price = float(row[1])
             except (TypeError, ValueError):

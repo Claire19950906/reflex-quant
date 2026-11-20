@@ -7,7 +7,7 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**六轮共新增 383 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**七轮共新增 467 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`capability_acceptance` 统计口径 **0→13%**、`engine/worker_helpers` 判定护栏 **0→16%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -125,6 +125,27 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 顺带测出一个真问题：`fetch_structure` 的 `get` 注入**没覆盖** OKX 那三连
 （`_okx_structure_rows` 直接调 `quote_sources.fetch_okx_*`），不打桩时单条用例白等 3~30 秒。
 现在打桩后 62 条 3 秒跑完；这条也说明"能注入 get 就算离线"是个错觉。
+
+## 第七轮：验收算分与决策字段护栏（84 条）
+
+`capability_acceptance.py`（1234 语句，64 项能力的算分器）+ `engine/worker_helpers.py`（1477 语句，
+把模型输出变成可入库决策）。这两块挑的是"数字看着对、其实口径错"的地方：
+
+- **秩相关**：并列取平均秩；分桶后每桶至少 5 个配对才算；桶内先取 `|涨跌 − 桶内中位数|`，
+  所以它问的是"权重能否区分同一小时里谁影响更大"，**不是**能否预测方向（涨跌全取负，ρ 不变）。
+- **Wilson 下界**：16/25 = 64% 的 95% 下界只有约 45%，小样本命中率必须带它。
+- **方向命中**：只有 BUY/SELL 可判定，HOLD 与没价格都记 None（不进分母）。
+- **规则型拒绝不计入判别力**：`asset_* / R8:* / high_strength` 是黑名单与去重，混进"方向判断力"
+  会让闸门看起来什么都能拦。
+- **观望就是观望**：`reconcile_score_action` 对 HOLD 一律把分数归零，分数再高也不会被抬成方向单。
+- **think 块剥离**：未闭合 `<think>` 只删标签、保留其后的 JSON（v342 曾把 1455 字削成 0 字）。
+- **脏计数不炸批**：`child_count` 读到 `'OIL|WTI|BUY'` 一律当 0（v322 曾让整批 16 条落库作废）。
+
+**这轮测出并修掉一个真 bug**：`_mark_field_missing` 里 `float(result.get(...) or 1.0)` 把 0.0 当成
+"没设过"，于是 completeness 扣到 0 之后再标一个缺失字段，分数会从 1.0 重新起扣（0 → 0.85）。
+改为只把 None 当默认后，0 分保持 0 分；相关 5 个测试文件 42 条复跑全绿。
+另记录一处未改的缺陷：同一字段重复标记会**重复扣分**（不幂等，0.75 → 0.5），
+改动会影响历史 completeness 口径，留给后续统一处理。
 
 ## 之前顺手修的三类真问题
 

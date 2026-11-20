@@ -91,7 +91,13 @@ def _mark_field_missing(result, field: str) -> None:
         _mf.append(field)
     result["missing_fields"] = json.dumps(_mf, ensure_ascii=False)
     weight = FIELD_WEIGHTS.get(field, 0.05)
-    cur = float(result.get("completeness_score") or 1.0)
+    # v461: `or 1.0` 会把 0.0 当"没设过"重置回 1.0 —— 扣到 0 之后再标一个缺失字段，
+    # 分数反而从 1.0 重新起扣（0 → 0.85）。这里只把 None 当默认，0 是合法值。
+    raw_cur = result.get("completeness_score")
+    try:
+        cur = 1.0 if raw_cur is None else float(raw_cur)
+    except (TypeError, ValueError):
+        cur = 1.0
     result["completeness_score"] = max(0.0, cur - weight)
 
 

@@ -89,9 +89,15 @@ def _class_bps(asset: str) -> tuple[float, float]:
     env_fee = os.environ.get("TRIDENT_FEE_BPS")
     env_slip = os.environ.get("TRIDENT_SLIPPAGE_BPS")
     if env_fee is not None or env_slip is not None:
-        f = float(env_fee) if env_fee is not None else _DEFAULT_BPS["fee_bps"]
-        s = float(env_slip) if env_slip is not None else _DEFAULT_BPS["slippage_bps"]
-        return f, s
+        # env 写错（比如 "18bps" / 空串）不能让整条结算链崩掉：
+        # 解析失败就当没设，退回默认费率并留一条 warning。
+        try:
+            f = float(env_fee) if env_fee is not None else _DEFAULT_BPS["fee_bps"]
+            s = float(env_slip) if env_slip is not None else _DEFAULT_BPS["slippage_bps"]
+            return f, s
+        except (TypeError, ValueError):
+            logger.warning("TRIDENT_FEE_BPS/SLIPPAGE_BPS 不是数字, 忽略: %r / %r",
+                           env_fee, env_slip)
     norm = _normalize_asset(asset)
     cls = _ASSET_CLASS_BPS.get(norm, _DEFAULT_BPS)
     return float(cls["fee_bps"]), float(cls["slippage_bps"])

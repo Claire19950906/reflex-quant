@@ -7,7 +7,7 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**四轮共新增 220 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**五轮共新增 321 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -90,6 +90,24 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
    同一个模块里，8 根日线算 RSI14 也返回 None —— 界面上显示"—"是设计，不是 bug。
 
 另外把两个事故固化成回归：`数据整理` 曾把「金十数据整理：每日全球外汇市场要闻速递」整篇 FX 要闻打成垃圾（v433 加的"汇总类词让位"现在有用例守着）；裸 `AMA` 误匹配英文标题里的普通单词，已从 JUNK 列表删除。
+
+## 第五轮：`db.py`（1711 语句）0→54%
+
+`db.py` 是全系统唯一取价口径，错一次不报错，只让库里的收益数字静默变错。101 条用例钉住四件事：
+
+1. **取价优先级与"不猜价"**：1m 分钟线 > 日线 > tick / `kline_bars`（毫秒 ts）兜底；取不到一律 None。
+   `price_at` 只看 `interval='1m'` —— 不过滤会取到 4h 收盘价，跟 20 分钟 horizon 差 4 小时。
+2. **日线兜底取最近一根**：v386 事故里旧实现 `ORDER BY ts ASC` 取到窗口最老的日线，
+   两笔 WTI 凭空多出 -3.17%/笔，把胜率和权益一起污染。现在有滞后上限，超了当"无价"。
+3. **入库时间戳只留一种格式**：ISO / 13 位毫秒 / `YYYY-MM-DD HH:MM:SS` 全部归一到 epoch 秒字符串；
+   `now - timestamp` 再不会把 ISO 行当 0 算出「积压 49 万小时」。
+4. **重复筛与门卫标签**：同内容（含标点/大小写差异）第二次入库直接 `FILTERED / dup_fingerprint`，
+   `first_seen_ts` 指向同簇最早那次；门卫主品种「黄金」写入前归一成 `XAU`（否则下游认不出、整条判 NONE）；
+   `gate_unavailable` 的 0/1/2 三态不再被压成布尔（压了会把"降级放行"的行冻死）。
+
+顺带测出两个口径缺口，先记录不改（改动会动到历史数据口径）：
+- 重复判定只比对**非 FILTERED** 历史行 —— 首条自身就是 FILTERED 时，后续同内容仍进 PENDING；
+- `raw_news.content_fingerprint` 是入库时算的，手改正文**不会**重算，判断"正文被改过"必须自己再算一遍比对。
 
 ## 之前顺手修的三类真问题
 

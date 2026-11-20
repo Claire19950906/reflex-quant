@@ -62,7 +62,25 @@ Accuracy does not come from "I'll be careful next time". It comes from **last mi
 
 ---
 
-## 4. Verify it yourself
+## 4. Why it actually raises accuracy
+
+Accuracy = right trades ÷ all trades. The numerator needs skill; the denominator needs discipline. **It only moves the denominator — and the denominator never needs prediction.**
+
+**1. It deletes orders that are certain to be wrong.** Stale quotes, an unreconciled ledger, duplicate runs, breached leverage — these are operational errors, not judgement calls. Anyone who blocks them avoids them 100%. A smaller denominator with the same numerator is a higher hit rate.
+
+**2. No evidence, no signal.** If the supporting facts don't clear the bar, no order is emitted. **Flat is not a wrong trade** — it never enters the denominator.
+
+**3. The same mistake cannot happen twice.** `hard` codes enter the gate; the place you got burned is physically closed next time. Repeated errors are the biggest leak in accuracy, and closing that leak needs no extra cleverness.
+
+**4. It shuts up when disagreement is wide.** When longs and shorts are balanced (BTC dispersion 0.64), it refuses to pick a direction instead of forcing one. **False certainty is the second biggest source of wrong trades.**
+
+**5. Every lesson becomes a rule.** Attribution must land in a parameter or a gate; if it cannot be written as a rule, it was not learned.
+
+In one line: **it doesn't raise accuracy by making you guess better — it raises accuracy by making you guess less.**
+
+---
+
+## 5. Verify it yourself
 
 ```bash
 cd backend && python3 scripts/iteration_check.py    # 40s, three lines

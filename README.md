@@ -9,7 +9,7 @@
 [![blocked](https://img.shields.io/badge/directional%20calls%20blocked-87.2%25-brightgreen)](#一-下单前告诉你现在是什么情况)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
-[![ci](https://github.com/Claire19950906/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/Claire19950906/reflex-quant/actions)
+[![ci](https://github.com/stardust888888/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/stardust888888/reflex-quant/actions)
 [![Stage](https://img.shields.io/badge/stage-paper%20only-orange)](#边界写在前面)
 
 **中文** | [English](./README.en.md)

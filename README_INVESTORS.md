@@ -9,8 +9,8 @@
 [![Error codes](https://img.shields.io/badge/error%20codes-E001–E033-blueviolet)](#-reflection-engine)
 [![Reflection layers](https://img.shields.io/badge/reflection%20layers-7-yellowgreen)](#-v225-reflection-engine)
 [![Tests](https://img.shields.io/badge/tests-3%2C596%20offline-success)](#-honest-status-2026-11-16)
-[![Stars](https://img.shields.io/github/stars/Claire19950906/reflex-quant?style=social)](https://github.com/Claire19950906/reflex-quant)
-[![Forks](https://img.shields.io/github/forks/Claire19950906/reflex-quant?style=social)](https://github.com/Claire19950906/reflex-quant/fork)
+[![Stars](https://img.shields.io/github/stars/stardust888888/reflex-quant?style=social)](https://github.com/stardust888888/reflex-quant)
+[![Forks](https://img.shields.io/github/forks/stardust888888/reflex-quant?style=social)](https://github.com/stardust888888/reflex-quant/fork)
 
 > **One-line pitch:** Reflex Quant is a self-aware quant AI that not only trades,
 > but reflects on every decision — catching **33 classes of reasoning errors** no
@@ -156,7 +156,7 @@ The **bottom row is what doesn't exist anywhere else in the quant world** — a 
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/Claire19950906/reflex-quant.git
+git clone https://github.com/stardust888888/reflex-quant.git
 cd reflex-quant
 cp .env.example backend/.env       # fill in OPENROUTER_API_KEY
 cd backend && pip install -r requirements.txt
@@ -235,7 +235,7 @@ Target payback: 6 months. Target LTV: $6k–$30k per desk.
 ## 📬 Get in touch
 
 - **Email (founder):** z2132743607@163.com
-- **Issues / feature requests:** [github.com/Claire19950906/reflex-quant/issues](https://github.com/Claire19950906/reflex-quant/issues)
+- **Issues / feature requests:** [github.com/stardust888888/reflex-quant/issues](https://github.com/stardust888888/reflex-quant/issues)
 - **Pitch deck:** [PITCH_DECK.md](./PITCH_DECK.md)
 - **Discussion:** please open a GitHub Discussion or issue — we read everything
 

@@ -4,7 +4,7 @@
 ### *Every signal audited. Every mistake coded. Every blind spot hunted.*
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Stars](https://img.shields.io/github/stars/Claire19950906/reflex-quant?style=social)](https://github.com/Claire19950906/reflex-quant)
+[![Stars](https://img.shields.io/github/stars/stardust888888/reflex-quant?style=social)](https://github.com/stardust888888/reflex-quant)
 [![Version](https://img.shields.io/badge/version-v492-blueviolet)](./CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.11%E2%80%933.14-green)](./backend/requirements.txt)
 [![Tests](https://img.shields.io/badge/tests-3500%2B%20collected-success)](./backend/tests/)
@@ -504,7 +504,7 @@ Linux 生产部署（systemd + nginx）见 [deploy/README.md](deploy/README.md)�
 ## 📬 联系与贡献
 
 - **邮箱（创始人）：** z2132743607@163.com
-- **Issues / 提案：** [github.com/Claire19950906/reflex-quant/issues](https://github.com/Claire19950906/reflex-quant/issues)
+- **Issues / 提案：** [github.com/stardust888888/reflex-quant/issues](https://github.com/stardust888888/reflex-quant/issues)
 - **贡献指南：** [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - **行为准则：** [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
 - **安全问题：** [`SECURITY.md`](./SECURITY.md)

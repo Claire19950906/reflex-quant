@@ -11,7 +11,7 @@
 **Seed Round: $1.5M**
 **18-month runway → Series A at $20M ARR**
 
-z2132743607@163.com · github.com/Claire19950906/reflex-quant
+z2132743607@163.com · github.com/stardust888888/reflex-quant
 
 *"We don't just trade. We reflect on why."*
 

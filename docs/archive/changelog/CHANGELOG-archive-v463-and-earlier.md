@@ -589,7 +589,7 @@ $ gh auth status     # gh: command not found
 ```
 `~/.gitconfig` 无 `[remote]`，只有 osxkeychain 凭据（`github.com` 有 password 记录）。
 所以不是"推失败"，是**从未关联过**。已 `git remote add origin` 到
-`Claire19950906/reflex-quant`。
+`stardust888888/reflex-quant`。
 
 ### 二、推送前先扫密钥（这次没被 Push Protection 拦）
 
@@ -4619,8 +4619,8 @@ body_only 31（12.8%）/ macro 62（25.6%）。
 ### Notes
 - This is the first public release of Reflex Quant.
 
-[Unreleased]: https://github.com/Claire19950906/reflex-quant/compare/v225...HEAD
-[v225]: https://github.com/Claire19950906/reflex-quant/releases/tag/v225
+[Unreleased]: https://github.com/stardust888888/reflex-quant/compare/v225...HEAD
+[v225]: https://github.com/stardust888888/reflex-quant/releases/tag/v225
 
 ## v345.1 · 全站界面扫描（除 LLM 外全修）
 

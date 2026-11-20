@@ -28,7 +28,7 @@ only gets smarter if more people feed it real-world reasoning failures.**
 ## Development setup
 
 ```bash
-git clone https://github.com/Claire19950906/reflex-quant.git
+git clone https://github.com/stardust888888/reflex-quant.git
 cd reflex-quant
 
 # Backend

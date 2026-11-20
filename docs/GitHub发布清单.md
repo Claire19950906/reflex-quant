@@ -55,7 +55,7 @@ Topics：
 
 **当前状态（2026-11-20 已执行）**
 
-- 已推到 `Claire19950906/reflex-quant` 的新分支 **`github-clean`**（干净历史，两个 commit）。
+- 已推到 `stardust888888/reflex-quant` 的新分支 **`github-clean`**（干净历史，两个 commit）。
 - 仓库首页仍显示旧的 `main`。要让访问者看到新 README，二选一：
   1. 仓库 **Settings → Branches → Default branch** 切成 `github-clean`（可逆，推荐）；
   2. 确认后把 `main` 覆盖成这个快照（`git push -f origin main:main`）——**不可逆，会丢远端 426 个提交的历史**。

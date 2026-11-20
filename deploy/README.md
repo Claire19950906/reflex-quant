@@ -29,7 +29,7 @@ sudo apt install -y python3.11 python3.11-venv nodejs npm nginx git
 sudo mkdir -p /opt/trident
 sudo useradd -r -s /usr/sbin/nologin trident   # 专用用户
 sudo chown trident:trident /opt/trident
-sudo -u trident git clone https://github.com/Claire19950906/reflex-quant.git /opt/trident
+sudo -u trident git clone https://github.com/stardust888888/reflex-quant.git /opt/trident
 
 cd /opt/trident
 sudo -u trident python3.11 -m venv venv

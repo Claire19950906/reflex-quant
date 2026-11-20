@@ -21,7 +21,9 @@ services:
     environment:
       BRIDGE_HOST: 127.0.0.1
       BRIDGE_PORT: "8100"
-      TRIDENT_DB_PATH: /app/data/trident_event_bus.db
+      # 默认指向合成演示库（backend/demo.db，已入库）：clone 后开箱即有数据。
+      # 接自己的库：改成 /app/data/trident_event_bus.db，或设 TRIDENT_DB_PATH 覆盖。
+      TRIDENT_DB_PATH: /app/data/demo.db
       # 本地 Ollama 在宿主机时（macOS/Windows）走网关；Linux 用 host 网络另配。
       OLLAMA_URL: http://host.docker.internal:11434
     volumes:
@@ -42,7 +44,9 @@ services:
     environment:
       TRIDENT_MASTER_HOST: 127.0.0.1
       TRIDENT_MASTER_PORT: "9001"
-      TRIDENT_DB_PATH: /app/data/trident_event_bus.db
+      # 默认指向合成演示库（backend/demo.db，已入库）：clone 后开箱即有数据。
+      # 接自己的库：改成 /app/data/trident_event_bus.db，或设 TRIDENT_DB_PATH 覆盖。
+      TRIDENT_DB_PATH: /app/data/demo.db
     volumes:
       - ./backend:/app/data
       - ./backend/runtime:/app/runtime

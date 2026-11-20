@@ -68,6 +68,10 @@ out/
 # ── Databases (CRITICAL) ───────────────────────────────────
 # 存储动态 ATR 止损止盈参数和实盘交易账单，绝对不可泄露
 *.db
+# 演示库是例外：合成数据，故意入库，让 clone 后开箱有界面可看
+!backend/demo.db
+backend/demo.db-wal
+backend/demo.db-shm
 *.db-journal
 *.db-wal
 *.db-shm
@@ -212,3 +216,6 @@ backend/_dead_files_backup/
 
 # audit 层回放产物（生成物，不入库）
 audit_out/
+
+# 演示库例外（合成数据，故意入库）：必须写在所有 *.db 规则之后
+!backend/demo.db

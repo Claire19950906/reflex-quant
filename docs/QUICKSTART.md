@@ -11,7 +11,15 @@ git clone <repo> && cd <repo>
 docker compose up
 ```
 
-打开 <http://localhost:3000>。首次启动数据库是空的，页面会明确显示"无可统计样本"——**这是诚实状态，不是坏了**。想看有数据的界面，走路线 B。
+打开 <http://localhost:3000>。默认连的是随仓库带的**合成演示库** `backend/demo.db`（400 天 K 线、48 条新闻与决策、3 笔纸面持仓），所以第一眼就有数据。新闻与决策都带 `[DEMO]` 前缀，不会和真实数据混淆。
+
+要换成你自己的库：
+
+```bash
+TRIDENT_DB_PATH=./backend/trident_event_bus.db docker compose up
+```
+
+想重新生成演示库：`cd backend && python3 scripts/make_demo_db.py --force`。
 
 ---
 

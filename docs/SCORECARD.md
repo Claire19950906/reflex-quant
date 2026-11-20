@@ -7,7 +7,7 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量 **5008 passed / 0 failed / 12 skipped**（19 分 00 秒）；覆盖率实测 **40%**（128,554 语句）；三轮共新增 121 条纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**四轮共新增 220 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -75,6 +75,21 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 但逐个看下来——26 个在文件内也零引用，其中绝大多数是 `@app` 路由（框架按装饰器调用，
 文本搜索看不到），真正能删的**只有 1 个 3 行的 `_us_eastern_now`**（本轮已删）。
 结论：这个文件的病不是"垃圾多"，是"职责混"。所以选择拆，不是删。
+
+## 第四轮补测：三条口径被写成用例（不是凑数）
+
+这一轮补 `abnormal_detector`（904 语句，异动闸）、`market_snapshot`（1141 语句，盘面数字）、
+`realtime_filter`（1142 语句，新闻 L1 漏斗）、`technical_indicators`（1173 语句）四个模块，
+共 99 条（四个文件：`test_technical_indicators_volume_gate` 19、`test_abnormal_detector_core` 34、`test_realtime_filter_l1` 19、`test_market_snapshot_pure` 27，组合跑 **99 passed / 6.0 秒**）。挑它们是因为**错了在界面上看不出来**，而写用例时把三件原本只躺在代码注释里的事固定了下来：
+
+1. **同一个涨跌幅，在不同周期结论相反**：涨 1.6% 在 10m（门槛 1.1%）算异动，在 1h（门槛 2.0%）不算。
+   阈值按 interval 走表，旧代码写死 2.5% 时两个周期都是错的。
+2. **L1 只匹配前 500 字**：关键词在第 500 字之后出现，L1 不给结论、升级给 L2，不是静默判垃圾。
+   这是刻意的成本控制，但以前没有任何测试拦着它被改成"全文匹配"（那会把长文里的营销词全炸出来）。
+3. **平盘算不出 ADX，就返回 None**：完全没有方向动作时没有 DX，宁可空着也不编一个 0 出来。
+   同一个模块里，8 根日线算 RSI14 也返回 None —— 界面上显示"—"是设计，不是 bug。
+
+另外把两个事故固化成回归：`数据整理` 曾把「金十数据整理：每日全球外汇市场要闻速递」整篇 FX 要闻打成垃圾（v433 加的"汇总类词让位"现在有用例守着）；裸 `AMA` 误匹配英文标题里的普通单词，已从 JUNK 列表删除。
 
 ## 之前顺手修的三类真问题
 

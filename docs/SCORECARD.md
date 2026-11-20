@@ -21,7 +21,7 @@
 
 ## 已经拿到的 9 分是怎么来的
 
-1. **时间口径层拆出去（+0.1）**：`_utc_ts_to_iso` / `_utc_ts_to_space_iso` / `_now_iso` / `_age_hours_of` 四个纯函数搬进 `api_time.py`（15 条单测；`api_server.py` 9292 → 9263 行），调用点走同名别名，行为不变。顺手拆掉了一条**靠误报通过**的静态测试。
+1. **时间口径层拆出去（+0.1）**：`_utc_ts_to_iso` / `_utc_ts_to_space_iso` / `_now_iso` / `_age_hours_of` 搬进 `api_time.py`，调用点走同名别名。**但这次切片真的拆坏过东西**——同一次改动把 `_EVENT_SELECT`（事件查询主 SELECT，89 行）和 8 个 `_EVENTS_15D_*` 缓存常量一起删了，`/api/events` 一调用就 `AttributeError`。已从 `bab2e77` 原样补回，并加 `tests/test_v504_api_server_constants.py`：AST 扫「被读但没定义」的模块级常量，重演即红。
 2. **格式化层拆出去（+0.1）**：`_safe` / `_row_to_event` 等 6 个纯函数移进 `api_format.py`，配 17 条断言。巨石没消失，但入口不再是"9.5k 行全都要读"。
 3. **CI 真的会报警（+0.1）**：夜间全量失败自动开 issue，同时修掉了 `ci.yml` 里重复的 `permissions` 与重复开 issue 步骤（重复键会让整个 workflow 无效）。
 

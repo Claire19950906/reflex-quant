@@ -129,6 +129,7 @@ Or `docker compose up`. Zero-cost deployment: [`DEPLOY.md`](./DEPLOY.md).
 |---|---|
 | Run it in 10 minutes | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) |
 | Where the 422 endpoints live | [`docs/API-MAP.md`](./docs/API-MAP.md) |
+| Which feed feeds which asset, and how often | [`docs/DATA-SOURCES.md`](./docs/DATA-SOURCES.md) |
 | Why the entry file is hard to read | [`docs/REFACTOR-api_server.md`](./docs/REFACTOR-api_server.md) |
 | How it works | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
 | FAQ | [`docs/FAQ.md`](./docs/FAQ.md) |

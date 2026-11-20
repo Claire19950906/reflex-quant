@@ -130,6 +130,7 @@ cd frontend && npm install && npm run dev # :3000
 | 10 分钟跑起来 | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) |
 | 422 个端点在哪 | [`docs/API-MAP.md`](./docs/API-MAP.md) |
 | 为什么入口文件难读 | [`docs/REFACTOR-api_server.md`](./docs/REFACTOR-api_server.md) |
+| 每个品种接哪几个源、多久问一次 | [`docs/DATA-SOURCES.md`](./docs/DATA-SOURCES.md) |
 | 系统怎么运转 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
 | 常见疑问 | [`docs/FAQ.md`](./docs/FAQ.md) |
 | 下一步做什么 | [`docs/ROADMAP.md`](./docs/ROADMAP.md) |

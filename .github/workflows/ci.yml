@@ -41,6 +41,23 @@ jobs:
         working-directory: frontend
         run: npx tsc --noEmit -p tsconfig.json
 
+  docs-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # 文档自己会过期：源码改了、文档没重生成，这里就红。
+      # 校验的是"从代码抽出来的那两份"——端点地图与数据源清单。
+      - name: 端点地图未过期
+        working-directory: backend
+        run: python scripts/gen_api_map.py --check
+      - name: 数据源清单未过期
+        working-directory: backend
+        run: python scripts/gen_data_sources.py --check
+
   offline-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25

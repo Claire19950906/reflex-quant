@@ -53,13 +53,17 @@ Topics：
 
 ## 四、推送
 
+**当前状态（2026-11-20 已执行）**
+
+- 已推到 `Claire19950906/reflex-quant` 的新分支 **`github-clean`**（干净历史，两个 commit）。
+- 仓库首页仍显示旧的 `main`。要让访问者看到新 README，二选一：
+  1. 仓库 **Settings → Branches → Default branch** 切成 `github-clean`（可逆，推荐）；
+  2. 确认后把 `main` 覆盖成这个快照（`git push -f origin main:main`）——**不可逆，会丢远端 426 个提交的历史**。
+
 ```bash
 cd "~/Desktop/GitHub 版"
-git init -b main
-git add -A
-git commit -m "init: 公开版（已剔除密钥与运行时数据）"
-git remote add origin <你的仓库地址>
-git push -u origin main
+git push -u origin main:github-clean   # 已执行
 ```
 
 推之前再跑一次：`grep -rE "sk-[A-Za-z0-9_-]{16,}|ghp_|AKIA" --include="*.py" --include="*.ts" . | head`
+

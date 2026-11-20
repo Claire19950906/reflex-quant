@@ -163,8 +163,9 @@ def snapshot_summary(px: AnchorPrices, anchor: float, assets=("BTC", "XAU", "WTI
             f"{sym} {price:,.2f} | 24h {chg24:+.2f}% | 7d {chg7d:+.2f}% | 资金费率 N/A"
             if chg24 is not None and chg7d is not None else f"{sym} {price:,.2f} | 24h/7d N/A"
         )
+        rng_txt = f"{lo:,.2f}–{hi:,.2f}" if lo is not None and hi is not None else "N/A"
         lines.append(
-            f"  日线: {_trend([x['c'] for x in b1d])} | ATR={atr_pct(b1d) or 'NA'}% | 区间: {lo:,.2f}–{hi:,.2f}"
+            f"  日线: {_trend([x['c'] for x in b1d])} | ATR={atr_pct(b1d) or 'NA'}% | 区间: {rng_txt}"
         )
         lines.append(
             f"  4H: {_trend([x['c'] for x in b4h])} ATR{atr_pct(b4h) or 'NA'}% | "

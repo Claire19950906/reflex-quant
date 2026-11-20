@@ -23,7 +23,12 @@ BACKEND = Path(__file__).resolve().parent.parent
 REAL_DB = BACKEND / "trident_event_bus.db"
 sys.path.insert(0, str(BACKEND / "src_python"))
 
-from repository import news as repo_news
+# 模块级 skip：本文件在 import 期就会读真实库构造参数化用例，
+# 所以 skipif 标记来不及生效（CI 无库环境会直接 ERROR 而不是 skip）。
+if not REAL_DB.exists():
+    pytest.skip("真实库不存在（CI 无库环境），跳过契约校验", allow_module_level=True)
+
+from repository import news as repo_news  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
     not REAL_DB.exists(),

@@ -79,12 +79,24 @@ jobs:
       - name: 结构质量闸门（事件循环阻塞 / 兼容垫片 / 别名蜜罐）
         run: python backend/scripts/quality_gates.py
 
-      - name: 离线核心子集
+      - name: 离线核心子集 + 覆盖率（防回退）
         working-directory: backend
         run: |
           python -m pytest tests/ -q -p no:cacheprovider \
             -k "dimension or reflection or risk or gate or contract or schema or registry" \
-            --maxfail=20
+            --maxfail=20 \
+            --cov=src_python --cov-report=term --cov-report=xml \
+            --cov-fail-under=18
+        # 门槛说明：2026-11-20 实测该子集对 src_python 的覆盖率 20%。
+        # 门槛故意卡在 18%——先防回退，每接一个新模块就抬到「实测 − 2pp」，
+        # 目标 60%。直接写 60% 只会让 CI 常红，没人再看。
+
+      - name: 上传覆盖率
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: backend/coverage.xml
 
       - name: 上传基线
         if: always()

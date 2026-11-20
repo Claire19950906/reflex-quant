@@ -149,53 +149,55 @@ def test_boundary_day_is_not_dropped():
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. 防回归: api_server.py 必须用**空格** cutoff 给 review_insights
 # ─────────────────────────────────────────────────────────────────────────────
-def test_api_server_uses_space_cutoff_for_review_insights():
-    """静态钉死: api_server.py 不得对 review_insights 用 'T' 分隔 cutoff。
+def test_review_insights_cutoff_uses_space_format():
+    """静态钉死: 对 review_insights.created_at 做窗口过滤的函数, 必须用空格分隔 cutoff。
 
-    用 AST 找 `review_insights` 的窗口过滤代码, 断言它**调用**的是空格分隔
-    的 helper, 而不是 _utc_ts_to_iso (那是 'T' 分隔, 给 ai_decisions 用的)。
+    v504 修正：这条防线原先只扫 api_server.py，而真正执行该查询的代码
+    （routers/review.py）在早前的切片里已经搬走了；更糟的是 api_server 里
+    唯一"命中"的其实是 _utc_ts_to_space_iso 这个 helper **自己的 docstring**
+    （里面提到 review_insights.created_at）—— 也就是说这条测试一直在
+    靠误报通过。helper 一搬走，误报消失，测试就挂了。
 
-    注意: 必须看**实际调用点** (ast.Call), 不能用子串搜索整个函数源码 ——
-    否则 _utc_ts_to_iso 这个 helper **自身**的定义 (def 行含函数名, docstring
-    里提到 review_insights.created_at) 会被误判成违规。
+    现在的判据只认**真的写着查询**的函数：函数源码里同时出现
+    `FROM review_insights` 与 `created_at >=`，才算被检查对象。
     """
     import ast
 
-    src_path = os.path.join(_SRC_PYTHON, "api_server.py")
-    with open(src_path, encoding="utf-8") as f:
-        src = f.read()
-    tree = ast.parse(src, filename=src_path)
+    files = [os.path.join(_SRC_PYTHON, "api_server.py"),
+             os.path.join(_SRC_PYTHON, "routers", "review.py")]
 
     offenders: list[str] = []
-    checked = 0
-    for node in ast.walk(tree):
-        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        seg = ast.get_source_segment(src, node) or ""
-        if "review_insights" not in seg:
-            continue
-        if "created_at" not in seg:
-            continue
-        checked += 1
-        # 该函数里如果**调用**了 _utc_ts_to_iso(...) 就说明 cutoff 用的是 'T' 分隔
-        for sub in ast.walk(node):
-            if not isinstance(sub, ast.Call):
+    checked: list[str] = []
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            src = f.read()
+        tree = ast.parse(src, filename=path)
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
-            fn = sub.func
-            name = fn.id if isinstance(fn, ast.Name) else getattr(fn, "attr", "")
-            if name == "_utc_ts_to_iso":
-                offenders.append(node.name)
-                break
+            seg = ast.get_source_segment(src, node) or ""
+            if "FROM review_insights" not in seg:
+                continue            # 只认真查询, 不认注释/docstring
+            if "created_at >=" not in seg:
+                continue
+            checked.append(f"{os.path.basename(path)}::{node.name}")
+            for sub in ast.walk(node):
+                if not isinstance(sub, ast.Call):
+                    continue
+                fn = sub.func
+                name = fn.id if isinstance(fn, ast.Name) else getattr(fn, "attr", "")
+                if name == "_utc_ts_to_iso":
+                    offenders.append(f"{os.path.basename(path)}::{node.name}")
+                    break
 
-    assert checked > 0, (
-        "没找到任何操作 review_insights.created_at 的函数 —— "
-        "说明代码结构变了, 本测试需要重新评估")
+    assert checked, (
+        "没找到任何**真的查询** review_insights.created_at 的函数 —— "
+        "代码结构又变了，本测试需要重新评估")
     assert not offenders, (
         f"这些函数仍用 _utc_ts_to_iso('T' 分隔) 过滤 review_insights "
         f"(空格分隔存储) → 同一天的行会被漏掉: {offenders}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 4. v309: raw_news.timestamp 的两种落库格式 (engine/ingest.py 与 api_server.py)
 # ─────────────────────────────────────────────────────────────────────────────
 # 落库格式 (v309 审计确认):

@@ -186,78 +186,8 @@ _window_dbg_log.setLevel(_logging.DEBUG if _WINDOW_DEBUG else _logging.WARNING)
 _window_dbg_log.propagate = False
 
 
-def _utc_ts_to_iso(ts: int) -> str:
-    """UTC unix 秒 → 与 SQLite 文本字段同口径的 ISO 字符串（无时区后缀）。
-
-    v180 P0+：review snapshot 窗口过滤要把 UTC 秒与 ai_decisions.created_at /
-    ai_decisions.entry_time / raw_news.timestamp（TEXT，全部用 'T' 分隔）做比较。
-
-    v302+ P0+【修复】改用 'T' 分隔（与存储格式完全一致）。旧版用空格 "%Y-%m-%d %H:%M:%S"
-    时，由于 SQLite 字符串比较按字节序，'T' (0x54) > ' ' (0x20)，导致
-    `entry_time >= '2026-10-09 16:00:00'` 这种过滤会把 2026-10-09 整天
-    （甚至更早）全部漏进窗口，造成 dashboard "今日" 显示全期数据。
-    改 'T' 分隔后，字符串比较与时间序一致，过滤正确。
-
-    v309 审计更正: 本 helper 产出的 'T' 分隔串**只能**用于 'T' 分隔存储的列。
-    库里的 TEXT 时间列实际有三种格式，不能混用:
-
-      · ai_decisions.created_at  → ai_worker 写 _ts() = **北京时间**
-                                   ('2026-10-25T16:00:00.000+08:00')
-                                   带 '+08:00' 偏移后缀 → 与 naive UTC cutoff
-                                   比会有 8h 漂移。**窗口过滤请用 ts (INTEGER)**
-                                   (get_review_snapshot / get_replay_stats 已改)。
-      · raw_news.timestamp       → engine/ingest.py 写 engine.utils._ts(), api_server 写 _now_iso()
-                                    → 都是 **'T' 分隔北京时间** (带 '+08:00' 偏移后缀)。
-                                    **不是 UTC** —— 旧注释写 "UTC" 是错的, 已更正。
-                                    比较请用 time_utils.sql_bj_ts_expr() 归一化。
-      · causal_chains.created_at  → **空格** 分隔**本机 localtime**
-                                    (db.py DEFAULT datetime('now','localtime'))
-                                    → 用 time_utils.sql_local_ts_expr() + local_str();
-                                    既不是 UTC 也不是固定北京。
-      · review_insights.created_at → **空格** 分隔 UTC (db.py DEFAULT
-                                   datetime('now')) → 用 _utc_ts_to_space_iso。
-
-    规则: **cutoff 的分隔符 + 时区语义必须与被比较列完全一致**，
-    否则字典序比较不成立。优先用 INTEGER epoch 列 (ts / exit_ts) 过滤,
-    彻底绕开 TEXT 格式问题。
-    """
-    return datetime.fromtimestamp(int(ts), tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-
-
-def _utc_ts_to_space_iso(ts: int) -> str:
-    """UTC unix 秒 → **空格分隔** 的 ISO 字符串 ('YYYY-MM-DD HH:MM:SS')。
-
-    为什么需要这个 (和 _utc_ts_to_iso 并存, 不能互相替代):
-
-      库的 TEXT 时间列有两种落库格式, 各表的 DEFAULT 不同:
-
-        · ai_decisions.created_at
-            → 'T' 分隔 ('2026-10-25T08:00:00')
-            → 用 _utc_ts_to_iso() (T 分隔) 比, 字典序与时间序一致 ✔
-          (但注意 ai_worker 写的是**北京**时间带 +08:00 后缀, 见 _utc_ts_to_iso
-           的 v309 注释 —— 窗口过滤优先用 ts (INTEGER))
-        · raw_news.timestamp
-            → 'T' 分隔**北京**时间 ('2026-10-25T16:00:00.000+08:00')
-            → **不要**用本 helper (UTC 空格) 比; 用
-              time_utils.sql_bj_ts_expr() 归一化后再比。
-        · review_insights.created_at
-            → db.py 的 DEFAULT 是 datetime('now') → **空格** 分隔
-              ('2026-10-25 08:00:00')
-            → 必须用**空格** cutoff 比, 用 'T' cutoff 会错 ✘
-
-      为什么 'T' cutoff 比空格存储会错:
-        SQLite 字符串比较按字节序, ' '(0x20) < 'T'(0x54)。
-        `created_at >= '2026-10-25T08:00:00'` 对一行 '2026-10-25 08:00:00'
-        求值为 **False** —— cutoff 当天的行被整片漏掉;
-        `<=` 方向则相反, 会把当天的行全放进来。
-
-      根因是 v302+ 那次修复把 cutoff 统一成了 'T' 分隔, 但那张表
-      (review_insights) 的存储格式没跟着改 → 修复对它是反效果。
-
-      规则: **cutoff 的分隔符必须与被比较列的落库格式一致**。
-      新增/改动任何 TEXT 时间列时, 先确认它属于哪种格式, 再选 helper。
-    """
-    return datetime.fromtimestamp(int(ts), tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+# v504：时间口径 helper 已下沉到 api_time（纯函数、有单测），这里只保留别名。
+from api_time import _utc_ts_to_iso, _utc_ts_to_space_iso  # noqa: E402
 
 
 def _resolve_window_with_log(hours, from_ts, to_ts, caller: str = ""):
@@ -366,9 +296,7 @@ _TRADING_MANAGER = TradingProcessManager(
 
 _SSE_QUEUES: List[asyncio.Queue] = []
 
-def _now_iso() -> str:
-    """完整 ISO 北京时间串（秒级，含 +08:00 时区），区别于 engine.utils._now（HH:MM:SS 日志时钟）。"""
-    return datetime.now(TZ_SHANGHAI).isoformat(timespec="seconds")
+from api_time import _now_iso  # v504 下沉，别名保持调用点不变
 
 # 2026-11-17: _format_time 已下沉到 common/time_utils.format_time（19 处调用共用）。
 # 这里保留同名别名，本地调用与既有 monkeypatch 都不受影响。
@@ -383,154 +311,7 @@ from api_format import (
 )
 
 
-def _age_hours_of(value: Any) -> Optional[float]:
-    """平台发布时间串距今的小时数（统一按北京时间换算；无法解析返回 None = 视为新鲜）。
-
-    走 config.parse_time_to_bj：带时区（+08:00/Z/±HH:MM）换算到北京，
-    无时区串按北京时间解读——避免把 UTC 当北京而差 8 小时。
-    """
-    dt = config.parse_time_to_bj(value)
-    if dt is None:
-        return None
-    return (datetime.now(TZ_SHANGHAI) - dt).total_seconds() / 3600.0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -- SSE helpers -----------------------------------------------------------
-
-async def _broadcast_sse(data: Dict[str, Any]) -> None:
-    payload = {**data, "server_emitted_at_ms": int(time.time() * 1000)}
-    text = json.dumps(payload, ensure_ascii=False)
-    dead = []
-    for q in _SSE_QUEUES:
-        try:
-            q.put_nowait(text)
-        except asyncio.QueueFull:
-            dead.append(q)
-    for q in dead:
-        try:
-            _SSE_QUEUES.remove(q)
-        except ValueError:
-            pass
-
-_EVENT_SELECT = """
-    SELECT
-        rn.id AS news_id,
-        rn.timestamp,
-        rn.published_at,
-        rn.source,
-        rn.content_fingerprint,
-        rn.first_seen_ts,
-        rn.net_origin_info,
-        rn.cross_net_first_seen_ts,
-        rn.cross_net_source,
-        rn.content AS news_text,
-        rn.status AS analysis_status,
-        -- v321 fix: 这两列必须 SELECT 出来，否则 _row_to_event 里的
-        -- _safe(row, "is_noise"/"gate_unavailable", 0) 恒为 0，
-        -- 导致噪声行/门卫冻结行被误显示为「待 AI 分析」。
-        rn.is_noise,
-        rn.gate_unavailable,
-        ad.id AS decision_id,
-        ad.paper_trading_run_id,
-        ad.strategy_id,
-        ad.strategy_version_id,
-        ad.agent_model_id,
-        ad.evidence_confidence,
-        ad.evidence_action,
-        ad.trade_gate_reason,
-        ad.no_trade_reason,
-        UPPER(ad.suggested_action) AS action,
-        ad.sentiment_score AS score,
-        ad.reasoning AS reason,
-        ad.market_category,
-        ad.target_asset,
-        ad.created_at,
-        ad.parent_id,
-        ad.child_count,
-        ad.reasoning_path,
-        ad.asset_reasoning,
-        ad.vip_tag,
-        qs.entry_price,
-        qs.exit_price,
-        ad.partial_exit_price,
-        ad.partial_exit_ratio,
-        ad.partial_pnl_pct,
-        ad.heat_score,
-        ad.impact_score,
-        ad.asset_impact,
-        ad.peer_reviews,
-        qs.max_price,
-        qs.min_price,
-        qs.max_price_time,
-        qs.min_price_time,
-        qs.verdict AS is_correct,
-        qs.settled,
-        ad.doubao_action,
-        ad.doubao_reasoning,
-        ad.extra_models_consensus,
-        datetime(qs.entry_ts, 'unixepoch', '+8 hours') AS entry_time,
-        ad.cluster_size,
-        ad.prediction_type,
-        ad.event_phase,
-        ad.market_confirmation,
-        ad.direct_catalyst,
-        ad.expected_horizon,
-        ad.invalidation_condition,
-        ad.decision_context,
-        ad.mfe_pct,
-        ad.mae_pct,
-        qs.pnl_pct AS forward_pnl,
-        ad.mfe_time_mins,
-        ad.attention_score,
-        ad.elasticity_window,
-        ad.data_anchor_ts,
-        ad.hard_data_evidence,
-        ad.event_struct,
-        ad.structured_input,
-        ad.structured_check,
-        ad.event_type_code,
-        ad.snapshot_proximity
-    FROM raw_news rn
-    -- 修复：C1 — 去 N+1。原写法每行 rn 跑一次 correlated subquery，
-    -- 改成 LEFT JOIN 上游预先聚合的 latest 子查询（按 news_id 取一条最大 id）。
-    LEFT JOIN (
-        SELECT news_id, MAX(id) AS latest_id FROM ai_decisions
-        WHERE is_sibling = 0 OR is_sibling IS NULL
-        GROUP BY news_id
-    ) latest ON latest.news_id = rn.id
-    LEFT JOIN ai_decisions ad ON ad.id = latest.latest_id
-    LEFT JOIN quick_sim_trades qs ON qs.decision_id = ad.id
-"""
-
-
-# v170.5+: 启动期预加载 now±15 天内所有事件 → 内存 dict → /api/events 直接查,
-# 省掉每次 await DB + 重复 row→event 转换。60s TTL 增量刷新以收纳 0~60s 内新增。
-_EVENTS_15D_LOCK = threading.Lock()
-_EVENTS_15D_CACHE: List[Dict[str, Any]] = []
-_EVENTS_15D_LAST_LOAD: float = 0.0       # time.monotonic() 上次成功写入时间
-_EVENTS_15D_TTL_S: float = 60.0          # 60s 后下一次请求触发增量 reload
-_EVENTS_15D_WINDOW_DAYS: int = 15        # ±15 天窗口
-_EVENTS_15D_WINDOW_S: int = 15 * 86400    # 秒数
-# v321：reload 单飞锁。reload 一次要几秒（SQL + 4000+ 行转换），
-# 期间到达的并发请求**各自**都会触发一次 reload → 线程池打满 → 接口看起来挂死。
-# 用一把"非阻塞抢锁"保证同一时刻只有一个线程在 reload，
-# 其余请求直接用旧缓存（stale-while-revalidate）。
-_EVENTS_15D_RELOAD_LOCK = threading.Lock()
-_EVENTS_15D_WAIT_S: float = 30.0          # 首加载（无旧缓存）时最多等多久
-
-
+from api_time import _age_hours_of  # v504 下沉，别名保持调用点不变
 def _events_15d_load_sync() -> List[Dict[str, Any]]:
     """一次性拉 [now-15d, now+15d] 内 is_noise=0 的事件, 转 row→event 形态 + 副品种。
 

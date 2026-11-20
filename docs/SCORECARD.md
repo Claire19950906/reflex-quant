@@ -7,7 +7,7 @@
 | 1 | 一眼看懂 | 8/10 | 首屏是"剔掉不该做的单"+ 三句话说明白 + 一张截图 | 缺一段 20 秒 GIF；首屏仍偏长 |
 | 2 | 能跑起来 | 10/10 | 自带合成演示库（17 品种 / 6800 根日线 / 9 资产 / 25 事件类型）；本机实测 `/api/health` **200**、`/api/trident2/features` 返回 **64 项**；CI 里 `demo-smoke` 每次真起一次服务验证 | — |
 | 3 | 结构可读 | 9/10 | 四层清晰；`trident2/catalog.py` 单一真值源；`API-MAP.md`（422 端点自动生成）；切片 ② 已落地：格式化层移入 `api_format.py`，`api_server.py` 9,514 → 9,292 行 | 还有 9.3k 行，③④ 两个切片要在全套测试环境做 |
-| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**七轮共新增 467 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`capability_acceptance` 统计口径 **0→13%**、`engine/worker_helpers` 判定护栏 **0→16%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
+| 4 | 测试与自检 | 9/10 | 全量按 6 块复跑合计 **5,353 passed / 0 failed / 12 skipped**（含并行协作者新增用例；其中 1 例在分块并发执行时因共享演示库被占用而失败，单独复跑 11 passed —— 属顺序/并发相关，非本轮改动）；覆盖率基线 **40%**（128,554 语句）；**八轮共新增 542 条**纯函数用例：`us_release_schedule` **0→95%**、`true_anomaly` **0→88%**、`yahoo_chart_daily` **0→93%**、`wscn_flash` **0→94%**、`ust_curve_treasury` **0→73%**、`us_daily_sina` **0→86%**、`watermark_v2` **25→83%**、`abnormal_detector` **0→20%**、`market_snapshot` **0→23%**、`technical_indicators` **0→24%**、`db.py` 取价/归一/证据/残留 **0→54%**、`macro_context` 解析/prompt 渲染 **0→43%**、`capability_acceptance` 统计口径 **0→13%**、`engine/worker_helpers` 判定护栏 **0→16%**、`causal_graph` 证据体积/归一 **0→18%**、`realtime_filter` **0→15%**、`api_server` 纯函数 19% | 40% 离 60% 还差约 26,000 条语句的覆盖，不是几篇用例能补的 |
 | 5 | CI | 9/10 | typecheck + 离线核心子集（1038 条，覆盖率 20.0%，棘轮 20% 只升不降）+ ruff + 端点基线 + `docs-drift` 文档过期校验 + nightly 全量失败开 issue + gitleaks | 棘轮目标 60% 尚未到位（子集覆盖 20%） |
 | 6 | 文档 | 10/10 | 中英双版 + 架构 + 快速上手 + FAQ + ROADMAP + 详细版 + **数据源清单（从代码生成，CI 校验不过期）** | — |
 | 7 | 安全与密钥卫生 | 10/10 | `.env` 从未入仓；公开版剔除数据库与运行时；`secret-scan.yml`（gitleaks）每次 push/PR 必扫 | — |
@@ -146,6 +146,25 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 改为只把 None 当默认后，0 分保持 0 分；相关 5 个测试文件 42 条复跑全绿。
 另记录一处未改的缺陷：同一字段重复标记会**重复扣分**（不幂等，0.75 → 0.5），
 改动会影响历史 completeness 口径，留给后续统一处理。
+
+## 第八轮：`causal_graph.py`（1860 语句）0→18%（75 条）
+
+因果图谱这层的错法是"事后才炸"：evidence 字段每次 upsert 都被重新序列化，
+而列表元素本身是 JSON 字符串 → 每轮多一层转义、体积约 ×2。实测 13 个节点各 536,519,911 字节
+（= 65,493 × 2^13），整库膨胀到 3.66GB，`/api/analysis/kg-stats` 稳定 60s+ 超时。用例钉住四条：
+
+- **拆平**：只有 `{"chain": [...]}` 这种形状会被递归拆成纯文本（列表套列表不拆，写入路径也不产生）；
+  递归层数到 `_MAX_EVIDENCE_NEST_DEPTH` 就停。
+- **硬上限**：超过 64KB 丢最旧、留最新；**单条就超限时也硬截断**（旧实现因 `out` 为空短路放行，cap 形同虚设）。
+- **合并保留旧核验**：v424 事故里 `_merge_evidence` 只返回 chain，把 `_status`/`_fail`/`_fact_ids` 一起抹掉
+  → 被事实否证的机制悄悄变回「未确认」（954 个活跃节点里 861 个 UNCONFIRMED）。现在合并后状态与事实号沿用旧值。
+- **不翻倍**：连做 5 轮合并，体积涨幅不超过 20%（不拆平的话每轮约 ×2）。
+
+另外钉住：`_serialize_evidence` 把 dict 传进 chain 位置直接抛 TypeError（v430 六个节点的机制文本曾被覆盖成键名）；
+`_norm_expect` 让"该机制成立时本品种应有方向"显式落库，反向机制（实际利率↑→金价↓）不再被系统性判反。
+
+写用例时自己也踩了一次：真去套 32 层 JSON 会让每层体积 ×2、瞬间申请几个 GB 内存，
+所以层数上限那条改成直接把 `depth` 顶到上限来验证。
 
 ## 之前顺手修的三类真问题
 

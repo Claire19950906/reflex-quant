@@ -11,7 +11,7 @@
 **Seed Round: $1.5M**
 **18-month runway → Series A at $20M ARR**
 
-z2132743607@163.com · github.com/stardust888888/reflex-quant
+research@example.com · github.com/stardust888888/reflex-quant
 
 *"We don't just trade. We reflect on why."*
 
@@ -56,7 +56,7 @@ Unlike backtest frameworks, Reflex Quant audits the **reasoning**, not just the 
 
 *(Replace placeholders with real screen recordings before sending)*
 
-> Live demo: z2132743607@163.com
+> Live demo: research@example.com
 
 ---
 

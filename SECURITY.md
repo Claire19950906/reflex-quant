@@ -12,7 +12,7 @@
 
 **Please do NOT open a public GitHub issue for security bugs.**
 
-Email **z2132743607@163.com** with:
+Email **research@example.com** with:
 
 1. A clear description of the vulnerability and its impact
 2. Reproduction steps (PoC preferred)
@@ -76,7 +76,7 @@ v300 起提供三种部署模式，由 `TRIDENT_MODE` 切换：
 - [`docs/SECURITY_DEMO_MODE.md`](./docs/SECURITY_DEMO_MODE.md) — 设计 & 威胁模型
 - [`docs/SECURITY_DEMO_MODE_DEPLOY.md`](./docs/SECURITY_DEMO_MODE_DEPLOY.md) — 三种发布场景的部署手册
 
-**报告 demo / licensed 模式相关问题**：同样发到 `z2132743607@163.com`，
+**报告 demo / licensed 模式相关问题**：同样发到 `research@example.com`，
 标题请加 `[v300-demo]` 前缀。
 
 ---

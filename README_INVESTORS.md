@@ -234,7 +234,7 @@ Target payback: 6 months. Target LTV: $6k–$30k per desk.
 
 ## 📬 Get in touch
 
-- **Email (founder):** z2132743607@163.com
+- **Email (founder):** research@example.com
 - **Issues / feature requests:** [github.com/stardust888888/reflex-quant/issues](https://github.com/stardust888888/reflex-quant/issues)
 - **Pitch deck:** [PITCH_DECK.md](./PITCH_DECK.md)
 - **Discussion:** please open a GitHub Discussion or issue — we read everything

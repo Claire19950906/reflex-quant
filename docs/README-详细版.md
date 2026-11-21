@@ -503,7 +503,7 @@ Linux 生产部署（systemd + nginx）见 [deploy/README.md](deploy/README.md)�
 
 ## 📬 联系与贡献
 
-- **邮箱（创始人）：** z2132743607@163.com
+- **邮箱（项目）：** research@example.com
 - **Issues / 提案：** [github.com/stardust888888/reflex-quant/issues](https://github.com/stardust888888/reflex-quant/issues)
 - **贡献指南：** [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - **行为准则：** [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)

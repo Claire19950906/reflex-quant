@@ -1,5 +1,8 @@
 # Trident Agent MVP — Linux 部署指南
 
+> **macOS 的 launchd 模板在 [`macos/`](macos/)**。三个 `.plist` 里的 `/Users/YOUR_USER`
+> 是占位符，换成你自己的用户名即可（`id -un` 可查），其余路径随之生效。
+
 > **Windows 机器请改看 [`README_windows.md`](README_windows.md)** —— 那条路径不依赖
 > systemd：三个 `.bat` 脚本（引擎 / API / 前端）各自完成准备与启动，你只需敲三条命令。
 

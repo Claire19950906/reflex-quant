@@ -222,5 +222,5 @@ TRIDENT_MASTER_PORT=9001
 
 ## 报告漏洞
 
-见根目录 [`SECURITY.md`](../SECURITY.md)。邮件：`z2132743607@163.com`，
+见根目录 [`SECURITY.md`](../SECURITY.md)。邮件：`research@example.com`，
 标题请加 `[backend-api]` 前缀。

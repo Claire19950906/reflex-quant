@@ -32,7 +32,7 @@ import urllib.request
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 _TIMEOUT = 20
-_UA = "reflex-quant research z2132743607@163.com"
+_UA = "reflex-quant research research@example.com"
 # SEC 要求 UA 里带联系人；速率上限 10 req/s，我们一次只抓 3 个 concept。
 _RETRIES = 3
 _CACHE_TTL = 86400          # 季频数据，一天一次足够

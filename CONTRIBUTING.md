@@ -8,7 +8,7 @@ only gets smarter if more people feed it real-world reasoning failures.**
 - 🐞 **Bug reports & feature requests** → [open an issue](../../issues)
 - 💬 **Questions / design discussion** → [GitHub Discussions](../../discussions)
 - 🔒 **Security issues** → see [`SECURITY.md`](./SECURITY.md) — *do not* open a public issue
-- 📧 **Email the founder directly:** z2132743607@163.com
+- 📧 **Email the founder directly:** research@example.com
 
 ## What we especially welcome
 

@@ -5,7 +5,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/Users/claire/android-runtime/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<string>/Users/YOUR_USER/android-runtime/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 		<key>PYTHONIOENCODING</key>
 		<string>utf-8</string>
 		<key>PYTHONUNBUFFERED</key>
@@ -22,17 +22,17 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/bin/bash</string>
-		<string>/Users/claire/.trident/wrappers/run_engine.sh</string>
+		<string>/Users/YOUR_USER/.trident/wrappers/run_engine.sh</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>StandardErrorPath</key>
-	<string>/Users/claire/.trident/log/engine.err.log</string>
+	<string>/Users/YOUR_USER/.trident/log/engine.err.log</string>
 	<key>StandardOutPath</key>
-	<string>/Users/claire/.trident/log/engine.out.log</string>
+	<string>/Users/YOUR_USER/.trident/log/engine.out.log</string>
 	<key>ThrottleInterval</key>
 	<integer>30</integer>
 	<key>WorkingDirectory</key>
-	<string>/Users/claire</string>
+	<string>/Users/YOUR_USER</string>
 </dict>
 </plist>

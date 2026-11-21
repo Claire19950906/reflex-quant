@@ -137,7 +137,7 @@ def _sec_industry(ticker: str) -> Dict[str, Any]:
         import urllib.request
         url = f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json"
         req = urllib.request.Request(url, headers={
-            "User-Agent": "reflex-quant research z2132743607@163.com"})
+            "User-Agent": "reflex-quant research research@example.com"})
         data = json.load(urllib.request.urlopen(req, timeout=20))
         sic_desc = str(data.get("sicDescription") or "")
         bucket = _bucket_from_industry(sic_desc, "")

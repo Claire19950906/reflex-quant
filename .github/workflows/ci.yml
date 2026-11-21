@@ -115,14 +115,24 @@ jobs:
       - name: 离线核心子集 + 覆盖率（防回退）
         working-directory: backend
         run: |
+          set -o pipefail
+          mkdir -p reports
           python -m pytest tests/ -q -p no:cacheprovider \
             -k "dimension or reflection or risk or gate or contract or schema or registry or api_format or api_pure or v50" \
             --maxfail=20 \
             --cov=src_python --cov-report=term --cov-report=xml \
-            --cov-fail-under=20
+            --cov-fail-under=20 2>&1 | tee reports/pytest-subset.txt
         # 门槛说明：2026-11-20 实测该子集对 src_python 的覆盖率 20%。
         # 棘轮规则：门槛 = 实测值，只升不降。每接一个新模块就抬到「新实测」，
         # 目标 60%。直接写 60% 只会让 CI 常红，没人再看。
+        # 输出 tee 进 reports/pytest-subset.txt 并上传 artifact：失败原因可直接下载读。
+
+      - name: 上传子集明细
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-subset
+          path: backend/reports/pytest-subset.txt
 
       - name: 上传覆盖率
         if: always()

@@ -70,6 +70,9 @@ out/
 *.db
 # 演示库是例外：合成数据，故意入库，让 clone 后开箱有界面可看
 !backend/demo.db
+# 基线样本库也是例外：只含结构化决策字段 + 决策时间窗内的K线，已脱敏，
+# 故意入库是为了让 CI 和外部读者能复现同一张拦对率对照表
+!data/gate_baseline_sample.db
 backend/demo.db-wal
 backend/demo.db-shm
 *.db-journal

@@ -1,0 +1,59 @@
+name: gate-baseline
+
+# 这个工作流只回答一个问题：
+#   "闸门拦下的单，事后是不是真的不该做？"
+#
+# 为什么单独做一个、而不塞进 ci：
+#   * ci 的职责是"改动有没有弄坏原本绿的东西"，分钟级；基线评估是"结论有没有变"，
+#     周级，两者节奏不同，混在一起会让 ci 变慢且噪音变多。
+#   * 它跑的是仓库里 `data/gate_baseline_sample.db`（脱敏样本库，1.4MB），
+#     不需要任何真实行情接口、不需要 Key，任何人 fork 下来都能复现同一张表 —— 
+#     这也是这张表能被外部引用、被挑错的前提。
+#   * 结论必须留在仓库里（audit/weekly/），而不是只留在 Actions 日志里：
+#     日志会过期，表不会。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/gate_baseline.py"
+      - "scripts/export_baseline_sample.py"
+      - "data/gate_baseline_sample.db"
+      - ".github/workflows/gate-baseline.yml"
+  workflow_dispatch:
+  schedule:
+    # 每周一 01:00 UTC = 09:00 CST，一周一次够用：样本以天为单位增长
+    - cron: "0 1 * * 1"
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 脚本只用标准库：不装依赖、不联网，跑得慢或红都只可能是逻辑问题
+      - name: 跑闸门基线
+        run: |
+          python3 scripts/gate_baseline.py \
+            --db data/gate_baseline_sample.db \
+            --out audit/weekly
+
+      - name: 表贴到 Job Summary
+        run: |
+          {
+            echo "## 闸门基线（自动生成）";
+            echo "";
+            cat audit/weekly/gate_baseline_*.md;
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-baseline
+          path: audit/weekly/
+          retention-days: 90

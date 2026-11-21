@@ -48,6 +48,10 @@ DEFAULT_DB = os.path.join(REPO_ROOT, "backend", "trident_event_bus.db")
 
 # 追加型表清单：table -> (ts 列类型, 默认保留天数, 说明)
 # 只允许列在这里的表被删除；新增表必须显式加入并写清理由。
+#
+# 刻意不在清单里：ai_decisions。它是决策事后归因的底账 —— 一旦被裁掉，
+# "闸门拦对率"这类评估就再也没法重算（scripts/gate_baseline.py 依赖它）。
+# 要加进来之前，先想清楚基线评估的样本从哪来。
 TABLES: Dict[str, Dict[str, Any]] = {
     "source_status_history": {
         "ts_kind": "text", "days": 7,

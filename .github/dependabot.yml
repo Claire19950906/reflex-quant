@@ -1,29 +1,39 @@
-# 依赖自己会烂：不自动提 PR，等于半年后发现 30 个高危。
-# 只对 minor/patch 分组提，major 留着人工判断，避免刷屏。
+# 依赖自己会烂，但一次开 8 个 PR（含 zod 3→4、vitest 2→5 这种大版本）只会把
+# 仓库首页刷成一片红。这里改成每月一次、只提 minor/patch、最多 2 个，
+# 大版本一律留给人自己判断。
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /backend
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
     groups:
       backend-minor:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /frontend
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
     groups:
       frontend-minor:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 2
+      interval: monthly
+    open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

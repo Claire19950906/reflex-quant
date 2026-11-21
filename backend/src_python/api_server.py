@@ -5283,6 +5283,108 @@ import news_release_timing as _nrt  # noqa: E402
 _fred_date_key = _nrt.fred_date_key
 _fred_series_key = _nrt.fred_series_key
 _fred_new_only = _nrt.fred_new_only
+
+# v531: 2bd7cf9 把宏观发布时点拆到 news_release_timing.py 时，把这三个 src 轮询协程
+# 的定义连带删掉了，只留下 startup 里的 create_task 调用 —— 服务一启动就 NameError。
+# 定义补回（它们只依赖已存在的 fred_feed / market_sentiment / _ingest_external_news_sync）。
+
+async def market_sentiment_watcher() -> None:
+    """v170+ 数据源加固：市场情绪聚合（Fear & Greed Index + Truth Social Trump）。
+
+    两条源每日合计 ~10-25 条结构化信号：FNG 当日一次 + Truth Social 当日新推 0-20 条。
+    间隔 MARKET_SENTIMENT_POLL_SECONDS（默认 3600s=1h，Truth Social 反爬轻、FNG 每日一更，
+    1h 是节奏与新闻价值的最佳折中）。
+    入库走 _ingest_external_news_sync(bypass_gate=True)：FNG/Trump 都是高相关性结构化信号，
+    不走新闻总开关/每日配额（与 FRED 共享 bypass_gate=True 的策略）。
+    """
+    await asyncio.sleep(20)  # 错峰：晚于其它新闻源启动
+    while True:
+        try:
+            items: List[Dict[str, Any]] = []
+
+            # (a) Fear & Greed Index —— 加密恐慌贪婪
+            try:
+                fng_items = await asyncio.to_thread(market_sentiment.fng.fetch_fng, 5)
+                if fng_items:
+                    items.extend(market_sentiment.fng.to_ingest_items(fng_items))
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                print(f"[MARKET-SENTIMENT] FNG {type(exc).__name__}: {str(exc)[:80]}", flush=True)
+
+            # (b) Truth Social Trump —— 政策预期驱动信号
+            try:
+                posts = await asyncio.to_thread(
+                    market_sentiment.trump_posts.fetch_with_retry, 10,
+                )
+                if posts:
+                    items.extend(market_sentiment.trump_posts.to_ingest_items(posts))
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                print(f"[MARKET-SENTIMENT] Trump {type(exc).__name__}: {str(exc)[:80]}", flush=True)
+
+            if items:
+                inserted = await asyncio.to_thread(
+                    _ingest_external_news_sync, items, bypass_gate=True,
+                )
+                if inserted:
+                    print(
+                        f"[MARKET-SENTIMENT] 入库 {inserted} 条情绪信号"
+                        f"（FNG + Trump 候选 {len(items)}）",
+                        flush=True,
+                    )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            print(f"[MARKET-SENTIMENT] {type(exc).__name__}: {str(exc)[:120]}", flush=True)
+        await asyncio.sleep(config.MARKET_SENTIMENT_POLL_SECONDS)
+
+async def extra_sources_watcher() -> None:
+    """三源增补：CBOE（VIX/SKEW 尾部风险定价）、DefiLlama（稳定币供给）、Polymarket（事件概率）。
+
+    日度级别更新，一小时一轮即可；本机对这三家都会间歇性 SSL 断连，采集器内部已带退避重试。
+    取不到就写 unavailable（带错误原因），不写 0、不沿用旧值。
+    """
+    import extra_sources
+
+    await asyncio.sleep(45)  # 错峰启动，避开行情首轮
+    while True:
+        try:
+            res = await asyncio.to_thread(extra_sources.refresh, None, True)
+            if res.get("written"):
+                print(f"[EXTRA-SRC] 落库 {res['written']} 条（ok {res['ok']}/{res['total']}）", flush=True)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            print(f"[EXTRA-SRC] {type(exc).__name__}: {str(exc)[:120]}", flush=True)
+        await asyncio.sleep(3600)
+
+async def fred_watcher() -> None:
+    """FRED 官方宏观数据发布检测（独立 10s 轮询，不受新闻源 15s 间隔限制）。
+
+    - release：CPI/非农/利率/美债等即时影响行情的指标发布 → 事件进新闻流
+    - trend：收益率/期限利差/M2 显著趋势变化 → 事件进新闻流
+    - 开关逻辑与其它新闻源一致：受新闻总开关与每日配额约束
+      （bypass_gate=False 走 allow_ingest）；单源开关（fred）只影响模拟盘交易层。
+    - 水位记忆：只推观测日期变化（真发布）；重启/首启建基线不推存量旧观测。
+    """
+    await asyncio.sleep(15)  # 错峰：FRED 网络请求放最后，避免启动瞬间并发
+    while True:
+        try:
+            releases, trends = await asyncio.to_thread(fred_feed.check_once)
+            new_releases = _fred_new_only(releases)
+            new_trends = _fred_new_only(trends)
+            if new_releases:
+                await asyncio.to_thread(_ingest_external_news_sync, new_releases)
+            if new_trends:
+                await asyncio.to_thread(_ingest_external_news_sync, new_trends)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            print(f"[FRED-WATCHER] {type(exc).__name__}: {exc}")
+        await asyncio.sleep(config.FRED_POLL_SECONDS)
+
 _bls_new_only = _nrt.bls_new_only
 _us_eastern_offset = _nrt.us_eastern_offset
 _is_us_workday = _nrt.is_us_workday

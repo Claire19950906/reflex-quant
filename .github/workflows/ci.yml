@@ -218,7 +218,7 @@ jobs:
       # 夜间全量红了没人看，等于没跑。这里失败就开 issue，同标题只开一次。
       - name: 失败时开 issue
         if: failure() && github.event_name == 'schedule'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = 'nightly 全量失败：' + new Date().toISOString().slice(0, 10);

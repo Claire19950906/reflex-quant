@@ -274,3 +274,15 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 剩余缺口集中在 `run_structure` / `main` 的 CLI 分支与影子层的 detail 文案——那些要真跑子进程，收益低于继续补数据口径。
 
 **全量实测（2026-11-21，日志 `/tmp/full15.log`）**：`6134 passed / 12 skipped / 0 failed`（24 分 42 秒）。
+
+## 第二十三轮：`api_server.py` 第一刀 —— 9204 → 8971 行
+
+第 3 项（结构可读）一直卡在 9/10，因为 `api_server.py` 从 9,179 行又长到 **9,204** 行。这一轮开了第一刀，挑的是**最容易证明、最不容易出事**的那块：
+
+- 拆出 `src_python/news_release_timing.py`（约 150 行）：FRED/BLS 的**水位记忆**（首启只建基线、不推存量；观测期/数据期"变化"才算真发布）与**发布窗口调度**（美东 8:30，工作日才进窗；黄金窗 5s / 中频 20s / 外围 90s / 窗口外 1800s）。
+- 为什么是它：纯函数 + 两个进程级 dict，不碰数据库、不发请求，却因为放在 9k 行文件里而**测不细**（为了跑 `_bls_sleep_seconds` 要把 FastAPI 全家 import 一遍），也看不出"FRED 与 BLS 守的是同一条规则"。
+- `api_server` 里保留 `_bls_*` / `_fred_*` 私有名指向同一份实现，连 `_FRED_SEEN` / `_BLS_SEEN` 都是**同一个 dict 对象**——老调用点和既有 4 条用例零改动。
+
+顺带把一处口径写实：水位按**变化**判、不按"变大"判。上游回填修订历史观测（回发旧日期）也值得推一次，静默吞掉修订比多推一次更贵；连发两次同一个值才静默。测试里两种情形都钉了。
+
+**实测**：`test_v521_news_release_timing.py` 12 条（水位语义 7 条 + 窗口边界 4 条 + 防腐 1 条），与既有 `test_api_pure_helpers.py` 28 条一起 **40 passed**。

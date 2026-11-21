@@ -1297,12 +1297,23 @@ def _detect_session(asset: str, entry_time: str) -> Optional[Dict[str, str]]:
     """
     if not entry_time:
         return None
+    # 只有日期没有时分（"2026-11-23"）时，"几点入场"根本不知道。
+    # 旧逻辑会把 00:00 当真实时间判成"深夜入场"，等于替报告编一个原因。
+    raw_time = str(entry_time).strip()
+    if len(raw_time) <= 10:
+        return None
     asset_u = str(asset or "").upper()
     _CRYPTO_24H = {"BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "LTC", "DOT", "LINK", "AVAX", "MATIC"}
+    # 交易标的常写成 SOLUSDT / BTCUSDT 这种带计价货币后缀的形式，
+    # 旧逻辑直接比对裸名，导致 24h 的加密单被误判成"非活跃时段入场"。
+    for _suffix in ("USDT", "USDC", "BUSD", "PERP"):
+        if asset_u.endswith(_suffix) and len(asset_u) > len(_suffix):
+            asset_u = asset_u[: -len(_suffix)]
+            break
     if asset_u in _CRYPTO_24H:
         return None
     try:
-        dt = datetime.fromisoformat(str(entry_time).replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
     except (ValueError, TypeError):
         return None
     wd = dt.weekday()  # 0=周一

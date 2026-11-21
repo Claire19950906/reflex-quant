@@ -23,8 +23,25 @@ LIVE_DB = BACKEND / "trident_event_bus.db"
 
 # 本文件从真库只读拷 schema；公开版仓库不带真库，此时整模块 skip，
 # 而不是在 import 期直接 OperationalError（那会让 CI 红而不是跳过）。
-if not LIVE_DB.exists():
-    pytest.skip("公开版无真库，跳过 schema 依赖用例", allow_module_level=True)
+# 库文件在、表却被清空（数据纪元重置 / 换机）同样按"没有真库"处理。
+_REQUIRED_TABLES = ("causal_chains", "ohlcv_daily", "causal_chain_outcomes")
+
+
+def _live_schema_ready() -> bool:
+    if not LIVE_DB.exists():
+        return False
+    try:
+        with sqlite3.connect(f"file:{LIVE_DB}?mode=ro", uri=True) as c:
+            names = {r[0] for r in c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'")}
+    except sqlite3.Error:
+        return False
+    return all(t in names for t in _REQUIRED_TABLES)
+
+
+if not _live_schema_ready():
+    pytest.skip("真库不存在或缺表（公开版 / 纪元重置后），跳过 schema 依赖用例",
+                allow_module_level=True)
 
 
 def _temp_db() -> sqlite3.Connection:

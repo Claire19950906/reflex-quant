@@ -25,8 +25,21 @@ sys.path.insert(0, str(BACKEND / "src_python"))
 
 # 模块级 skip：本文件在 import 期就会读真实库构造参数化用例，
 # 所以 skipif 标记来不及生效（CI 无库环境会直接 ERROR 而不是 skip）。
-if not REAL_DB.exists():
-    pytest.skip("真实库不存在（CI 无库环境），跳过契约校验", allow_module_level=True)
+def _real_db_ready() -> bool:
+    """库文件在 ≠ 库可用：数据纪元重置/换机后，文件可能还在但一张表都没有。"""
+    if not REAL_DB.exists():
+        return False
+    try:
+        with sqlite3.connect(f"file:{REAL_DB}?mode=ro", uri=True) as c:
+            names = {r[0] for r in c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'")}
+    except sqlite3.Error:
+        return False
+    return {"raw_news", "ai_decisions"} <= names
+
+
+if not _real_db_ready():
+    pytest.skip("真实库不存在或缺表（CI 无库环境），跳过契约校验", allow_module_level=True)
 
 from repository import news as repo_news  # noqa: E402
 

@@ -239,4 +239,13 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 
 顺带覆盖了 `compute_reference` 的降级（空库 → 全部 `pct=None`，而不是 0%）、`structure_verdict` 只挑 FAIL/ERROR、`print_report` 用退出码表达"结构层有没有问题"。
 
+**全量实测（2026-11-21，日志 `/tmp/full14.log`）**：`6085 passed / 12 skipped / 0 failed`（27 分 40 秒）。
+
+上一轮剩的 1 红是 `test_source_status_areport::test_areport_does_not_block_heartbeat_loop`，
+它当时用 **150ms** 落库窗口判"事件循环有没有被阻塞"。负载机上心跳单拍本身就会抖到
+134~177ms（全量跑实测），窗口太窄，真假分不开——5 次复跑里 3 次假红。
+而且 `areport` 按设计**会 await 落库**（"返回即已落库"），所以能测的只有"等待期间循环还在转"。
+已改成 1 秒窗口 + 预热默认线程池，阈值 20 拍 / 单拍 < 400ms：真阻塞时只剩 1~2 拍，
+宿主抖动（≤200ms）不再触发假红。5 连跑 + 全量均绿。
+
 **方向性说明**：这 23 条只把报告层钉死，`_q_*` 那 30 多个指标查询（覆盖了模块一半语句）还没测——它们要按表造样本，与"补覆盖率"是两个工程量级。这一轮不假装已覆盖。

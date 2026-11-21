@@ -217,7 +217,10 @@ def _compute_fed_impacts(ust2y_change_bp: float,
     for sym, name, cls, sign, note in IMPACT_CATALOG:
         norm = max(-1.0, min(1.0, sign * ust2y_change_bp / 25.0))
         rc = real_corr.get(sym)
-        if rc:
+        # 真实相关必须是"三键齐全 + 数值可信"的完整结构；上游换了字段名或缺一项时，
+        # 旧写法 rc['sample_size'] 会直接 KeyError 把整个 fed-impact 接口打成 500。
+        if (isinstance(rc, dict) and isinstance(rc.get('correlation'), (int, float))
+                and rc.get('sample_size') is not None and rc.get('method')):
             n_real += 1
             impacts.append({
                 'symbol': sym,

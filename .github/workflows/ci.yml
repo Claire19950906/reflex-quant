@@ -79,7 +79,19 @@ jobs:
           pip install -r backend/requirements-dev.txt
 
       - name: lint（错误级门禁）
-        run: ruff check backend/src_python backend/scripts backend/tests
+        # 输出同时 tee 成 backend/reports/lint.txt 并上传 artifact（lint-output）：
+        # ruff 的报错在 Actions 页面上会被折叠，失败原因不该靠猜。
+        run: |
+          set -o pipefail
+          mkdir -p backend/reports
+          ruff check backend/src_python backend/scripts backend/tests 2>&1 | tee backend/reports/lint.txt
+
+      - name: 上传 lint 明细
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-output
+          path: backend/reports/lint.txt
 
       - name: 依赖一致性审计（requirements ↔ 实装）
         run: python backend/scripts/deps_audit.py

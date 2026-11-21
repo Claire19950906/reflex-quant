@@ -288,3 +288,20 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 **实测**：`test_v521_news_release_timing.py` 12 条（水位语义 7 条 + 窗口边界 4 条 + 防腐 1 条），与既有 `test_api_pure_helpers.py` 28 条一起 **40 passed**。
 
 **全量实测（2026-11-21，日志 `/tmp/full16.log`）**：`6185 passed / 12 skipped / 0 failed`（17 分 01 秒）。
+
+## 第二十四轮：`api_server.py` 第二刀 —— 8971 → 8471 行
+
+这一刀切的是**外部行情适配层**（币安 fapi / spot / Bybit / Bitstamp / OKX / Yahoo / 金十），拆成 `kline_sources.py`（约 710 行）。挑它的理由和上一轮同一条：这一整块只做 HTTP + 解析 + 短期 TTL，**不碰决策链**，却因为放在同一个 9k 行文件里，上游一改字段就得在决策代码旁边改；想单测一个解析函数，还得先把 FastAPI 全家 import 一遍。
+
+**留在原地的两处不是漏了**：
+
+- `_paged_history` 要落库（`_store_klines` 留在 api_server），搬出去会变成反向 import，比重复 60 行更糟。
+- `_HISTORY_SYNC_CACHE` / `_HISTORY_SYNC_TTL_S` 归 `_history_sync` 自己用，跟着它。
+
+**踩到的真实坑（值得记一笔）**：整段搬移时，`_HISTORY_SYNC_CACHE` 是**带类型注解的赋值**（`AnnAssign`），我按"普通赋值"筛，它被连带扫走，`_history_sync` 立刻 `NameError` —— `test_abnormal_detector` 两条红。教训：全量搬代码不能用名字清单筛，要按 AST 节点类型逐个过；两条测试就是这次的护栏。
+
+**测试侧必须同步的一点**：叶子函数搬走后，调用点在**新模块**里查找，`monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", ...)` 不再生效（拆前是同一命名空间）。4 条 yahoo 归因用例改成打 `kline_sources`，断言语义不变；这也是拆分本身最容易在 CI 里留下假绿的地方。
+
+`test_v535_kline_sources_split.py` 11 条：同一份实现（`api._fetch_binance_klines is ks._fetch_binance_klines`）、共享同一个缓存 dict、1m→15m/1h 聚合的开高低收量口径、缺桶不插空 bar、上游全挂返回 None 不造数据。
+
+**诚实说明**：`kline_sources.py` 自身覆盖率只有 **19%**（440 语句）—— 剩下全是 HTTP 分支，要覆盖得逐个 mock 上游响应体，收益远低于继续拆结构。

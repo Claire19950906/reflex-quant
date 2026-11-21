@@ -602,13 +602,15 @@ def build_prompt_block(priors: List[Dict[str, Any]]) -> str:
                   f"区间{float(p.get('ci_low') or 0):.0%}-{float(p.get('ci_high') or 0):.0%})")
         if p.get("base_rate") is not None and p.get("lift") is not None:
             ev_txt += (f" 基准={float(p['base_rate']):.0%} "
-                       f"超额={float(p['lift']):+.0f}pp p={float(p.get('p_value') or 1):.2f}")
+                       # lift 是比例（0.2 = 20pp），直接 :+.0f 会打印成 +0pp
+                       f"超额={float(p['lift']) * 100:+.0f}pp "
+                       f"p={float(p.get('p_value') or 1):.2f}")
         lines.append(
             f"{i}. [{p['asset']}|{p['direction']}|{tag}] {p['name']}"
             f" | {ev_txt}"
             f" | 关键词={','.join(p['matched_keywords'])}"
         )
-        if p["mechanism"]:
+        if p.get("mechanism"):
             lines.append(f"   机理：{p['mechanism']}")
     if "strong" in tiers:
         lines.append("已验证档若与本次判断方向相反，必须在 summary 里说明反例依据。")

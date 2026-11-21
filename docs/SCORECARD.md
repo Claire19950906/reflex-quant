@@ -272,3 +272,5 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 
 **实测**：`capability_scorecard.py` 632 语句，覆盖 **49% → 80%**（`test_v519` 23 条 + `test_v520` 49 条，72 条全绿）。
 剩余缺口集中在 `run_structure` / `main` 的 CLI 分支与影子层的 detail 文案——那些要真跑子进程，收益低于继续补数据口径。
+
+**全量实测（2026-11-21，日志 `/tmp/full15.log`）**：`6134 passed / 12 skipped / 0 failed`（24 分 42 秒）。

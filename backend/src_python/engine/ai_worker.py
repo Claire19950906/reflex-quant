@@ -10630,7 +10630,7 @@ async def ai_worker(loop: asyncio.AbstractEventLoop) -> None:
                     # v342 观测：把"降级"落一行，让"哪一步坏的"可量化（不改判定）
                     try:
                         from common import llm_degrade_probe as _ldp
-                        _ldp.record(conn, news_id=nid,
+                        _ldp.record(conn, news_id=s.get("news_id"),
                                     asset=res.get("target_asset") or asset,
                                     result=res)
                     except Exception:

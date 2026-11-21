@@ -402,6 +402,31 @@ _TRADING_MANAGER = TradingProcessManager(
 
 _SSE_QUEUES: List[asyncio.Queue] = []
 
+
+async def _broadcast_sse(event: Dict[str, Any]) -> None:
+    """把一条事件推给所有在线 SSE 订阅者。
+
+    v505 修复：5 处 push（金价/WTI 行情、快速模拟结算、异常信号）一直在调这个函数，
+    但定义早前被删掉了 —— 只要走到那条路径就是 NameError，前端反而收不到任何更新。
+    现在用 _SSE_QUEUES 兜住：没有订阅者就直接丢，队列满就把那个订阅者摘掉，
+    广播本身永不抛错、永不阻塞调用方。
+    """
+    if not _SSE_QUEUES:
+        return
+    dead: List[asyncio.Queue] = []
+    for q in list(_SSE_QUEUES):
+        try:
+            q.put_nowait(event)
+        except asyncio.QueueFull:
+            dead.append(q)
+        except Exception:
+            dead.append(q)
+    for q in dead:
+        try:
+            _SSE_QUEUES.remove(q)
+        except ValueError:
+            pass
+
 from api_time import _now_iso  # v504 下沉，别名保持调用点不变
 
 # 2026-11-17: _format_time 已下沉到 common/time_utils.format_time（19 处调用共用）。

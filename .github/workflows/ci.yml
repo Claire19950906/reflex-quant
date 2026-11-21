@@ -144,12 +144,17 @@ jobs:
         run: |
           python src_python/api_server.py > /tmp/api.log 2>&1 &
           ok=0
-          for i in $(seq 1 40); do
+          for i in $(seq 1 60); do
             code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/health || true)
             if [ "$code" = "200" ]; then echo "health 200（等待 ${i} 次）"; ok=1; break; fi
             sleep 2
           done
-          if [ "$ok" != "1" ]; then echo "服务没起来"; tail -60 /tmp/api.log; exit 1; fi
+          if [ "$ok" != "1" ]; then
+            echo "服务没起来（等了 120s）"
+            ps -ef | grep "[a]pi_server.py" || true
+            tail -120 /tmp/api.log
+            exit 1
+          fi
       - name: 64 项目录可读
         run: |
           n=$(curl -sf http://127.0.0.1:8000/api/trident2/features | python -c "import sys,json;print(json.load(sys.stdin)['summary']['total'])")

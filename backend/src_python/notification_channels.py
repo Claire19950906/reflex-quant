@@ -147,7 +147,7 @@ def _send_feishu(url: str, title: str, body: str) -> Tuple[bool, str]:
             headers={"Content-Type": "application/json; charset=utf-8"},
         )
         resp = urllib.request.urlopen(req, timeout=10)
-        _wechat_count(int(d.get("n") or 0) + 1)
+        # v505：这行原是从微信通道复制过来的，飞书响应体里没有 d，走到这里必 NameError
         return True, f"HTTP {resp.status}"
     except urllib.error.HTTPError as e:
         body_b = e.read().decode("utf-8", errors="replace")[:200]

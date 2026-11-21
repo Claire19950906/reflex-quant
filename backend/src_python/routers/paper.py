@@ -326,8 +326,10 @@ async def reject_strategy_reflection_endpoint(reflection_id: int,
     return {"reflection_id": int(reflection_id), "status": "rejected"}
 
 
+# v505: 函数体全是同步 sqlite3 查询、零 await —— 用 def 让 FastAPI 丢线程池，
+# 不要改回 async def，否则事件循环会被磁盘 IO 堵住（quality_gates 会拦）。
 @router.get("/api/ledger/reconcile")
-async def get_ledger_reconcile() -> Dict[str, Any]:
+def get_ledger_reconcile() -> Dict[str, Any]:
     """两套模拟账本对账：把"系统到底赚没赚钱"这个问题摊开。
 
     现状（2026-11-19 22:50 实测）：

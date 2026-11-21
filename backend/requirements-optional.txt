@@ -7,7 +7,7 @@
 # deps_audit.py 对这里的包只报 warn，不计入失败（CI 因此不会因为机器没装而红）。
 
 # 离线复盘看板（dashboard/app.py）的图表；主服务不需要
-plotly>=5.20.0
+plotly>=5.24.1
 
 # UA 解析（访客统计里的浏览器/系统识别）；缺了统计降级成 raw UA 字符串
 ua-parser>=0.18.0

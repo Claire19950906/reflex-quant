@@ -144,6 +144,13 @@ def main(argv: List[str] | None = None) -> int:
                     print(f'   ... 另有 {len(items) - 20} 处')
             else:
                 print(f'[{name}] ✓ 0 处')
+    # v505：失败时再吐一遍 GitHub 注解（::error file=...,line=...::原因）。
+    # 这样即使拿不到 Actions 完整日志，check-run 的 annotations 里也能读到具体是哪一处。
+    if total and not args.json:
+        for name, items in results.items():
+            for it in items:
+                print(f'::error file={it["file"]},line={it.get("line") or 1},'
+                      f'title={name}::{it["reason"]}')
     return 0 if total == 0 else 1
 
 

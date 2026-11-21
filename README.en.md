@@ -4,7 +4,7 @@
 
 ### Raise your decision accuracy. Raise your odds.
 
-[![blocked](https://img.shields.io/badge/directional%20calls%20blocked-87.2%25-brightgreen)](#1-before-the-order-the-situation-not-a-call)
+[![blocked](https://img.shields.io/badge/demo%20db%20blocked-96%2F128%20%C2%B7%2075%25-brightgreen)](#1-before-the-order-the-situation-not-a-call)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
 [![ci](https://github.com/stardust888888/reflex-quant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/stardust888888/reflex-quant/actions)
@@ -14,7 +14,11 @@
 
 | Gate evaluations | Directional calls | Passed | Blocked |
 | :---: | :---: | :---: | :---: |
-| 735 | 156 | 20 | **136 · 87.2%** |
+| 192 | 128 | 32 | **96 · 75%** |
+
+> That table is the **reproducible one in this repo** (`backend/demo.db`, a demo database with constructed samples).
+> The live database once had 735 evaluations with 136 blocked (87.2%), but that data was lost when the
+> database was wiped and rebuilt — so **that number no longer reproduces**, and it is no longer the headline.
 
 <p align="center">
   <img src="./assets/reflex-quant-banner.jpg" alt="Reflex Quant — cut the trades you shouldn't take" width="880">
@@ -77,14 +81,18 @@ Accuracy does not come from "I'll be careful next time". It comes from **last mi
 
 Accuracy = right trades ÷ all trades. The numerator needs skill; the denominator needs discipline. **It only moves the denominator — and the denominator never needs prediction.**
 
-**Measured, not marketed**: in 735 gate evaluations on this machine, there were 156 directional attempts, 20 passed, **136 blocked (87.2%)**; the other 579 were HOLD (no direction). One query reproduces it:
+**Reproducible — but first, which database**: what ships in this repo with real rows is `backend/demo.db` (a demo database, 192 constructed samples) — 128 directional attempts, 32 passed, **96 blocked (75%)**; the other 64 were HOLD. One query reproduces it:
 
 ```bash
-sqlite3 backend/trident_event_bus.db \
+sqlite3 backend/demo.db \
   "SELECT COUNT(*) FROM gate_evaluations WHERE action IN ('BUY','SELL') AND passed=0;"
 ```
 
-That is **not** "accuracy improved by 87%". It is "87% of attempts were not allowed." The difference between those two sentences is the whole project.
+The live database is `backend/trident_event_bus.db`. It once held 735 evaluations with 136 blocked (87.2%), but that data did not survive a wipe-and-rebuild, so **that number no longer reproduces and is no longer quoted**. A reproducible 75% beats an unreproducible 87%.
+
+That is **not** "accuracy improved by 75%". It is "75% of attempts were not allowed." The difference between those two sentences is the whole project.
+
+**And one caveat up front**: direction calls have no edge — historical direction hit rate is about **46.7%**, i.e. a coin flip. This project does not sell "better guessing"; it sells "fewer guesses". Anyone who buys it as a prediction engine will be disappointed.
 
 **1. It deletes orders that are certain to be wrong.** Stale quotes, an unreconciled ledger, duplicate runs, breached leverage — these are operational errors, not judgement calls. Anyone who blocks them avoids them 100%. A smaller denominator with the same numerator is a higher hit rate.
 

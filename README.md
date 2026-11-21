@@ -6,7 +6,7 @@
 
 ### Raise your decision accuracy. Raise your odds.
 
-[![blocked](https://img.shields.io/badge/directional%20calls%20blocked-87.2%25-brightgreen)](#一-下单前告诉你现在是什么情况)
+[![blocked](https://img.shields.io/badge/demo%20db%20blocked-96%2F128%20%C2%B7%2075%25-brightgreen)](#一-下单前告诉你现在是什么情况)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
 [![ci](https://github.com/stardust888888/reflex-quant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/stardust888888/reflex-quant/actions)
@@ -16,7 +16,11 @@
 
 | 闸门评估 | 方向性决策 | 放行 | 拦下 |
 | :---: | :---: | :---: | :---: |
-| 735 | 156 | 20 | **136 · 87.2%** |
+| 192 | 128 | 32 | **96 · 75%** |
+
+> 上表是**仓库里能直接复现的那一份**（`backend/demo.db`，体验库，构造样本）。
+> 真跑起来的库曾经有过 735 次评估 / 拦下 136 次（87.2%），但那次库被清空后数据没回来，
+> 所以那组数字**现在跑不出来**，不放在首屏当卖点。
 
 <p align="center">
   <img src="./assets/reflex-quant-banner.jpg" alt="Reflex Quant — cut the trades you shouldn't take" width="880">
@@ -79,14 +83,18 @@
 
 准确率 = 对的单 ÷ 所有单。分子靠本事，分母靠纪律。**它只动分母，而分母不需要预测能力。**
 
-**实测，不是宣传**：本机 735 次闸门评估里，方向性决策 156 次，放行 20 次，**拦下 136 次（87.2%）**；其余 579 次本就是 HOLD（不给方向）。一条 SQL 可复现：
+**能复现，但要先说清是哪个库**：仓库里点开就有数的是 `backend/demo.db`（体验库，192 条构造样本）——方向性出手 128 次，放行 32，**拦下 96（75%）**，另外 64 条本就是 HOLD。一条 SQL 可复现：
 
 ```bash
-sqlite3 backend/trident_event_bus.db \
+sqlite3 backend/demo.db \
   "SELECT COUNT(*) FROM gate_evaluations WHERE action IN ('BUY','SELL') AND passed=0;"
 ```
 
-这不是"准确率提升了 87%"，是"87% 的出手没被允许"。两句话的差别，就是这个项目的全部诚意。
+真跑起来的库是 `backend/trident_event_bus.db`。它此前有过 735 次评估、拦下 136 次（87.2%），但那批数据在一次库被清空后没能恢复，所以**那个数字我跑不出来，也就不再引**。宁可首屏只放一个 75%，也不放一个复现不了的 87%。
+
+这不是"准确率提升了 75%"，是"75% 的出手没被允许"。两句话的差别，就是这个项目的全部诚意。
+
+**还有一句得说在前面**：方向判断本身并没有优势——历史样本里方向命中约 **46.7%**，跟抛硬币差不多。所以这个项目不谈"猜得更准"，只谈"少猜几次"。谁要是把它当预测工具买，一定失望。
 
 **1. 删掉必然错的单。** 报价过期、账不平、重复下单、杠杆越界——这四类不是判断失误，是操作错误，只要有人拦，100% 能避免。分母少掉这些，准确率自然上移。
 

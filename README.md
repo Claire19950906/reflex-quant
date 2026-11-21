@@ -129,7 +129,7 @@ python3 src_python/api_server.py          # :8000
 cd frontend && npm install && npm run dev # :3000
 ```
 
-也可以 `docker compose up`。零成本部署见 [`DEPLOY.md`](./DEPLOY.md)。
+容器编排 `docker-compose.yml` 目前是骨架（未逐项验证），先跑上面两条命令；零成本部署见 [`DEPLOY.md`](./DEPLOY.md)。
 
 ---
 

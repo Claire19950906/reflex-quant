@@ -127,7 +127,7 @@ python3 src_python/api_server.py          # :8000
 cd frontend && npm install && npm run dev # :3000
 ```
 
-Or `docker compose up`. Zero-cost deployment: [`DEPLOY.md`](./DEPLOY.md).
+The `docker-compose.yml` is still a skeleton (not verified end-to-end) — start with the two commands above. Zero-cost deployment: [`DEPLOY.md`](./DEPLOY.md).
 
 ---
 

@@ -4,22 +4,33 @@
 
 ---
 
-## 路线 A · 只看界面（3 分钟）
+## 路线 A · 只看界面（3 分钟，不用 docker、不用任何 key）
+
+仓库自带合成演示库 `backend/demo.db`（400 天 K 线、48 条新闻与决策、3 笔纸面持仓），
+clone 下来就能看到有数据的界面。新闻与决策都带 `[DEMO]` 前缀，不会和真实库混淆。
 
 ```bash
-git clone <repo> && cd <repo>
-docker compose up
+# 终端 1：后端（:8000）
+cd backend
+pip install -r requirements.txt
+TRIDENT_OFFLINE=1 TRIDENT_DB_PATH="$PWD/demo.db" python3 src_python/api_server.py
+
+# 终端 2：前端（:3000）
+cd frontend
+npm install
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000 npx next dev -p 3000
 ```
 
-打开 <http://localhost:3000>。默认连的是随仓库带的**合成演示库** `backend/demo.db`（400 天 K 线、48 条新闻与决策、3 笔纸面持仓），所以第一眼就有数据。新闻与决策都带 `[DEMO]` 前缀，不会和真实数据混淆。
+打开 <http://localhost:3000>。归因页的分钟级 K 线要另一条后端，再开一个终端：
+`cd backend && TRIDENT_OFFLINE=1 TRIDENT_DB_PATH="$PWD/demo.db" python3 src_python/bridge_server.py`（:8100）。
 
-要换成你自己的库：
-
-```bash
-TRIDENT_DB_PATH=./backend/trident_event_bus.db docker compose up
-```
-
+想接自己的库：把 `TRIDENT_DB_PATH` 换成 `./backend/trident_event_bus.db`。
 想重新生成演示库：`cd backend && python3 scripts/make_demo_db.py --force`。
+
+> **别把 `docker compose up` 当第一步。** `docker-compose.yml` 和两个 Dockerfile 是
+> 迁容器的**骨架**，还没逐项验证：前端镜像的 `NEXT_PUBLIC_API_URL` 要在 `npm run build`
+> 阶段注入（运行时再传 env 不生效），compose 里也没有 :8000 的 `api_server`。
+> 先用上面两条命令跑通，再考虑容器化。
 
 ---
 

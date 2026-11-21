@@ -138,11 +138,15 @@ def _base_mult(sentiment_score, impact_magnitude, heat_score, impact_score=None)
     direction = min(1.0, abs(s))
     # 影响力 (0~1): impact_magnitude 在 DB 里恒为 0, 真正在用的是 impact_score
     imp01 = 0.0
-    if impact_magnitude is not None and impact_magnitude > 0:
-        try:
-            imp01 = min(1.0, max(0.1, float(impact_magnitude) / 100.0))
-        except (TypeError, ValueError):
-            imp01 = 0.0
+    # v520: impact_magnitude 在库外的路径上可能是字符串（CSV 回灌 / 手填），
+    # 原来的 `impact_magnitude > 0` 直接比较会把整条决策算权重时打崩；
+    # 先转 float 再比较，脏值按"无影响力"处理，与旧行为的正常分支完全一致。
+    try:
+        _mag = float(impact_magnitude) if impact_magnitude is not None else 0.0
+    except (TypeError, ValueError):
+        _mag = 0.0
+    if _mag > 0:
+        imp01 = min(1.0, max(0.1, _mag / 100.0))
     elif impact_score is not None:
         # impact_magnitude 在 DB 里恒为 0 (实测 4616 行), 真正在用的是
         # impact_score (0-10 标度, ai_worker 让 LLM 打 "<0-10>")。
@@ -255,10 +259,19 @@ def _source_mult_from_cache(source_stats):
     """3. source hit-rate coefficient (0.3 - 1.5) from source_stats cache"""
     if not source_stats:
         return 1.0
-    sample_n = int(source_stats.get("sample_n", 0) or 0)
+    try:
+        sample_n = int(source_stats.get("sample_n", 0) or 0)
+    except (TypeError, ValueError):
+        sample_n = 0            # 脏样本数按"不可校准"处理，不能把决策算权重时打崩
     if sample_n < 5:
         return 1.0
-    hit = float(source_stats.get("hit_rate", 0.5) or 0.5)
+    # v520: 原来写 `float(hit_rate or 0.5)` —— 0 是假值，于是"命中率 0%"
+    # （全错来源）被当成 0.5 的中性；改成分开判 None，0 真的按 0 走。
+    hit_raw = source_stats.get("hit_rate")
+    try:
+        hit = 0.5 if hit_raw is None else float(hit_raw)
+    except (TypeError, ValueError):
+        hit = 0.5
     return max(0.3, min(1.5, 0.5 + hit))
 
 

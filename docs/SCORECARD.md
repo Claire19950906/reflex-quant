@@ -305,3 +305,5 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 `test_v535_kline_sources_split.py` 11 条：同一份实现（`api._fetch_binance_klines is ks._fetch_binance_klines`）、共享同一个缓存 dict、1m→15m/1h 聚合的开高低收量口径、缺桶不插空 bar、上游全挂返回 None 不造数据。
 
 **诚实说明**：`kline_sources.py` 自身覆盖率只有 **19%**（440 语句）—— 剩下全是 HTTP 分支，要覆盖得逐个 mock 上游响应体，收益远低于继续拆结构。
+
+**全量实测（2026-11-21，日志 `/tmp/full18.log`）**：`6264 passed / 12 skipped / 0 failed`（22 分 33 秒）。

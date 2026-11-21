@@ -289,6 +289,14 @@ class TestIntegration:
             pytest.skip(f"生产 DB 不存在: {db_path}")
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
+        # 库文件在、表却被清空（数据纪元重置/换机）时，"查不到表"不该报成代码错。
+        tables = {r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        missing = {"strategy_param_adjustments", "review_insights"} - tables
+        if missing:
+            conn.close()
+            pytest.skip(f"生产库文件在但缺派生表 {sorted(missing)}："
+                        f"{_EPOCH_SKIP}")
         try:
             yield conn
         finally:
@@ -419,6 +427,10 @@ class TestIntegration:
         prod_db = root / "trident_event_bus.db"
         if not prod_db.exists():
             pytest.skip(f"生产 DB 不存在: {prod_db}")
+        _ptables = {r[0] for r in sqlite3.connect(str(prod_db)).execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        if "review_insights" not in _ptables:
+            pytest.skip(f"生产库缺 review_insights 表：{_EPOCH_SKIP}")
         env2 = os.environ.copy()
         env2.pop("TRIDENT_DB_PATH", None)
         proc2 = subprocess.run(

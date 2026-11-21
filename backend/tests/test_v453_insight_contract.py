@@ -244,32 +244,35 @@ def test_pre_reset_snapshot_writes_restorable_copy(tmp_path):
 def test_fingerprint_has_git_and_param_dimensions():
     import sys, os
     sys.path.insert(0, "src_python")
-    from code_fingerprint import fingerprint, reload_fingerprint
-    fp = fingerprint()
-    assert "/p" in fp and len(fp) >= 12
-    # 改关键参数 → 指纹必须变（否则分层会串代）
-    old = os.environ.get("REVIEW_INSIGHTS_RANK")
-    os.environ["REVIEW_INSIGHTS_RANK"] = "0" if old != "0" else "1"
-    # 全量跑时别的用例会短暂改工作区，git 维度会从 `hash` 变成 `hash+`（脏标记），
-    # 让这条"参数变了才变"的断言假红。这里把 git 维度钉死，只测参数维度。
     import code_fingerprint as cf
     from functools import lru_cache
+    # 先把 git 维度钉死再取基准指纹：全量跑期间有人提交/改工作区，
+    # 哈希本身会变，那样"参数变了才变"的断言会假红（实测踩过：
+    # 全量跑到一半提交了新用例，基准 5d0e44a+ 变成 73338fc+）。
     orig = cf._git_hash
     cf._git_hash.cache_clear()
     fixed = orig()
     cf._git_hash = lru_cache(maxsize=1)(lambda: fixed)
+    cf.fingerprint.cache_clear()
     try:
-        assert reload_fingerprint() != fp
-    finally:
-        if old is None:
-            os.environ.pop("REVIEW_INSIGHTS_RANK", None)
-        else:
-            os.environ["REVIEW_INSIGHTS_RANK"] = old
+        fp = cf.fingerprint()
+        assert "/p" in fp and len(fp) >= 12
+        assert fixed.split("+")[0] in fp or fixed == ""
+        # 改关键参数 → 指纹必须变（否则分层会串代）
+        old = os.environ.get("REVIEW_INSIGHTS_RANK")
+        os.environ["REVIEW_INSIGHTS_RANK"] = "0" if old != "0" else "1"
         try:
-            assert reload_fingerprint() == fp
+            assert cf.reload_fingerprint() != fp
         finally:
-            cf._git_hash = orig
-            cf._git_hash.cache_clear()
+            if old is None:
+                os.environ.pop("REVIEW_INSIGHTS_RANK", None)
+            else:
+                os.environ["REVIEW_INSIGHTS_RANK"] = old
+        assert cf.reload_fingerprint() == fp
+    finally:
+        cf._git_hash = orig
+        cf._git_hash.cache_clear()
+        cf.fingerprint.cache_clear()
 
 
 def test_fingerprint_survives_missing_git(monkeypatch):

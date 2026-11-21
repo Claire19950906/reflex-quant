@@ -16,11 +16,11 @@
 > 全部由持仓重算，手续费双边入账），下单前必须过 `trade_preflight.py` 硬闸（账不平、行情过期、
 > run 重复、杠杆越界直接拒单），止损触发会真实平仓。当前仍是 **paper + MockAdapter**——
 > 能交易、能对账，但**没有接真钱**。现状与验收口径见
-> [`docs/archive/交易可用性-2026-11-19.md`](./docs/archive/交易可用性-2026-11-19.md)。
+> [`docs/archive/交易可用性-2026-11-19.md`](./archive/交易可用性-2026-11-19.md)。
 
 **大多数 AI 量化在比谁的信号更"准"。Reflex Quant 比的是——谁先抓到自己的错。**
 
-**This is the Chinese developer README.** For the English investor pitch, see [`README_INVESTORS.md`](./README_INVESTORS.md). For the deck, see [`PITCH_DECK.md`](./PITCH_DECK.md).
+**This is the Chinese developer README.** For the English investor pitch, see [`README_INVESTORS.md`](../README_INVESTORS.md). For the deck, see [`PITCH_DECK.md`](../PITCH_DECK.md).
 
 </div>
 
@@ -111,8 +111,8 @@ README 里的能力描述是"设计上有什么"，不是"已经验证了什么"
 债务到期结构、管理层指引、分析师覆盖、DCF/EV-EBITDA；**权重 0.08 仍是先验** —— 影子账本
 生产样本仍为 0 笔「适用」的（164 行全是 XAU/WTI/BTC 或占位），机制能自证但还没被验证；
 同业分组是人工写死的 26 票，宏观传导系数未回测校准；MSTR 这类财库票净资产含 BTC，PB 0.58 不代表便宜。
-口径、PB 补洞与验收清单见 [`docs/v454-基本面补洞-2026-11-18.md`](./docs/v454-基本面补洞-2026-11-18.md)，
-宽度扩面见 [`docs/v406-基本面扩面-2026-11-17.md`](./docs/v406-基本面扩面-2026-11-17.md)。
+口径、PB 补洞与验收清单见 [`docs/archive/v454-基本面补洞-2026-11-18.md`](./archive/v454-基本面补洞-2026-11-18.md)，
+宽度扩面见 [`docs/archive/v406-基本面扩面-2026-11-17.md`](./archive/v406-基本面扩面-2026-11-17.md)。
 
 **A股 / 港股（v406 + v455）**：东财财报读数（营收/净利同比、年化 ROE）按需抓取落 `cn_equity_fundamentals`；
 估值分位在 v455 之前**恒为不可用**（每票 1~7 个快照点、门槛 60），导致分数只剩增速一把尺 ——
@@ -120,7 +120,7 @@ README 里的能力描述是"设计上有什么"，不是"已经验证了什么"
 （法定披露截止日当已知日，防前视），8/8 只、1940 行，PE 分位实测 002384 0.8% / 600519 95.9% / 00700 1.2%，
 茅台分数 +0.22 → **−0.18**。推导 PE 24.08 / PB 4.99 与东财当期快照完全一致。
 **边界**：无同业对比（8 票跨 8 个行业，样本不足不造数）、无财报日历、无三表、无宏观传导；
-见 [`docs/v455-A股港股估值分位-2026-11-18.md`](./docs/v455-A股港股估值分位-2026-11-18.md)。
+见 [`docs/archive/v455-A股港股估值分位-2026-11-18.md`](./archive/v455-A股港股估值分位-2026-11-18.md)。
 
 **口径体检与工程化（v456）**：`scripts/fundamental_drift_check.py` 每日核对「推导值 vs 供应商当期值」
 （≤5% OK / 5~25% WARN / >25% FAIL），首跑就抓到净资产取到旧报表的真 bug（META PB 偏差 +39.9% → 0.2%），
@@ -130,7 +130,7 @@ README 里的能力描述是"设计上有什么"，不是"已经验证了什么"
 FRED 层进 prompt 前压缩 60%（与权重同源，`TRIDENT_FRED_PROMPT_MODE=full` 可回退）；
 `decision_fundamental_snapshot` 埋点 + `scripts/fundamental_ab_replay.py` 为“0.08 是否有效”攒证据
 （当前样本 0，如实输出 insufficient）；仓位乘数只做影子（`sizing_mult`，不改实际下单）。
-见 [`docs/v456-六项落地-2026-11-18.md`](./docs/v456-六项落地-2026-11-18.md)。
+见 [`docs/archive/v456-六项落地-2026-11-18.md`](./archive/v456-六项落地-2026-11-18.md)。
 
 **宏观驱动系数校准（v459）**：`scripts/macro_driver_calibration.py` 用 FRED 5 年日频 + 板块 ETF 检验
 v454 那套「4 驱动 → 板块倾斜」先验。结论：四个驱动的中位对齐 IC 全部 <0.10，**复合 tilt 对同桶 ETF
@@ -138,7 +138,7 @@ v454 那套「4 驱动 → 板块倾斜」先验。结论：四个驱动的中�
 因此 `_MACRO_TILT_CAP` **0.15 → 0.05**（`TRIDENT_MACRO_TILT_CAP` 可恢复），宏观倾斜只作小幅修正，
 不再按满额调分；新增每月 1 日 07:20 的 `macro-calibration` 定时任务。另 `fundamental_drift_check.py
 --warn-check` 把 WARN 变成三方表决：**TSLA 我方与 yfinance 完全一致（16.83 vs 16.83），供应商偏 18%**，
-NVDA/RIOT 属期次口径不同，腾讯第三方不可得。见 [`docs/v459-宏观驱动系数校准-2026-11-19.md`](./docs/v459-宏观驱动系数校准-2026-11-19.md)。
+NVDA/RIOT 属期次口径不同，腾讯第三方不可得。见 [`docs/archive/v459-宏观驱动系数校准-2026-11-19.md`](./archive/v459-宏观驱动系数校准-2026-11-19.md)。
 
 **非公司基本面（v460）**：此前只有美股/A股/港股有基本面这一票，黄金/原油/美元/外汇/加密在
 `decision_guard` 里记「非公司标的 N/A」→ 0.08 权重让出后归一化，方向**没有可复现的基本面依据**。
@@ -149,22 +149,22 @@ XAU −0.46 / WTI +0.06 / USD +0.49 / EURUSD −0.49 / USDJPY +0.03 / BTC −0.2
 白银等未接入品种明确 `unsupported`（不返回 0 分）。门槛：分量 <2 或独立数据族 <2 不发分、分位需 ≥30 观测、
 说不清符号的进 `gaps` 不打分。同时 EIA 补了产量/炼厂/馏分油三条序列（走 `/v2/seriesid/PET.<id>.W`，
 一次抓 52 周供分位），prompt 用「一行结论」替掉原始点位、COT 168 项折叠成计数，体积 10,490 → 8,442（−19.5%）。
-见 [`docs/v460-非公司基本面-2026-11-19.md`](./docs/v460-非公司基本面-2026-11-19.md)。
+见 [`docs/archive/v460-非公司基本面-2026-11-19.md`](./archive/v460-非公司基本面-2026-11-19.md)。
 
 **美债基本面（v464）**：接上 v460 之后，美债从 0 分变成可打分，且**长短久期两套口径** ——
 10Y/30Y/TLT 那套看实际利率、通胀预期、曲线 carry、期货持仓与信用利差（6 分量）；2Y/SHY 那套看政策利率
 （4 分量，短债不吃久期风险）。方向约定「正=看多债券价格」，曲线符号写死为 carry 视角并在 `detail` 里说明理由。
 同时发现并修掉一个更根本的问题：库里 FRED 序列原本只有 38 天，"历史分位 83%"实为 38 天分位 ——
 用官方 API 回填 3 年 10,214 行、分位窗口抬到 ~2.7 年，实际利率 2.89% 的分位因此从 83% 修正为 98%，
-UST 分数由 −0.09 变为 −0.22。见 [`docs/v464-美债基本面-2026-11-19.md`](./docs/v464-美债基本面-2026-11-19.md)。
+UST 分数由 −0.09 变为 −0.22。见 [`docs/archive/v464-美债基本面-2026-11-19.md`](./archive/v464-美债基本面-2026-11-19.md)。
 
 **拍卖需求与股指估值（v465/v466）**：美债补上「投标倍数」这一层（10Y/30Y 合成一个分量，
 长端 89% 分位、短端 39% 分位——曲线长端紧短端松的微观证据）；SPX 接 multpl 月度 CAPE
 （1,871 个观测到 1871 年，当前 38.63 = 近 30 年 90% 分位），配「盈利收益率−10Y」与信用利差，
 实测 −0.67 为全品种最负。同一个 HY OAS 变化对债券是正分、对股指是负分，符号差异有专门测试钉住。
 见
-[`docs/v465-美债拍卖需求-2026-11-19.md`](./docs/v465-美债拍卖需求-2026-11-19.md)、
-[`docs/v466-股指估值CAPE-2026-11-19.md`](./docs/v466-股指估值CAPE-2026-11-19.md)。
+[`docs/archive/v465-美债拍卖需求-2026-11-19.md`](./archive/v465-美债拍卖需求-2026-11-19.md)、
+[`docs/archive/v466-股指估值CAPE-2026-11-19.md`](./archive/v466-股指估值CAPE-2026-11-19.md)。
 **银/铜、纳指代理、沪深300、TIC（v467）**：剩下的品种一次接完。银、铜补上 5 年日线后，
 用**跨品种比价**做估值 —— 金银比（高=白银相对黄金便宜=偏多白银）、铜金比（高=增长预期强=偏多铜），
 再叠 COT 反向、美元 20 日反向、白银实际利率，实测 XAG −0.06 / CU +0.25（铜投机净多只剩 4% 分位，
@@ -174,57 +174,57 @@ UST 分数由 −0.09 变为 −0.22。见 [`docs/v464-美债基本面-2026-11-1
 标准 ERP 算不了（FRED 中国长端序列已停更，返回 400），写进缺口。TIC 外资持仓接通 321 个月，
 但**滞后 >75 天不发分**：当前数据滞后 339 天，所以只出现在 gaps 里，不参与加权 ——
 旧持仓当"当下买盘"用比不接更危险。见
-[`docs/v467-银铜纳指沪深300-TIC-2026-11-19.md`](./docs/v467-银铜纳指沪深300-TIC-2026-11-19.md)。
+[`docs/archive/v467-银铜纳指沪深300-TIC-2026-11-19.md`](./archive/v467-银铜纳指沪深300-TIC-2026-11-19.md)。
 **BTC 链上活跃度（v468）**：加密的"贵不贵"（MVRV/已实现市值/交易所余额）仍需付费源，
 但"还有没有人在用"免费可得 —— blockchain.info 日频接入 722 天活跃地址、725 天交易笔数，
 BTC 增加 `onchain_addr 0.12` / `onchain_tx 0.10` 两分量（活跃度扩张=偏多，属显式假设不属因果）。
 BTC 由此从 4 分量变 6 分量、−0.0067 → +0.1601：链上扩张、场内杠杆退、稳定币缩，三种信号打架，
 分歧度高，看板不可只看单一分数。同一轮把三条免费源的失败证据固化下来：上期所只有行情+持仓（库存全 404）、
 FRED 期限溢价 9 次重试全灭、中国 10Y 两个入口一个断连一个返回空 —— 说不清符号的一律不做。
-见 [`docs/v468-BTC链上活动与免费源到顶-2026-11-19.md`](./docs/v468-BTC链上活动与免费源到顶-2026-11-19.md)。
+见 [`docs/archive/v468-BTC链上活动与免费源到顶-2026-11-19.md`](./archive/v468-BTC链上活动与免费源到顶-2026-11-19.md)。
 **BTC 现货 ETF 净流入（v469）**：加密补上"真金白银的增量资金"—— farside 全量页回填 733 个交易日
 （2024-01-11 起），11 只美国现货 ETF 逐日净流入合计，BTC 增 `etf_flow 0.14`（20 日累计净流入分位，流入=偏多），
 6 分量变 7 分量。实测 20 日净赎回 **37.13 亿美元（历史 6% 分位）**，把链上三绿压回中性（+0.16 → +0.06）：
 **使用度在涨、钱在撤**，这是当下 BTC 最该知道的一句。美债期限溢价五个入口全数复核失败，
 结论改为"必须换源（Wind/Bloomberg）"，不再原样重试。
-见 [`docs/v469-BTC-ETF净流入与期限溢价换源-2026-11-19.md`](./docs/v469-BTC-ETF净流入与期限溢价换源-2026-11-19.md)。
+见 [`docs/archive/v469-BTC-ETF净流入与期限溢价换源-2026-11-19.md`](./archive/v469-BTC-ETF净流入与期限溢价换源-2026-11-19.md)。
 **SOL 接入（v470）**：加密第三品种补齐 —— DefiLlama 免费给链上 TVL（2,074 天）与日手续费（2,132 天），
 SOL 增 `tvl 0.44` / `fees 0.34` / `cot 0.22` 三分量（资本流入、真实需求扩张=偏多，持仓拥挤=反向）。
 实测 **−0.7510**：TVL −19.3%、手续费 −28.3%，"人和钱一起走"而空头未挤满，典型阴跌结构。
 至此 15 个品种有非公司基本面（XAU/XAG/CU/WTI/USD/EURUSD/USDJPY/UST/US2Y/SPX/NDX/CSI300/BTC/ETH/SOL）；
 ETH 成为最薄的一个（无链上维度），是下一个明确优化点。
-见 [`docs/v470-SOL链上TVL与手续费接入-2026-11-19.md`](./docs/v470-SOL链上TVL与手续费接入-2026-11-19.md)。
+见 [`docs/archive/v470-SOL链上TVL与手续费接入-2026-11-19.md`](./archive/v470-SOL链上TVL与手续费接入-2026-11-19.md)。
 **ETH 链上维度（v471）**：以太坊补上 DefiLlama 的链上 TVL（3,341 天）与日手续费（4,122 天），
 ETH 增 `tvl 0.22` / `fees 0.18`，3 分量 → **5 分量、权重和 1.12**、−0.71 → −0.66。
 结构值得看：TVL −20.7%（资本在撤）、未平仓 96% 分位（杠杆堆到极值）、资金费率 88% 分位（多头拥挤），
 但手续费只 −1.3%（链还在用）—— **链在用、价靠杠杆撑** 的多头陷阱形态。
 至此 BTC/ETH/SOL 三个加密都有"链上 + 场内"两层；只有 BTC 多一层 ETF 资金流，这也是它仍站在正区间的唯一原因。
-见 [`docs/v471-ETH链上维度补齐-2026-11-19.md`](./docs/v471-ETH链上维度补齐-2026-11-19.md)。
+见 [`docs/archive/v471-ETH链上维度补齐-2026-11-19.md`](./archive/v471-ETH链上维度补齐-2026-11-19.md)。
 **分歧度与可信度（v472）**：加权平均不是共识 —— "全体轻微偏多"和"一半极多一半极空"能算出同一个分数。
 现在每个品种直接输出 `dispersion`（加权标准差）与 `confidence`（可信度）、多空权重占比，
 `decision_guard` 的 0.08 权重按 `0.6 + 0.4×confidence` 打折（下限 0.6，分歧大不等于没信息）。
 实测 15 品种里 4 个高分歧：USDJPY 0.89（多空几乎对半，分数≈打平）、US2Y 0.71、UST 0.65、BTC 0.64（链上极多 vs ETF 极空）；
 低分歧的高分最可信：SPX 0.26、ETH 0.32（空头权重 1.12、多头 0，全表最纯的空头）、XAU 0.33。
-见 [`docs/v472-分歧度显式化-2026-11-19.md`](./docs/v472-分歧度显式化-2026-11-19.md)。
+见 [`docs/archive/v472-分歧度显式化-2026-11-19.md`](./archive/v472-分歧度显式化-2026-11-19.md)。
 **影子仓位按分歧度打折（v473）**：分歧度从"只影响方向分"扩到"也影响仓位乘数" ——
 `sizing_multiplier` = `(1+0.20×score) × (0.75+0.25×confidence)`，带可信度时下限放开到 0.70，
 公司侧（无 confidence）逐位保持 v456 口径不变；快照表新增 `dispersion/dispersion_level/confidence` 三列可审计。
 实测 USDJPY 1.006→0.856（分歧 0.89）；BTC 1.018→0.908（链上极多 vs ETF 极空，正分不该当真）；
 SPX/CSI300 只降 0.035（分量一致，本就该少打折）。**仍然只记账，不改实盘。**
-见 [`docs/v473-影子仓位按分歧度打折-2026-11-19.md`](./docs/v473-影子仓位按分歧度打折-2026-11-19.md)。
+见 [`docs/archive/v473-影子仓位按分歧度打折-2026-11-19.md`](./archive/v473-影子仓位按分歧度打折-2026-11-19.md)。
 **公司侧分歧度（v474）**：公司票也会自相矛盾 —— 最典型是"估值说便宜、盈利在砍"。
 现在 `fundamental_factor` 也输出 `dispersion/dispersion_level/confidence/bull_weight/bear_weight`，
 口径与 alt 侧逐字一致（盈利股 估值 0.50 / 盈利修正 0.50 / 宏观 0.10；亏损股用生意四项权重），
 `decision_guard` 的解释句、影子仓位乘数全部共用一套读取。
 实测 16 只票：**COIN 分歧 0.84、可信 0.44**（估值 +0.25 对盈利 −0.60，标准价值陷阱）；
 PLTR/META/SMCI 都是"中分歧 + 多 1.00 / 空 0.10"，强势来自两条主线都同意而非互相抵消。
-见 [`docs/v474-公司侧分歧度-2026-11-19.md`](./docs/v474-公司侧分歧度-2026-11-19.md)。
+见 [`docs/archive/v474-公司侧分歧度-2026-11-19.md`](./archive/v474-公司侧分歧度-2026-11-19.md)。
 **可信度门槛闸（v475）**：可信度不只决定"分数算多少"（权重打折）和"仓位多大"（乘数打折），
 现在还决定"够不够格开仓"：`buy_min_effective = 校准门槛 + min(0.10, 0.10×(1−conf))`，
 只收紧不放宽、封顶 0.10（基本面仅 0.08 权重，不该一票否决）。同轮把 v472 的权重打折
 从 alt 专有改成两侧通用（COIN 0.080→0.0621）。`thresholds` 同时保留原始/校准/生效三个数
 加 `action_before_confidence_gate`，能证明"这次 HOLD 是不是被可信度拦下的"。
-见 [`docs/v475-可信度门槛闸-2026-11-19.md`](./docs/v475-可信度门槛闸-2026-11-19.md)。
+见 [`docs/archive/v475-可信度门槛闸-2026-11-19.md`](./archive/v475-可信度门槛闸-2026-11-19.md)。
 
 
 
@@ -302,7 +302,7 @@ reflex-quant/
 
 **结构现状**：顶层按职责分层是健康的，但 `src_python/` 是一层扁平目录（无包边界，靠 `sys.path` 注入），
 模块按「领域」而不是按「版本号」分组的工作尚未完成。改造路径与风险清单见
-[`docs/后端领域分包方案-2026-11-16.md`](./docs/后端领域分包方案-2026-11-16.md)；
+[`docs/后端领域分包方案-2026-11-16.md`](./archive/后端领域分包方案-2026-11-16.md)；
 拆分 `api_server` 期间的端点总数护栏见 `backend/scripts/architecture_baseline.py`。
 
 ## 快速开始（Windows）
@@ -426,8 +426,8 @@ export TRIDENT_API_KEY_STORE=$(pwd)/api_keys.json
 python3 -m api_server
 ```
 
-完整设计、5 层防御、应急响应见 [`docs/SECURITY_DEMO_MODE.md`](./docs/SECURITY_DEMO_MODE.md)
-和 [`docs/SECURITY_DEMO_MODE_DEPLOY.md`](./docs/SECURITY_DEMO_MODE_DEPLOY.md)。
+完整设计、5 层防御、应急响应见 [`docs/SECURITY_DEMO_MODE.md`](./SECURITY_DEMO_MODE.md)
+和 [`docs/SECURITY_DEMO_MODE_DEPLOY.md`](./SECURITY_DEMO_MODE_DEPLOY.md)。
 
 ## 反思系统 XLSX 导出
 
@@ -491,7 +491,7 @@ cd backend/src_python && python3 -c "import db; c = db.get_connection(); db.migr
 
 ## 部署
 
-Linux 生产部署（systemd + nginx）见 [deploy/README.md](deploy/README.md)。
+Linux 生产部署（systemd + nginx）见 [deploy/README.md](./archive/README.md)。
 
 ## 子项目
 
@@ -505,16 +505,16 @@ Linux 生产部署（systemd + nginx）见 [deploy/README.md](deploy/README.md)�
 
 - **邮箱（项目）：** research@example.com
 - **Issues / 提案：** [github.com/stardust888888/reflex-quant/issues](https://github.com/stardust888888/reflex-quant/issues)
-- **贡献指南：** [`CONTRIBUTING.md`](./CONTRIBUTING.md)
-- **行为准则：** [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
-- **安全问题：** [`SECURITY.md`](./SECURITY.md)
+- **贡献指南：** [`CONTRIBUTING.md`](../CONTRIBUTING.md)
+- **行为准则：** [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
+- **安全问题：** [`SECURITY.md`](../SECURITY.md)
 
 **想成为 33+ 错误码（E001–E033）/ 7 层反思器的协作者？** 元反思循环（E028+）是开放的——如果你抓到
 一次所有反思器都漏掉的坏交易，欢迎提一个 issue 描述场景并提议新的 checker。
 
 ## 📄 License
 
-MIT — 见 [`LICENSE`](./LICENSE)。
+MIT — 见 [`LICENSE`](../LICENSE)。
 
 ## 🌟 Star History
 

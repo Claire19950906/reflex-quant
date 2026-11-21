@@ -109,8 +109,6 @@ cd backend && python3 scripts/iteration_check.py    # 40 秒，三行结论
 python3 scripts/offline_selftest.py                  # 30 秒，不碰生产库
 ```
 
-![实时信号台](./assets/screenshot-signal-desk.png)
-
 ---
 
 ## 边界（写在前面）

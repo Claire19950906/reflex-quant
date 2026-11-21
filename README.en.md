@@ -107,8 +107,6 @@ cd backend && python3 scripts/iteration_check.py    # 40s, three lines
 python3 scripts/offline_selftest.py                  # 30s, never touches the production DB
 ```
 
-![live signal desk](./assets/screenshot-signal-desk.png)
-
 ---
 
 ## Boundaries, up front

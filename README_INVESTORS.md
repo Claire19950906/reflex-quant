@@ -167,7 +167,7 @@ cd ../frontend && npm ci && npm run dev              # terminal 3: UI
 
 Open <http://localhost:3000> — live feed, reflection panel, meta-loop dashboard.
 
-Full guide: [docs/INSTALL.md](./docs/INSTALL.md). Windows one-click: `scripts\dev_start.bat`.
+Full guide: [docs/INSTALL.md](./docs/QUICKSTART.md). Windows one-click: `scripts\dev_start.bat`.
 
 ---
 

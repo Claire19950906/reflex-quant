@@ -16,6 +16,11 @@
 | :---: | :---: | :---: | :---: |
 | 735 | 156 | 20 | **136 · 87.2%** |
 
+<p align="center">
+  <img src="./assets/reflex-quant-banner.jpg" alt="Reflex Quant — cut the trades you shouldn't take" width="880">
+</p>
+
+
 </div>
 
 It speaks twice around every order.

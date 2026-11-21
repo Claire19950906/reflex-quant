@@ -893,7 +893,10 @@ def coerce_epoch_ts(value: Any, *, default: Optional[int] = None) -> Optional[in
         except (ValueError, TypeError):
             continue
         if dt.tzinfo is None:
-            dt = dt.astimezone()          # naive → 本地时区
+            # naive → 固定 +08:00。这类历史数据都是本机（北京）写入的，语义就是东八区；
+            # 用带参的 replace 而不是 astimezone()：后者跟运行环境走，CI 在 UTC 下
+            # 会把 18:55 当成 UTC、整体差 8 小时，测试与回测窗口都会跟着漂。
+            dt = dt.replace(tzinfo=_dt.timezone(_dt.timedelta(hours=8)))
         return int(dt.timestamp())
     return default
 

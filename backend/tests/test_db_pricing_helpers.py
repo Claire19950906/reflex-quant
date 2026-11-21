@@ -80,11 +80,13 @@ def test_coerce_epoch_ts_iso_utc_and_z_suffix():
     assert db.coerce_epoch_ts("2026-11-17T06:06:40+00:00") == expect
 
 
-def test_coerce_epoch_ts_naive_means_local_time():
-    # `YYYY-MM-DD HH:MM:SS` 这类历史数据都是本机写入 → 按本地时区解析
-    naive = datetime.datetime(2026, 11, 17, 14, 6, 40)
-    assert db.coerce_epoch_ts("2026-11-17 14:06:40") == int(naive.astimezone().timestamp())
-    assert db.coerce_epoch_ts("2026/11/17 14:06:40") == int(naive.astimezone().timestamp())
+def test_coerce_epoch_ts_naive_means_cn_time():
+    # `YYYY-MM-DD HH:MM:SS` 这类历史数据都是本机（北京）写入 → 固定按东八区解析。
+    # 不能用 astimezone() 跟着运行环境走：CI 在 UTC 下会整体差 8 小时。
+    cn = datetime.timezone(datetime.timedelta(hours=8))
+    naive = datetime.datetime(2026, 11, 17, 14, 6, 40, tzinfo=cn)
+    assert db.coerce_epoch_ts("2026-11-17 14:06:40") == int(naive.timestamp())
+    assert db.coerce_epoch_ts("2026/11/17 14:06:40") == int(naive.timestamp())
 
 
 @pytest.mark.parametrize("raw", [None, "", "   ", "不是时间", True, [], {}])

@@ -1245,9 +1245,17 @@ def parse_gate_sublayer(raw: Any) -> Tuple[str, str]:
     s = str(raw or "").strip()
     if ":" in s:
         l1_raw, l2_raw = s.split(":", 1)
-        l1 = l1_raw.strip() if any(it[0] == l1_raw.strip() for it in _GATE_SUBLAYER) else _GATE_SUBLAYER[0][0]
-        l2_enum = next((it[1] for it in _GATE_SUBLAYER if it[0] == l1), [])
-        l2 = l2_raw.strip() if any(x[0] == l2_raw.strip() for x in l2_enum) else (l2_enum[0][0] if l2_enum else "")
+        l1_in = l1_raw.strip()
+        l1_match = any(it[0] == l1_in for it in _GATE_SUBLAYER)
+        l1 = l1_in if l1_match else _GATE_SUBLAYER[0][0]
+        if not l1_match:
+            # v527: 与 parse_sublayer 同口径 —— l1 是回退值时必须清空 l2，
+            # 否则 LLM 输出一个不存在的 l1 会被静默写成某个具体子层，
+            # 报告里看起来像"模型判定了"，实际是兜底填的。
+            l2 = ""
+        else:
+            l2_enum = next((it[1] for it in _GATE_SUBLAYER if it[0] == l1), [])
+            l2 = l2_raw.strip() if any(x[0] == l2_raw.strip() for x in l2_enum) else (l2_enum[0][0] if l2_enum else "")
     else:
         l1 = s if any(it[0] == s for it in _GATE_SUBLAYER) else _GATE_SUBLAYER[0][0]
         l2 = ""

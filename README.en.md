@@ -7,7 +7,7 @@
 [![blocked](https://img.shields.io/badge/directional%20calls%20blocked-87.2%25-brightgreen)](#1-before-the-order-the-situation-not-a-call)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11–3.14-green)](./backend/requirements.txt)
-[![ci](https://github.com/stardust888888/reflex-quant/actions/workflows/ci.yml/badge.svg)](https://github.com/stardust888888/reflex-quant/actions)
+[![ci](https://github.com/stardust888888/reflex-quant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/stardust888888/reflex-quant/actions)
 [![Stage](https://img.shields.io/badge/stage-paper%20only-orange)](#boundaries-up-front)
 
 **English** | [中文](./README.md)

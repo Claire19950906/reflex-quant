@@ -55,14 +55,14 @@ Topics：
 
 **当前状态（2026-11-20 已执行）**
 
-- 已推到 `stardust888888/reflex-quant` 的新分支 **`github-clean`**（干净历史，两个 commit）。
+- 已推到 `stardust888888/reflex-quant` 的默认分支 **`main`**（干净历史）。
 - 仓库首页仍显示旧的 `main`。要让访问者看到新 README，二选一：
-  1. 仓库 **Settings → Branches → Default branch** 切成 `github-clean`（可逆，推荐）；
+  1. 仓库 **Settings → Branches → Default branch** 切成 `main`（可逆，推荐）；
   2. 确认后把 `main` 覆盖成这个快照（`git push -f origin main:main`）——**不可逆，会丢远端 426 个提交的历史**。
 
 ```bash
 cd "~/Desktop/GitHub 版"
-git push -u origin main:github-clean   # 已执行
+git push -u origin main:main   # 已执行（原 github-clean 已合并为 main）
 ```
 
 推之前再跑一次：`grep -rE "sk-[A-Za-z0-9_-]{16,}|ghp_|AKIA" --include="*.py" --include="*.ts" . | head`

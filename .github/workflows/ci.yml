@@ -93,15 +93,39 @@ jobs:
       - name: 版本号命名空间冻结 + 真重复审计
         run: python backend/scripts/legacy_namespace_audit.py
 
+      # 本机拿不到 Actions 日志正文，所以把这一步的完整输出落成文件、上传成
+      # artifact：qg-output。失败原因直接从 artifact 里读，不靠猜。
       - name: 结构质量闸门（事件循环阻塞 / 兼容垫片 / 别名蜜罐）
+        continue-on-error: true
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
         run: |
-          python -c "import sys; print('python', sys.version.split()[0], 'stdout', sys.stdout.encoding)"
-          if ! python backend/scripts/quality_gates.py; then
-            echo "=== quality_gates 失败，逐项明细 ==="
-            python backend/scripts/quality_gates.py --json || true
-            echo "=== 明细结束 ==="
-            exit 1
+          mkdir -p backend/reports
+          set +e
+          {
+            python -c "import sys, locale; print('python', sys.version.split()[0], 'stdout', sys.stdout.encoding, 'fs', locale.getpreferredencoding())"
+            python backend/scripts/quality_gates.py --json
+            echo "rc=$?"
+          } > backend/reports/qg.txt 2>&1
+          set -e
+          cat backend/reports/qg.txt
+
+      - name: 闸门判定
+        run: |
+          if grep -q '^rc=0$' backend/reports/qg.txt; then
+            echo "quality_gates 通过"
+            exit 0
           fi
+          echo "quality_gates 未通过，明细见 artifact: qg-output"
+          exit 1
+
+      - name: 上传闸门明细
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qg-output
+          path: backend/reports/qg.txt
 
       - name: 离线核心子集 + 覆盖率（防回退）
         working-directory: backend

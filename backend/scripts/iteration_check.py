@@ -10,7 +10,7 @@
     python3 scripts/iteration_check.py --json        # 机读
 
 三条尺子各自负责什么：
-  · offline_selftest   —— 交易闭环 (合成行情, 临时库): 26 项
+  · offline_selftest   —— 交易闭环 (合成行情, 临时库): 27 项
   · capability_acceptance —— 26 项能力/契约, 分 PASS / FAIL / ⏳等数据
   · pytest (可选)      —— 404 个测试文件的回归
 
@@ -151,6 +151,12 @@ def print_burn(b: dict | None) -> None:
               f" — 调了模型没产出，先查配额/超时/think-only")
 
 
+def _pct(v: object) -> str:
+    """百分比容错：合成库/空库上 complete_rate、filter_rate 都是 None，
+    原实现直接 v*100 会 TypeError，把整个体检脚本打崩（README 首屏就让人跑这条）。"""
+    return f"{v*100:.1f}%" if isinstance(v, (int, float)) else "n/a"
+
+
 def print_capacity(cap: dict | None) -> None:
     if not cap:
         print("   （产能体检不可用：analysis_yield 读取失败）")
@@ -162,12 +168,15 @@ def print_capacity(cap: dict | None) -> None:
     fr = cap.get("gate_filter_rate")
     worst = cap.get("worst_channel")
     dtxt = f"{d:.2f}" if isinstance(d, (int, float)) else "n/a"
+    qtxt = (f"{q} 条/{eta}h" if isinstance(q, (int, float)) and isinstance(eta, (int, float))
+            else "n/a")
     txt = (f"📈 产能   方向 {dtxt} 条/日 · "
-           f"完整率 {cr*100:.1f}% · 队列 {q} 条/{eta}h · 门卫否 {fr*100:.1f}%")
+           f"完整率 {_pct(cr)} · 队列 {qtxt} · 门卫否 {_pct(fr)}")
     print(txt)
     if worst:
-        print(f"     ⚠ 主通道短输出 {worst['short_rate']*100:.0f}%（{worst['model_id']}，{worst['calls']} 次）"
-              f" — {worst.get('verdict') or ''}；这是空烧 token 的主要来源")
+        print(f"     ⚠ 主通道短输出 {_pct(worst.get('short_rate'))}（{worst.get('model_id')}，"
+              f"{worst.get('calls')} 次） — {worst.get('verdict') or ''}；"
+              f"这是空烧 token 的主要来源")
 
 
 def run_pytest() -> dict:
@@ -182,7 +191,21 @@ def run_pytest() -> dict:
             "raw_tail": out.splitlines()[-2:]}
 
 
+def _demo_db_hint() -> None:
+    """演示库上跑出来的 ❌ 大多是“没数据”，不是代码坏了。
+
+    陌生人第一次按 README 跑这条时连的就是 backend/demo.db，
+    如果不说明，他会看到 PASS 8 · FAIL 10 就以为项目是坏的。
+    """
+    db = os.environ.get("TRIDENT_DB_PATH", "")
+    if "demo" in Path(db).name.lower():
+        print("ℹ️  当前连的是合成演示库 demo.db：依赖真实样本的能力项会显示 ❌ / ⏳，")
+        print("    那是「没数据」，不是代码坏了。要真结论请把 TRIDENT_DB_PATH 指向真实库。")
+        print()
+
+
 def main() -> int:
+    _demo_db_hint()
     ap = argparse.ArgumentParser(description="一次迭代的统一自检入口")
     ap.add_argument("--with-pytest", action="store_true", help="加跑全量回归")
     ap.add_argument("--json", action="store_true", help="只输出 JSON")

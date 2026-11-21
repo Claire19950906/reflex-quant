@@ -105,9 +105,12 @@ sqlite3 backend/trident_event_bus.db \
 ## 五、你能自己验
 
 ```bash
-cd backend && python3 scripts/iteration_check.py    # 40 秒，三行结论
-python3 scripts/offline_selftest.py                  # 30 秒，不碰生产库
+cd backend && python3 scripts/offline_selftest.py    # 30 秒，27 项交易闭环，碰的是临时库
+TRIDENT_DB_PATH="$PWD/demo.db" python3 scripts/iteration_check.py   # 40 秒，闭环 + 能力口径
 ```
+
+> 用 `demo.db` 跑 `iteration_check` 时，依赖真实样本的能力项会显示 ❌ / ⏳ ——
+> 那是「没数据」，不是代码坏了。脚本开头会自己把这句话打出来。
 
 ---
 

@@ -103,9 +103,12 @@ In one line: **it doesn't raise accuracy by making you guess better — it raise
 ## 5. Verify it yourself
 
 ```bash
-cd backend && python3 scripts/iteration_check.py    # 40s, three lines
-python3 scripts/offline_selftest.py                  # 30s, never touches the production DB
+cd backend && python3 scripts/offline_selftest.py    # 30s, 27 trade-loop checks, temp DB only
+TRIDENT_DB_PATH="$PWD/demo.db" python3 scripts/iteration_check.py   # 40s, loop + capability
 ```
+
+> On `demo.db`, capability items that need real samples show ❌ / ⏳ — that means
+> "no data yet", not "the code is broken". The script prints this caveat itself.
 
 ---
 

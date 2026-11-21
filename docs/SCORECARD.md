@@ -220,3 +220,8 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 2. `build_prompt_block` 遇到没有 `mechanism` 的候选链直接 `KeyError`，整段 prompt 生成失败；改为缺失即不渲染。
 
 定向回归：`pytest -k "chain_prior or prior"` → **77 passed / 1 skipped**（1 分 35 秒）。
+
+**全量实测（2026-11-21，日志 `/tmp/full12.log`）**：`5975 passed / 12 skipped / 0 failed`（42 分 46 秒）。
+上一轮 5974 passed / 1 failed 的那条是 `test_v457_lock_retry::test_gives_up_after_max_retries`：
+`cts.time` 是全局 time 模块，patch 后先前用例遗留的 l2_batcher 后台线程每 0.25 秒往记录表里塞一条
+（实测 95,903 条 0.25），退避断言必然失败。已改成**只记录本线程**的 sleep，后台线程不记也不真睡。

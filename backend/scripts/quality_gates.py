@@ -53,6 +53,16 @@ def _is_route(node: ast.AST) -> bool:
     return any(any(k in _deco_text(d) for k in ROUTE_DECOS) for d in decos)
 
 
+def _read_text(path: Path, errors: str = 'strict') -> str:
+    """按原样读源码，保留行尾（行号才对得上）。
+
+    不用 Path.read_text(newline=...)：`newline` 是 Python 3.13 才加的参数，
+    3.11 上直接 TypeError —— CI 就是被这一行打红的，本机 3.14 却全绿。
+    """
+    with path.open('r', encoding='utf-8', newline='', errors=errors) as fh:
+        return fh.read()
+
+
 def _has_await(node: ast.AST) -> bool:
     for sub in ast.walk(node):
         if isinstance(sub, (ast.Await, ast.AsyncFor, ast.AsyncWith)):
@@ -65,7 +75,7 @@ def check_loop_blocking() -> List[Dict[str, Any]]:
     bad: List[Dict[str, Any]] = []
     for path in _iter_py(SRC):
         try:
-            tree = ast.parse(path.read_text(encoding='utf-8', newline=''))
+            tree = ast.parse(_read_text(path))
         except SyntaxError as e:
             bad.append({'check': 'loop-blocking', 'file': str(path.relative_to(ROOT)),
                         'func': '<syntax>', 'line': e.lineno, 'reason': f'SyntaxError: {e.msg}'})
@@ -89,7 +99,7 @@ def check_shims() -> List[Dict[str, Any]]:
     """顶层兼容垫片必须为 0。"""
     bad: List[Dict[str, Any]] = []
     for path in sorted(SRC.glob('*.py')):
-        txt = path.read_text(encoding='utf-8', newline='', errors='ignore')
+        txt = _read_text(path, errors='ignore')
         if 'sys.modules[__name__] =' in txt:
             bad.append({'check': 'shims', 'file': str(path.relative_to(ROOT)),
                         'func': '<module>', 'line': 0,
@@ -103,7 +113,7 @@ def check_alias_honeypot() -> List[Dict[str, Any]]:
     if not alias.exists():
         return [{'check': 'alias-honeypot', 'file': 'backend/src_python/legacy_alias.py',
                  'func': '<module>', 'line': 0, 'reason': '别名层文件不存在'}]
-    txt = alias.read_text(encoding='utf-8', newline='', errors='ignore')
+    txt = _read_text(alias, errors='ignore')
     # 允许出现（因为要跳过它），但必须出现"跳过"判断；缺了就是真放行
     if 'startswith' not in txt or '_' not in txt:
         return [{'check': 'alias-honeypot', 'file': 'backend/src_python/legacy_alias.py',
@@ -112,10 +122,41 @@ def check_alias_honeypot() -> List[Dict[str, Any]]:
     return []
 
 
+# 3.13 才加、3.11 上会 TypeError 的参数。CI 跑 3.11，本机可能是 3.14，
+# 这类差异在本机永远跑不出来，只能靠这条检查提前拦住。
+PY313_ONLY_KWARGS = {'read_text': {'newline'}, 'write_text': {'newline'}}
+
+
+def check_py311_compat() -> List[Dict[str, Any]]:
+    """只能用 3.11 就有的 API：挡掉 3.13+ 才加的关键字参数。"""
+    bad: List[Dict[str, Any]] = []
+    base_list = [SRC, ROOT / 'backend' / 'scripts']
+    for base in base_list:
+        for path in _iter_py(base):
+            try:
+                tree = ast.parse(_read_text(path))
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+                    continue
+                allowed = PY313_ONLY_KWARGS.get(node.func.attr)
+                if not allowed:
+                    continue
+                for kw in node.keywords:
+                    if kw.arg in allowed:
+                        bad.append({'check': 'py311-compat',
+                                    'file': str(path.relative_to(ROOT)),
+                                    'func': node.func.attr, 'line': node.lineno,
+                                    'reason': f'{node.func.attr}({kw.arg}=...) 是 3.13+ 参数，CI 的 3.11 会 TypeError'})
+    return bad
+
+
 CHECKS = {
     'loop-blocking': check_loop_blocking,
     'shims': check_shims,
     'alias-honeypot': check_alias_honeypot,
+    'py311-compat': check_py311_compat,
 }
 
 

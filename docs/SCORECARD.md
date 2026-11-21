@@ -202,3 +202,21 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 
 **本轮全量实测**：`5948 passed / 12 skipped / 0 failed`（49 分 42 秒，2026-11-21，日志 `/tmp/full10.log`）。
 比上一轮 5823 多 125 条（本轮 74 条 + 并行协作者新增），**0 失败**。
+
+## 第二十轮：`chain_prior`（因果链先验）0→91%（27 条）
+
+这一层是"要不要因为一条链放弃这笔单"的闸门，错的代价是拿噪声挡真实交易。用例钉住：
+
+- **关键词不许带毒**：净化过的 `trigger_keywords` 优先、且**不与** `trigger_words` 取并集（并集会把 "BUY/美联储/品种名" 重新放进来，任何带"美联储"的新闻都能点燃地缘链）；单字与 40 多个通用词/品种代号全丢。
+- **英文词边界**：`oil` 不命中 `boil`、`rate` 不命中 `corporate`（旧实现实测假命中 14.8%）。
+- **只有强证据能定向**：n≥12 且超额 lift≥10pp、单侧 p≤0.05；拿不到基准率时退回 Wilson 下界>0.5，宁可不达标也不开闸。2/2 的点估计是 100%、下界只有 34%，用例专门断言"不许信两个样本"。
+- **weak 档永不否决**：3~11 样本只出 `UP_WEAK/DOWN_WEAK`；`WEAK_MIXED` 也明确表示"别照做"。
+- **BOTH（幅度）链永不可转成方向**：它们只在 prompt 里标注"这种局面追不追"，档位单独记 `strong_mag`。
+- **不吃未来新闻**：`match_by_time` 默认 `allow_future=False`，只有事后解释才显式打开——这是回测前视偏差的直接来源。
+
+顺手修了两个真问题：
+
+1. prompt 里"超额"打印成 `+0pp`：`lift` 是比例（0.2 = 20pp），`{:.0f}` 直接格式化会印成 0。改成 ×100。**这条会让一份 20pp 的超额证据在 LLM 眼里变成"没有超额"。**
+2. `build_prompt_block` 遇到没有 `mechanism` 的候选链直接 `KeyError`，整段 prompt 生成失败；改为缺失即不渲染。
+
+定向回归：`pytest -k "chain_prior or prior"` → **77 passed / 1 skipped**（1 分 35 秒）。

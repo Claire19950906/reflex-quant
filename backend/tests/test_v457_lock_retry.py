@@ -9,6 +9,7 @@
 """
 import sqlite3
 import sys
+import threading
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src_python"))
@@ -27,8 +28,20 @@ class _Conn:
 
 
 def _patch_sleep(monkeypatch):
+    """只记录**本线程**的退避时长。
+
+    `cts.time` 是全局 time 模块，patch 之后全进程生效：先前用例遗留的
+    l2_batcher 后台线程会每 0.25 秒调一次 sleep，把记录列表刷成 9 万多条
+    0.25（全量跑实测），退避断言随之失败。后台线程一律不记、也不真睡。
+    """
     sleeps = []
-    monkeypatch.setattr(cts.time, "sleep", lambda s: sleeps.append(s))
+    main = threading.current_thread()
+
+    def _fake(s):
+        if threading.current_thread() is main:
+            sleeps.append(s)
+
+    monkeypatch.setattr(cts.time, "sleep", _fake)
     return sleeps
 
 

@@ -24,6 +24,8 @@ SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src_python"
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
+import kline_sources as ks  # noqa: E402  v535: 叶子函数已拆到该模块，patch 打这里
+
 
 def _fake_yahoo_bars(asset: str, interval: str, limit: int):
     """模拟 N 根 NVDA/MU 类股票 K 线（价格 ~ 120 USD）。"""
@@ -54,6 +56,7 @@ def test_fetch_binance_klines_us_hynix_returns_yahoo_bars(monkeypatch):
     """v?? 修复前: yahoo 市场 → return None；修复后: 返回 (bars, last_bar)。"""
     import api_server
 
+
     captured = {}
 
     def _fake(asset, interval, limit):
@@ -62,7 +65,7 @@ def test_fetch_binance_klines_us_hynix_returns_yahoo_bars(monkeypatch):
         captured["limit"] = limit
         return _fake_yahoo_bars(asset, interval, limit)
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", _fake)
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars", _fake)
     api_server._BINANCE_KLINE_CACHE.clear()
 
     out = api_server._fetch_binance_klines("US_HYNIX", "1h")
@@ -89,7 +92,7 @@ def test_fetch_binance_klines_us_hynix_15m(monkeypatch):
         captured["limit"] = limit
         return _fake_yahoo_bars(asset, interval, limit)
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", _fake)
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars", _fake)
     api_server._BINANCE_KLINE_CACHE.clear()
 
     out = api_server._fetch_binance_klines("US_HYNIX", "15m")
@@ -112,7 +115,7 @@ def test_fetch_binance_klines_yahoo_empty_returns_none(monkeypatch):
     """Yahoo 多源全部失败 → None（让 live 端点退回 _live_price_sync）。"""
     import api_server
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars",
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars",
                         lambda asset, interval, limit: [])
     api_server._BINANCE_KLINE_CACHE.clear()
     out = api_server._fetch_binance_klines("US_HYNIX", "1h")
@@ -128,7 +131,7 @@ def test_fetch_binance_klines_skhynix_kospi(monkeypatch):
         called["yahoo"] += 1
         return _fake_yahoo_bars(asset, interval, limit)
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", _fake)
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars", _fake)
     api_server._BINANCE_KLINE_CACHE.clear()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -149,13 +152,13 @@ def test_fetch_binance_klines_btc_does_not_use_yahoo(monkeypatch):
         called["binance_fapi"] += 1
         return None
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", _fake_yahoo)
-    monkeypatch.setattr(api_server, "_binance_fapi_klines", _fake_fapi)
-    monkeypatch.setattr(api_server, "_binance_spot_klines",
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars", _fake_yahoo)
+    monkeypatch.setattr(ks, "_binance_fapi_klines", _fake_fapi)
+    monkeypatch.setattr(ks, "_binance_spot_klines",
                         lambda symbol, interval: None)
-    monkeypatch.setattr(api_server, "_bybit_klines_bars",
+    monkeypatch.setattr(ks, "_bybit_klines_bars",
                         lambda bybit_sym, interval: None)
-    monkeypatch.setattr(api_server, "_bitstamp_klines_bars",
+    monkeypatch.setattr(ks, "_bitstamp_klines_bars",
                         lambda bs_sym, interval: None)
     api_server._BINANCE_KLINE_CACHE.clear()
 
@@ -179,8 +182,8 @@ def test_fetch_binance_klines_wti_does_not_use_yahoo(monkeypatch):
         called["jin10"] += 1
         return None
 
-    monkeypatch.setattr(api_server, "_fetch_yahoo_history_bars", _ycb)
-    monkeypatch.setattr(api_server, "_jin10_klines_bars", _jcb)
+    monkeypatch.setattr(ks, "_fetch_yahoo_history_bars", _ycb)
+    monkeypatch.setattr(ks, "_jin10_klines_bars", _jcb)
     api_server._BINANCE_KLINE_CACHE.clear()
 
     out = api_server._fetch_binance_klines("WTI", "1h")

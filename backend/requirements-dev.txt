@@ -1,4 +1,4 @@
-pytest>=8
+pytest>=9.2.0
 
 # lint 门禁（CI 与 pre-commit 共用同一版本，规则见仓库根 ruff.toml）
 ruff==0.17.5

@@ -169,6 +169,11 @@ def test_areport_does_not_block_heartbeat_loop(monkeypatch):
                 beats.append(time.monotonic())
                 await asyncio.sleep(0.02)
 
+        # 预热默认线程池：第一次 run_in_executor 会在事件循环线程上做 Thread.start()，
+        # 重载机器上这一步本身就要上百毫秒 —— 它会被误算成"落库阻塞了事件循环"
+        # （全量跑实测 134ms vs 阈值 120ms）。先空跑一次把线程起好，再开始计时。
+        await asyncio.get_running_loop().run_in_executor(None, lambda: None)
+
         hb = asyncio.create_task(heartbeat())
         rep = asyncio.create_task(source_status.areport("hb_src", True))
         # 等落库线程真正进入阻塞态再开始计时：默认线程池是懒创建的，第一次 submit
@@ -177,7 +182,11 @@ def test_areport_does_not_block_heartbeat_loop(monkeypatch):
         deadline = time.monotonic() + 3.0
         while "persist_entered" not in seen and time.monotonic() < deadline:
             await asyncio.sleep(0.005)
-        await asyncio.sleep(0.15)          # 落库保持阻塞 150ms，期间量心跳
+        # areport 按设计会 await 落库（调用方拿到结果时 DB 已写好），
+        # 所以要测的是"等待期间事件循环还能跑"。窗口取 1 秒：
+        # 150~400ms 的窗口在负载机上会被宿主抖动淹没（实测单拍 134~177ms、拍数不足），
+        # 而真阻塞 1 秒时拍数只剩 1~2 —— 那时才是确定的结论。
+        await asyncio.sleep(1.0)
         stop = True
         release.set()
         await hb
@@ -190,10 +199,11 @@ def test_areport_does_not_block_heartbeat_loop(monkeypatch):
     assert "persist_end" in seen, "测试前提失效：落库没有被正常解除阻塞"
     inside = [t for t in beats
               if seen["persist_entered"] <= t <= seen["persist_end"]]
-    assert len(inside) >= 2, "测试前提失效：阻塞窗口内心跳拍数不足"
-    # 20ms 周期的心跳，单拍间隔不应被落库拖成百毫秒级
+    # 1 秒窗口 × 20ms ≈ 50 拍；事件循环被阻塞时只剩 1~2 拍
+    assert len(inside) >= 20, "测试前提失效：阻塞窗口内心跳拍数不足"
+    # 真阻塞会把单拍间隔拉成秒级；宿主抖动上限约 200ms
     max_gap = max(b - a for a, b in zip(inside, inside[1:])) * 1000
-    assert max_gap < 120, f"心跳单拍间隔 {max_gap:.0f}ms，落库期间事件循环被阻塞"
+    assert max_gap < 400, f"心跳单拍间隔 {max_gap:.0f}ms，落库期间事件循环被阻塞"
 
 
 # ── 4. register() 的 fd 泄漏回归 ──────────────────────────────────────────

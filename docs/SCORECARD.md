@@ -286,3 +286,5 @@ $ pytest -k "dimension or reflection or risk or gate or contract or schema or re
 顺带把一处口径写实：水位按**变化**判、不按"变大"判。上游回填修订历史观测（回发旧日期）也值得推一次，静默吞掉修订比多推一次更贵；连发两次同一个值才静默。测试里两种情形都钉了。
 
 **实测**：`test_v521_news_release_timing.py` 12 条（水位语义 7 条 + 窗口边界 4 条 + 防腐 1 条），与既有 `test_api_pure_helpers.py` 28 条一起 **40 passed**。
+
+**全量实测（2026-11-21，日志 `/tmp/full16.log`）**：`6185 passed / 12 skipped / 0 failed`（17 分 01 秒）。

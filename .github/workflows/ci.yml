@@ -94,7 +94,14 @@ jobs:
         run: python backend/scripts/legacy_namespace_audit.py
 
       - name: 结构质量闸门（事件循环阻塞 / 兼容垫片 / 别名蜜罐）
-        run: python backend/scripts/quality_gates.py
+        run: |
+          python -c "import sys; print('python', sys.version.split()[0], 'stdout', sys.stdout.encoding)"
+          if ! python backend/scripts/quality_gates.py; then
+            echo "=== quality_gates 失败，逐项明细 ==="
+            python backend/scripts/quality_gates.py --json || true
+            echo "=== 明细结束 ==="
+            exit 1
+          fi
 
       - name: 离线核心子集 + 覆盖率（防回退）
         working-directory: backend
